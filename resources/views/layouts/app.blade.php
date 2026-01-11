@@ -54,7 +54,7 @@
             <x-nav-item icon="computer" label="CBT" />
             <x-nav-item icon="warning" label="Pelanggaran" />
             <x-nav-item icon="article" label="Berita" />
-            <x-nav-item icon="school" label="Sekolah" />
+            <x-nav-item icon="school" label="Sekolah" :active="Request::is('sekolah*')" href="{{ route('sekolah.index') }}" />
             <x-nav-item icon="people" label="Fungsionaris" :active="Request::is('fungsionaris*')" href="{{ route('fungsionaris.index') }}" />
             <x-nav-item icon="notifications" label="Pengumuman" />
             <x-nav-item icon="image" label="Slider Admin" />
