@@ -6,10 +6,13 @@
 <style>
     .page-header {
         padding: 20px 0;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 20px;
+        display: flex;              /* WAJIB */
+        align-items: center;        /* SEJAJAR TENGAH */
+        gap: 16px;                  /* JARAK ICON & TEKS */
+    }
+    
+    .page-header .icon-box-circle-header {
+        flex-shrink: 0;
     }
     
     .icon-box-circle-header {
@@ -22,6 +25,12 @@
         background-color: #fce4ec;
         color: #d81b60;
     }
+
+    .school-info {
+    display: flex;              /* TAMBAHAN */
+    flex-direction: column;     /* TEKS ATAS-BAWAH */
+    justify-content: center;
+}
 
     .school-info .label {
         font-size: 12px;
@@ -180,9 +189,9 @@
 <div class="row">
     <div class="col s12">
         <div class="page-header">
-            <div class="icon-box-circle-header">
+            <!-- <div class="icon-box-circle-header">
                 <i class="material-icons">school</i>
-            </div>
+            </div> -->
             <div class="school-info">
                 <span class="label">Sekolah</span>
                 <span class="name">Sekolah Literasia Edutekno Digital</span>
