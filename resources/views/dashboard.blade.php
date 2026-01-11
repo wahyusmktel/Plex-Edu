@@ -4,106 +4,142 @@
 
 @section('styles')
 <style>
+    .page-header {
+        padding: 20px 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .icon-box-circle-header {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fce4ec;
+        color: #d81b60;
+    }
+
+    .school-info .label {
+        font-size: 12px;
+        color: #9e9e9e;
+        display: block;
+    }
+    
+    .school-info .name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #333;
+    }
+
     .stats-card {
-        border-radius: 12px;
+        border-radius: 16px;
         padding: 24px;
         background: #fff;
         height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease;
+        /* Clean Box Styling */
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+        margin-bottom: 24px; /* Fix for mobile stacking */
     }
     
     .stats-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-8px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.06);
+        border-color: #e2e8f0;
     }
     
     .stats-card .icon-round {
-        width: 54px;
-        height: 54px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 20px;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
     }
     
     .stats-card .label {
-        color: #9e9e9e;
+        color: #757575;
         font-size: 14px;
-        font-weight: 500;
-        margin-bottom: 4px;
+        font-weight: 600;
+        margin-bottom: 6px;
     }
     
     .stats-card .value {
-        font-size: 24px;
-        font-weight: 700;
-        color: #424242;
+        font-size: 28px;
+        font-weight: 800;
+        color: #2d3748;
     }
     
     /* Stats Colors */
-    .icon-pink { background-color: #fce4ec; color: #d81b60; }
-    .icon-purple { background-color: #f3e5f5; color: #8e24aa; }
-    .icon-yellow { background-color: #fffde7; color: #fbc02d; }
-    .icon-blue { background-color: #e3f2fd; color: #1e88e5; }
-    .icon-red { background-color: #ffebee; color: #e53935; }
-    .icon-lavender { background-color: #f3e5f5; color: #7e57c2; }
+    .icon-pink { background-color: #fff0f3; color: #ff2d55; }
+    .icon-purple { background-color: #f3f0ff; color: #7048e8; }
+    .icon-yellow { background-color: #fff9db; color: #fcc419; }
+    .icon-blue { background-color: #e7f5ff; color: #228be6; }
+    .icon-red { background-color: #fff5f5; color: #fa5252; }
+    .icon-lavender { background-color: #f8f0fc; color: #be4bdb; }
     
     .main-chart-card {
         background: #fff;
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        min-height: 400px;
+        border-radius: 16px;
+        padding: 30px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        min-height: 450px;
+        margin-bottom: 24px; /* Fix for mobile stacking */
     }
     
     .small-info-card {
         background: #fff;
-        border-radius: 12px;
+        border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        margin-bottom: 24px; /* Fix for mobile stacking */
         display: flex;
         align-items: center;
         gap: 20px;
     }
     
     .small-info-card .icon-box {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
     
-    .small-info-card.yellow-box .icon-box { background-color: #fffde7; color: #fbc02d; }
-    .small-info-card.blue-box .icon-box { background-color: #e3f2fd; color: #1e88e5; }
-    .small-info-card.purple-box .icon-box { background-color: #f3e5f5; color: #8e24aa; }
-    .small-info-card.red-box .icon-box { background-color: #ffebee; color: #e53935; }
-    
-    .small-info-card .content {
-        display: flex;
-        flex-direction: column;
-    }
+    .small-info-card.yellow-box .icon-box { background-color: #fff9db; color: #fcc419; }
+    .small-info-card.blue-box .icon-box { background-color: #e7f5ff; color: #228be6; }
+    .small-info-card.purple-box .icon-box { background-color: #f3f0ff; color: #7048e8; }
+    .small-info-card.red-box .icon-box { background-color: #fff5f5; color: #fa5252; }
     
     .small-info-card .content .title {
-        font-size: 14px;
-        color: #9e9e9e;
-        font-weight: 500;
+        font-size: 15px;
+        color: #718096;
+        font-weight: 600;
+        display: block;
     }
     
     .small-info-card .content .number {
-        font-size: 18px;
-        font-weight: 700;
-        color: #424242;
+        font-size: 20px;
+        font-weight: 800;
+        color: #1a202c;
     }
     
     .donut-placeholder {
         width: 100%;
-        height: 250px;
+        height: 280px;
         position: relative;
         display: flex;
         align-items: center;
@@ -111,12 +147,12 @@
     }
     
     .donut-ring {
-        width: 200px;
-        height: 200px;
+        width: 220px;
+        height: 220px;
         border-radius: 50%;
-        border: 25px solid #f3f3f3;
-        border-top-color: #e91e63;
-        border-right-color: #e91e63;
+        border: 30px solid #f7fafc;
+        border-top-color: #d90d8b;
+        border-right-color: #d90d8b;
         transform: rotate(45deg);
     }
     
@@ -130,10 +166,12 @@
     .chart-header select {
         display: block;
         width: auto;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 4px 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 6px 12px;
         height: auto;
+        font-size: 13px;
+        color: #4a5568;
     }
 </style>
 @endsection
@@ -142,7 +180,7 @@
 <div class="row">
     <div class="col s12">
         <div class="page-header">
-            <div class="icon-box-circle pink">
+            <div class="icon-box-circle-header">
                 <i class="material-icons">school</i>
             </div>
             <div class="school-info">
@@ -214,7 +252,7 @@
     <div class="col s12 l7">
         <div class="main-chart-card">
             <div class="chart-header">
-                <span style="font-weight:600; font-size: 16px;">Absensi Siswa</span>
+                <span style="font-weight:700; font-size: 18px; color: #1a202c;">Absensi Siswa</span>
                 <select class="browser-default">
                     <option value="1">June 2022 - May 2022</option>
                 </select>
@@ -222,18 +260,18 @@
             <div class="donut-placeholder">
                 <div class="donut-ring"></div>
                 <div style="position: absolute; text-align: center;">
-                    <div style="font-size: 12px; color: #9e9e9e;">Hadir</div>
-                    <div style="font-size: 24px; font-weight: 700;">80%</div>
+                    <div style="font-size: 13px; color: #718096; font-weight: 500;">Hadir</div>
+                    <div style="font-size: 32px; font-weight: 800; color: #1a202c;">80%</div>
                 </div>
             </div>
-            <div style="display: flex; justify-content: center; gap: 30px; margin-top: 20px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 12px; height: 12px; background: #e91e63; border-radius: 2px;"></div>
-                    <span style="font-size: 12px;">Hadir</span>
+            <div style="display: flex; justify-content: center; gap: 40px; margin-top: 30px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 14px; height: 14px; background: #d90d8b; border-radius: 4px;"></div>
+                    <span style="font-size: 13px; font-weight: 600; color: #4a5568;">Hadir</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 12px; height: 12px; background: #eee; border-radius: 2px;"></div>
-                    <span style="font-size: 12px;">Absen</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 14px; height: 14px; background: #f7fafc; border-radius: 4px; border: 1px solid #e2e8f0;"></div>
+                    <span style="font-size: 13px; font-weight: 600; color: #4a5568;">Absen</span>
                 </div>
             </div>
         </div>

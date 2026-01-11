@@ -12,68 +12,99 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #ba80e8 0%, #d90d8b 100%);
+            --primary-color: #d90d8b;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f5f7fa;
+            background-color: #f8f9fc;
             color: #4a4a4a;
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
         }
         
+        main {
+            flex: 1 0 auto;
+        }
+
         /* Sidebar Styling */
         .sidenav {
-            width: 260px;
+            width: 280px;
             background-color: #fff;
-            box-shadow: none;
-            border-right: 1px solid #eee;
+            box-shadow: 0 0 15px rgba(0,0,0,0.03);
+            border: none;
         }
         
         .sidenav .logo-container {
-            padding: 24px;
+            padding: 30px 24px;
             display: flex;
             align-items: center;
             gap: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .sidenav .logo-container i {
+            font-size: 32px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .sidenav .logo-container .logo-text {
-            font-weight: 700;
-            font-size: 20px;
-            color: #d81b60;
-            letter-spacing: 1px;
+            font-weight: 800;
+            font-size: 24px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
         }
         
+        .sidenav li {
+            margin: 4px 0;
+        }
+
+        .sidenav li.active {
+            background-color: transparent !important;
+        }
+
         .sidenav li a {
             font-size: 14px;
             font-weight: 500;
-            color: #757575;
-            padding: 0 32px;
+            color: #616161;
+            padding: 0 24px 0 32px;
+            height: 44px;
+            line-height: 44px;
             display: flex;
             align-items: center;
+            border-radius: 0 22px 22px 0;
+            margin-right: 20px;
+            transition: all 0.3s ease;
         }
         
         .sidenav li a i {
             margin-right: 16px;
-            font-size: 20px;
-            color: #9e9e9e;
-        }
-        
-        .sidenav li.active {
-            background-color: transparent;
+            font-size: 22px;
+            color: #bdbdbd;
         }
         
         .sidenav li.active a {
-            color: #fff;
-            background: linear-gradient(90deg, #d81b60 0%, #e91e63 100%);
-            border-radius: 0 24px 24px 0;
-            margin-right: 16px;
+            color: #fff !important;
+            background: var(--primary-gradient) !important;
+            box-shadow: 0 4px 12px rgba(217, 13, 139, 0.2);
         }
         
         .sidenav li.active a i {
-            color: #fff;
+            color: #fff !important;
         }
         
-        /* Navbar Styling */
+        /* Navbar, Main, Footer Padding */
         header, main, footer {
-            padding-left: 260px;
+            padding-left: 280px;
+            transition: padding-left 0.3s ease;
         }
         
         @media only screen and (max-width : 992px) {
@@ -81,34 +112,57 @@
                 padding-left: 0;
             }
         }
+
+        /* Desktop Sidenav Toggle Logic */
+        @media only screen and (min-width : 993px) {
+            body.sidenav-collapsed .sidenav {
+                transform: translateX(-105%) !important;
+            }
+            body.sidenav-collapsed header, 
+            body.sidenav-collapsed main, 
+            body.sidenav-collapsed footer {
+                padding-left: 0;
+            }
+        }
         
-        .navbar-fixed nav {
-            background-color: #f5f7fa;
-            box-shadow: none;
+        nav {
+            background-color: transparent !important;
+            box-shadow: none !important;
             color: #4a4a4a;
-            padding: 0 24px;
+            height: 70px;
+            line-height: 70px;
         }
         
-        .navbar-fixed nav i {
-            color: #757575;
+        nav i {
+            color: #757575 !important;
         }
         
+        .nav-wrapper {
+            padding: 0 30px;
+        }
+
         .nav-right-icons {
+            display: flex !important;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-right-icons li a {
+            padding: 0 10px;
             display: flex;
             align-items: center;
-            gap: 20px;
         }
         
         .profile-avatar {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background-color: #ddd;
+            background-color: #eee;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: relative;
+            margin-left: 10px;
         }
         
         .profile-avatar img {
@@ -117,9 +171,9 @@
             object-fit: cover;
         }
         
-        .profile-avatar .status-dot {
-            width: 10px;
-            height: 10px;
+        .status-dot {
+            width: 12px;
+            height: 12px;
             background-color: #4caf50;
             border: 2px solid #fff;
             border-radius: 50%;
@@ -128,44 +182,27 @@
             right: 0;
         }
         
-        /* Content Styling */
-        .page-header {
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
+        /* Footer */
+        .page-footer {
+            background-color: #fff;
+            color: #757575;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+            /* Place footer above sidebar */
+            position: relative;
+            z-index: 999;
         }
         
-        .school-info {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .school-info .label {
-            font-size: 12px;
-            color: #9e9e9e;
-        }
-        
-        .school-info .name {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .icon-box-circle {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .footer-copyright {
+            background-color: transparent !important;
+            color: #9e9e9e !important;
         }
 
-        .icon-box-circle.pink { background-color: #fce4ec; color: #d81b60; }
-        
-        /* Layout classes */
+        /* Content Hub */
         .container-fluid {
-            width: 95%;
+            width: 96%;
             margin: 0 auto;
+            padding-top: 10px;
         }
         
         @yield('styles')
@@ -176,7 +213,7 @@
     <!-- Sidebar -->
     <ul id="slide-out" class="sidenav sidenav-fixed">
         <li class="logo-container">
-            <i class="material-icons pink-text text-darken-1">import_contacts</i>
+            <i class="material-icons">import_contacts</i>
             <span class="logo-text">Literasia</span>
         </li>
         <li class="active"><a href="#!"><i class="material-icons">dashboard</i>Dashboard Sekolah</a></li>
@@ -194,26 +231,22 @@
     </ul>
     
     <header>
-        <div class="navbar-fixed">
-            <nav>
-                <div class="nav-wrapper">
-                    <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-                    <ul class="left hide-on-med-and-down">
-                        <li><a href="#!"><i class="material-icons">radio_button_checked</i></a></li>
-                    </ul>
-                    <ul class="right nav-right-icons">
-                        <li><a href="#!"><i class="material-icons">dark_mode</i></a></li>
-                        <li><a href="#!"><i class="material-icons">notifications_none</i></a></li>
-                        <li>
-                            <div class="profile-avatar">
-                                <img src="https://via.placeholder.com/150" alt="Profile">
-                                <div class="status-dot"></div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-        </div>
+        <nav>
+            <div class="nav-wrapper">
+                <a href="#" data-target="slide-out" class="sidenav-trigger show-on-large"><i class="material-icons">menu</i></a>
+
+                <ul class="right nav-right-icons">
+                    <li><a href="#!"><i class="material-icons">dark_mode</i></a></li>
+                    <li><a href="#!"><i class="material-icons">notifications_none</i></a></li>
+                    <li>
+                        <div class="profile-avatar">
+                            <img src="https://via.placeholder.com/150" alt="Profile">
+                            <div class="status-dot"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
     </header>
 
     <main>
@@ -222,13 +255,42 @@
         </div>
     </main>
 
+    <footer class="page-footer">
+        <div class="container-fluid">
+            <div class="footer-copyright">
+                © 2026 Literasia Edutekno Digital. All rights reserved.
+                <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+            </div>
+        </div>
+    </footer>
+
     <!-- Compiled and minified JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var elems = document.querySelectorAll('.sidenav');
-            var instances = M.Sidenav.init(elems);
+        $(document).ready(function(){
+            // Initialize sideNav
+            $('.sidenav').sidenav();
+            
+            // Handle sidenav toggle for both mobile and desktop
+            $('.sidenav-trigger').on('click', function(e) {
+                e.preventDefault();
+                
+                if ($(window).width() > 992) {
+                    // Desktop mode: Toggle class on body
+                    $('body').toggleClass('sidenav-collapsed');
+                } else {
+                    // Mobile mode: Use Materialize instance
+                    var instance = M.Sidenav.getInstance($('#slide-out'));
+                    if (instance) {
+                        if (instance.isOpen) {
+                            instance.close();
+                        } else {
+                            instance.open();
+                        }
+                    }
+                }
+            });
         });
     </script>
     @yield('scripts')
