@@ -32,6 +32,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('sekolah')->name('sekolah.')->group(function () {
         Route::get('/', [\App\Http\Controllers\SekolahController::class, 'index'])->name('index');
         Route::post('/settings', [\App\Http\Controllers\SekolahController::class, 'updateSettings'])->name('update-settings');
+        Route::post('/settings/activate/{id}', [\App\Http\Controllers\SekolahController::class, 'activateSettings'])->name('settings.activate');
+        Route::delete('/settings/destroy/{id}', [\App\Http\Controllers\SekolahController::class, 'destroySettings'])->name('settings.destroy');
         
         // Jurusan
         Route::post('/jurusan/store', [\App\Http\Controllers\SekolahController::class, 'storeJurusan'])->name('jurusan.store');

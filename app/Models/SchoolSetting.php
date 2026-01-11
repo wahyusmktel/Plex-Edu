@@ -13,5 +13,6 @@ class SchoolSetting extends Model
         'semester',
         'tahun_pelajaran',
         'jenjang',
+        'is_active',
     ];
 }

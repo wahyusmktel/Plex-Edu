@@ -13,12 +13,13 @@ class SekolahController extends Controller
 {
     public function index()
     {
-        $settings = SchoolSetting::first();
+        $allSettings = SchoolSetting::orderBy('tahun_pelajaran', 'desc')->orderBy('semester', 'desc')->get();
+        $settings = $allSettings->where('is_active', true)->first() ?? $allSettings->first();
         $jurusans = Jurusan::all();
         $kelas = Kelas::with(['waliKelas', 'jurusan'])->get();
         $gurus = Fungsionaris::where('jabatan', 'guru')->get();
 
-        return view('admin.sekolah.index', compact('settings', 'jurusans', 'kelas', 'gurus'));
+        return view('admin.sekolah.index', compact('settings', 'allSettings', 'jurusans', 'kelas', 'gurus'));
     }
 
     public function updateSettings(Request $request)
@@ -29,18 +30,35 @@ class SekolahController extends Controller
             'jenjang' => 'required',
         ]);
 
-        $settings = SchoolSetting::first();
-        if (!$settings) {
-            $settings = new SchoolSetting();
+        // If this is set to active, deactivate others
+        if ($request->is_active) {
+            SchoolSetting::query()->update(['is_active' => false]);
         }
 
-        $settings->semester = $request->semester;
-        $settings->tahun_pelajaran = $request->tahun_pelajaran;
-        $settings->jenjang = $request->jenjang;
-        $settings->is_active = $request->has('is_active') ? $request->is_active : true; // Default to true if not provided for now
+        $settings = SchoolSetting::create([
+            'semester' => $request->semester,
+            'tahun_pelajaran' => $request->tahun_pelajaran,
+            'jenjang' => $request->jenjang,
+            'is_active' => $request->is_active ? true : false,
+        ]);
+
+        return response()->json(['success' => 'Pengaturan sekolah berhasil ditambahkan', 'data' => $settings]);
+    }
+
+    public function activateSettings($id)
+    {
+        SchoolSetting::query()->update(['is_active' => false]);
+        $settings = SchoolSetting::findOrFail($id);
+        $settings->is_active = true;
         $settings->save();
 
-        return response()->json(['success' => 'Pengaturan sekolah berhasil diperbarui']);
+        return response()->json(['success' => 'Semester berhasil diaktifkan']);
+    }
+
+    public function destroySettings($id)
+    {
+        SchoolSetting::destroy($id);
+        return response()->json(['success' => 'Pengaturan berhasil dihapus']);
     }
 
     // Jurusan CRUD

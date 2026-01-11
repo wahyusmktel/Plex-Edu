@@ -35,48 +35,90 @@
         <div class="p-8">
             <!-- Tab 1: Settings -->
             <div x-show="activeTab === 'settings'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4">
-                <form @submit.prevent="saveSettings">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div>
-                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Semester</label>
-                            <select x-model="settings.semester" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
-                                <option value="">Pilih Semester</option>
-                                <option value="ganjil">Ganjil</option>
-                                <option value="genap">Genap</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Tahun Pelajaran</label>
-                            <select x-model="settings.tahun_pelajaran" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
-                                <option value="">Pilih Tahun Pelajaran</option>
-                                <template x-for="year in ['2025/2026', '2026/2027', '2027/2028', '2028/2029', '2029/2030']">
-                                    <option :value="year" x-text="year"></option>
-                                </template>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Jenjang</label>
-                            <select x-model="settings.jenjang" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
-                                <option value="">Pilih Jenjang</option>
-                                <option value="sd">SD</option>
-                                <option value="smp">SMP</option>
-                                <option value="sma_smk">SMA/SMK</option>
-                            </select>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    <!-- Form Section -->
+                    <div class="lg:col-span-1">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6">Tambah Semester/Tahun</h3>
+                        <form @submit.prevent="saveSettings" class="space-y-6">
+                            <div>
+                                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Semester</label>
+                                <select x-model="settings.semester" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
+                                    <option value="">Pilih Semester</option>
+                                    <option value="ganjil">Ganjil</option>
+                                    <option value="genap">Genap</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Tahun Pelajaran</label>
+                                <select x-model="settings.tahun_pelajaran" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
+                                    <option value="">Pilih Tahun Pelajaran</option>
+                                    <template x-for="year in ['2025/2026', '2026/2027', '2027/2028', '2028/2029', '2029/2030']">
+                                        <option :value="year" x-text="year"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Jenjang Sekolah</label>
+                                <select x-model="settings.jenjang" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
+                                    <option value="">Pilih Jenjang</option>
+                                    <option value="sd">SD</option>
+                                    <option value="smp">SMP</option>
+                                    <option value="sma_smk">SMA/SMK</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-3 py-2">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" x-model="settings.is_active" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                                <span class="text-sm font-bold text-slate-600">Langsung Aktifkan</span>
+                            </div>
+                            <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer">
+                                <i class="material-icons">add</i> TAMBAH SETTING
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- History Section -->
+                    <div class="lg:col-span-2">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6">Riwayat Tahun Pelajaran</h3>
+                        <div class="overflow-hidden border border-slate-100 rounded-3xl">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 text-slate-400 text-[11px] uppercase font-black tracking-widest">
+                                    <tr>
+                                        <th class="px-6 py-4">Tahun Pelajaran</th>
+                                        <th class="px-6 py-4">Semester</th>
+                                        <th class="px-6 py-4">Jenjang</th>
+                                        <th class="px-6 py-4 text-center">Status</th>
+                                        <th class="px-6 py-4 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm">
+                                    <template x-for="item in allSettings" :key="item.id">
+                                        <tr class="border-t border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                                            <td class="px-6 py-4 font-bold text-slate-700" x-text="item.tahun_pelajaran"></td>
+                                            <td class="px-6 py-4 font-medium text-slate-500" x-text="item.semester.toUpperCase()"></td>
+                                            <td class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-tighter" x-text="item.jenjang.replace('_', '/')"></td>
+                                            <td class="px-6 py-4 text-center">
+                                                <template x-if="item.is_active">
+                                                    <span class="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest">AKTIF</span>
+                                                </template>
+                                                <template x-if="!item.is_active">
+                                                    <button @click="activateSetting(item.id)" class="px-3 py-1 bg-slate-100 text-slate-400 hover:bg-[#ba80e8] hover:text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer">AKTIFKAN</button>
+                                                </template>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">
+                                                <button @click="deleteSetting(item.id)" class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer opacity-0 group-hover:opacity-100">
+                                                    <i class="material-icons text-lg">delete</i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between mb-8 pb-8 border-b border-slate-50">
-                        <div class="flex items-center gap-3">
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" x-model="settings.is_active" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                            </label>
-                            <span class="text-sm font-bold text-slate-600">Aktifkan Semester Ini</span>
-                        </div>
-                        <button type="submit" class="px-8 py-4 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 cursor-pointer">
-                            <i class="material-icons">save</i> Simpan Pengaturan
-                        </button>
-                    </div>
-                </form>
+                </div>
 
                 <!-- Jurusan Table (SMA/SMK only) -->
                 <div x-show="settings.jenjang === 'sma_smk'" class="mt-12 pt-12 border-t border-slate-50" x-transition>
@@ -276,11 +318,12 @@ function sekolahPage() {
     return {
         activeTab: 'settings',
         settings: {
-            semester: '{{ $settings->semester ?? "" }}',
-            tahun_pelajaran: '{{ $settings->tahun_pelajaran ?? "" }}',
-            jenjang: '{{ $settings->jenjang ?? "" }}',
-            is_active: {{ ($settings->is_active ?? false) ? 'true' : 'false' }},
+            semester: '',
+            tahun_pelajaran: '',
+            jenjang: '',
+            is_active: true,
         },
+        allSettings: @json($allSettings),
         jurusans: @json($jurusans),
         kelas: @json($kelas),
         gurus: @json($gurus),
@@ -296,7 +339,7 @@ function sekolahPage() {
         },
 
         isSettingsFull() {
-            return this.settings.semester && this.settings.tahun_pelajaran && this.settings.jenjang;
+            return this.allSettings.some(s => s.is_active);
         },
 
         goToKelasTab() {
@@ -304,7 +347,7 @@ function sekolahPage() {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Perhatian',
-                    text: 'Harap lengkapi Pengaturan Sekolah (Semester, Tahun, Jenjang) terlebih dahulu.',
+                    text: 'Harap aktifkan salah satu Semester/Tahun Pelajaran terlebih dahulu.',
                     confirmButtonText: 'Lengkapi Sekarang'
                 });
                 this.activeTab = 'settings';
@@ -319,9 +362,34 @@ function sekolahPage() {
                 _token: '{{ csrf_token() }}',
                 ...this.settings
             }).done(res => {
-                Swal.fire('Berhasil', res.success, 'success').then(() => location.reload());
+                Swal.fire('Berhasil', 'Pengaturan ditambahkan', 'success').then(() => location.reload());
             }).fail(err => {
-                Swal.fire('Error', 'Gagal memperbarui pengaturan', 'error');
+                Swal.fire('Error', 'Gagal menambahkan pengaturan', 'error');
+            });
+        },
+
+        activateSetting(id) {
+            Swal.fire({ title: 'Mengaktifkan...', didOpen: () => Swal.showLoading() });
+            $.post(`{{ url('sekolah/settings/activate') }}/${id}`, {
+                _token: '{{ csrf_token() }}'
+            }).done(() => location.reload());
+        },
+
+        deleteSetting(id) {
+            Swal.fire({
+                title: 'Hapus Pengaturan?',
+                text: 'Data yang terkait dengan semester ini mungkin akan terpengaruh.',
+                icon: 'warning',
+                showCancelButton: true
+            }).then(r => {
+                if (r.isConfirmed) {
+                    $.ajax({
+                        url: `{{ url('sekolah/settings/destroy') }}/${id}`,
+                        type: 'DELETE',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: () => location.reload()
+                    });
+                }
             });
         },
 
