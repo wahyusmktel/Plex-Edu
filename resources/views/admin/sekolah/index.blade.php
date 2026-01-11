@@ -64,7 +64,14 @@
                             </select>
                         </div>
                     </div>
-                    <div class="flex justify-end">
+                    <div class="flex items-center justify-between mb-8 pb-8 border-b border-slate-50">
+                        <div class="flex items-center gap-3">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" x-model="settings.is_active" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                            </label>
+                            <span class="text-sm font-bold text-slate-600">Aktifkan Semester Ini</span>
+                        </div>
                         <button type="submit" class="px-8 py-4 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3 cursor-pointer">
                             <i class="material-icons">save</i> Simpan Pengaturan
                         </button>
@@ -272,6 +279,7 @@ function sekolahPage() {
             semester: '{{ $settings->semester ?? "" }}',
             tahun_pelajaran: '{{ $settings->tahun_pelajaran ?? "" }}',
             jenjang: '{{ $settings->jenjang ?? "" }}',
+            is_active: {{ ($settings->is_active ?? false) ? 'true' : 'false' }},
         },
         jurusans: @json($jurusans),
         kelas: @json($kelas),

@@ -37,6 +37,7 @@ class SekolahController extends Controller
         $settings->semester = $request->semester;
         $settings->tahun_pelajaran = $request->tahun_pelajaran;
         $settings->jenjang = $request->jenjang;
+        $settings->is_active = $request->has('is_active') ? $request->is_active : true; // Default to true if not provided for now
         $settings->save();
 
         return response()->json(['success' => 'Pengaturan sekolah berhasil diperbarui']);

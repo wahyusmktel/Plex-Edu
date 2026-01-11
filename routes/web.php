@@ -45,4 +45,24 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/kelas/update/{id}', [\App\Http\Controllers\SekolahController::class, 'updateKelas'])->name('kelas.update');
         Route::delete('/kelas/destroy/{id}', [\App\Http\Controllers\SekolahController::class, 'destroyKelas'])->name('kelas.destroy');
     });
+
+    // Mata Pelajaran Routes
+    Route::prefix('mata-pelajaran')->name('mata-pelajaran.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\MataPelajaranController::class, 'index'])->name('index');
+        
+        // Jam Pelajaran
+        Route::post('/jam/store', [\App\Http\Controllers\MataPelajaranController::class, 'storeJam'])->name('jam.store');
+        Route::delete('/jam/destroy/{id}', [\App\Http\Controllers\MataPelajaranController::class, 'destroyJam'])->name('jam.destroy');
+
+        // Mata Pelajaran
+        Route::post('/subject/store', [\App\Http\Controllers\MataPelajaranController::class, 'storeSubject'])->name('subject.store');
+        Route::get('/subject/show/{id}', [\App\Http\Controllers\MataPelajaranController::class, 'showSubject'])->name('subject.show');
+        Route::post('/subject/update/{id}', [\App\Http\Controllers\MataPelajaranController::class, 'updateSubject'])->name('subject.update');
+        Route::delete('/subject/destroy/{id}', [\App\Http\Controllers\MataPelajaranController::class, 'destroySubject'])->name('subject.destroy');
+
+        // Jadwal Pelajaran
+        Route::get('/schedule/get-by-kelas/{kelas_id}', [\App\Http\Controllers\MataPelajaranController::class, 'getSchedulesByKelas'])->name('schedule.get-by-kelas');
+        Route::post('/schedule/store', [\App\Http\Controllers\MataPelajaranController::class, 'storeSchedule'])->name('schedule.store');
+        Route::delete('/schedule/destroy/{id}', [\App\Http\Controllers\MataPelajaranController::class, 'destroySchedule'])->name('schedule.destroy');
+    });
 });
