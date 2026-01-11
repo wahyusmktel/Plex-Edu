@@ -48,20 +48,20 @@ class FungsionarisTemplateExport implements FromArray, WithHeadings
     public function headings(): array
     {
         return [
-            'Nama',
-            'NIP',
-            'NIK',
-            'Posisi',
-            'Jabatan (guru/pegawai)',
-            'Username',
-            'Password',
-            'Status (aktif/nonaktif)',
-            'No HP',
-            'Alamat',
-            'Tempat Lahir',
-            'Tanggal Lahir (YYYY-MM-DD)',
-            'Jenis Kelamin (L/P)',
-            'Pendidikan Terakhir'
+            'nama',
+            'nip',
+            'nik',
+            'posisi',
+            'jabatan',
+            'username',
+            'password',
+            'status',
+            'no_hp',
+            'alamat',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'jenis_kelamin',
+            'pendidikan_terakhir'
         ];
     }
 }

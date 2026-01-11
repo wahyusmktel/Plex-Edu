@@ -19,7 +19,7 @@ class FungsionarisImport implements ToModel, WithHeadingRow
                 'username' => $row['username'],
                 'password' => Hash::make($row['password']),
                 'role'     => $row['jabatan'] === 'guru' ? 'guru' : 'pegawai',
-                'email'    => $row['username'] . '@literasia.com', // Dummy email if needed
+                'email'    => $row['username'] . '@literasia.com',
             ]);
 
             return new Fungsionaris([
@@ -28,13 +28,13 @@ class FungsionarisImport implements ToModel, WithHeadingRow
                 'nip'                 => $row['nip'],
                 'nik'                 => $row['nik'],
                 'posisi'              => $row['posisi'],
-                'jabatan'             => $row['jabatan_guru_pegawai'],
-                'status'              => $row['status_aktif_nonaktif'],
+                'jabatan'             => $row['jabatan'],
+                'status'              => $row['status'],
                 'no_hp'               => $row['no_hp'],
                 'alamat'              => $row['alamat'],
                 'tempat_lahir'        => $row['tempat_lahir'],
-                'tanggal_lahir'       => $row['tanggal_lahir_yyyy_mm_dd'],
-                'jenis_kelamin'       => $row['jenis_kelamin_lp'],
+                'tanggal_lahir'       => $row['tanggal_lahir'],
+                'jenis_kelamin'       => $row['jenis_kelamin'],
                 'pendidikan_terakhir' => $row['pendidikan_terakhir'],
             ]);
         });
