@@ -1,341 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" x-data="{ sidebarOpen: true, mobileMenuOpen: false }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Literasia')</title>
-    <!-- Import Google Icon Font -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Import Inter Font -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
-    <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #ba80e8 0%, #d90d8b 100%);
-            --primary-color: #d90d8b;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fc;
-            color: #4a4a4a;
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-        }
-        
-        main {
-            flex: 1 0 auto;
-        }
-
-        /* Sidebar Styling */
-        .sidenav {
-            width: 280px;
-            background-color: #fff;
-            box-shadow: 0 0 15px rgba(0,0,0,0.03);
-            border: none;
-        }
-        
-        .sidenav .logo-container {
-            padding: 30px 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-        
-        .sidenav .logo-container i {
-            font-size: 32px;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .sidenav .logo-container .logo-text {
-            font-weight: 800;
-            font-size: 24px;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        .sidenav li {
-            margin: 4px 0;
-        }
-
-        .sidenav li.active {
-            background-color: transparent !important;
-        }
-
-        .sidenav li a {
-            font-size: 14px;
-            font-weight: 500;
-            color: #616161;
-            padding: 0 24px 0 32px;
-            height: 44px;
-            line-height: 44px;
-            display: flex;
-            align-items: center;
-            border-radius: 0 22px 22px 0;
-            margin-right: 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .sidenav li a i {
-            margin-right: 16px;
-            font-size: 22px;
-            color: #bdbdbd;
-        }
-        
-        .sidenav li.active a {
-            color: #fff !important;
-            background: var(--primary-gradient) !important;
-            box-shadow: 0 4px 12px rgba(217, 13, 139, 0.2);
-        }
-        
-        .sidenav li.active a i {
-            color: #fff !important;
-        }
-        
-        /* Navbar, Main, Footer Padding */
-        header, main, footer {
-            padding-left: 280px;
-            transition: padding-left 0.3s ease;
-        }
-        
-        @media only screen and (max-width : 992px) {
-            header, main, footer {
-                padding-left: 0;
-            }
-        }
-
-        /* Desktop Sidenav Toggle Logic */
-        @media only screen and (min-width : 993px) {
-            body.sidenav-collapsed .sidenav {
-                transform: translateX(-105%) !important;
-            }
-            body.sidenav-collapsed header, 
-            body.sidenav-collapsed main, 
-            body.sidenav-collapsed footer {
-                padding-left: 0;
-            }
-        }
-        
-        nav {
-            background-color: transparent !important;
-            box-shadow: none !important;
-            color: #4a4a4a;
-            height: 70px;
-            line-height: 70px;
-        }
-        
-        nav i {
-            color: #757575 !important;
-        }
-        
-        .nav-wrapper {
-            padding: 0 30px;
-        }
-
-        .nav-right-icons {
-            display: flex !important;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-right-icons li a {
-            padding: 0 10px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .profile-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #eee;
-            overflow: hidden;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            position: relative;
-            margin-left: 10px;
-        }
-        
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            background-color: #4caf50;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            position: absolute;
-            bottom: 0;
-            right: 0;
-        }
-        
-        /* Dropdown Styling */
-        .dropdown-content {
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            min-width: 200px !important;
-        }
-
-        .dropdown-content li > a, .dropdown-content li > span {
-            font-size: 14px;
-            color: #4a4a4a;
-            padding: 14px 16px;
-        }
-
-        .dropdown-content li > a > i {
-            margin-right: 15px;
-            color: #9e9e9e;
-        }
-
-        /* Footer */
-        .page-footer {
-            background-color: #fff;
-            color: #757575;
-            padding: 20px 0;
-            border-top: 1px solid #eee;
-            /* Place footer above sidebar */
-            position: relative;
-            z-index: 999;
-        }
-        
-        .footer-copyright {
-            background-color: transparent !important;
-            color: #9e9e9e !important;
-        }
-
-        /* Content Hub */
-        .container-fluid {
-            width: 96%;
-            margin: 0 auto;
-            padding-top: 10px;
-        }
-        
-        @yield('styles')
-    </style>
-</head>
-<body>
-    
-    <!-- Sidebar -->
-    <ul id="slide-out" class="sidenav sidenav-fixed">
-        <li class="logo-container">
-            <i class="material-icons">import_contacts</i>
-            <span class="logo-text">Literasia</span>
-        </li>
-        <li class="active"><a href="{{ route('dashboard') }}"><i class="material-icons">dashboard</i>Dashboard Sekolah</a></li>
-        <li><a href="#!"><i class="material-icons">assignment_turned_in</i>E-Raport</a></li>
-        <li><a href="#!"><i class="material-icons">computer</i>CBT</a></li>
-        <li><a href="#!"><i class="material-icons">warning</i>Pelanggaran</a></li>
-        <li><a href="#!"><i class="material-icons">article</i>Berita</a></li>
-        <li><a href="#!"><i class="material-icons">school</i>Sekolah</a></li>
-        <li class="{{ Request::is('fungsionaris*') ? 'active' : '' }}"><a href="{{ route('fungsionaris.index') }}"><i class="material-icons">people</i>Fungsionaris</a></li>
-        <li><a href="#!"><i class="material-icons">notifications</i>Pengumuman</a></li>
-        <li><a href="#!"><i class="material-icons">image</i>Slider Admin</a></li>
-        <li><a href="#!"><i class="material-icons">calendar_today</i>Kalender</a></li>
-        <li><a href="#!"><i class="material-icons">account_balance</i>Mata Pelajaran</a></li>
-        <li><a href="#!"><i class="material-icons">record_voice_over</i>Sambutan</a></li>
-        <li><div class="divider"></div></li>
-        <li><a class="waves-effect logout-btn" href="#!" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-            <i class="material-icons">exit_to_app</i>Logout
-        </a></li>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-            @csrf
-        </form>
-    </ul>
-    
-    <header>
-        <nav>
-            <div class="nav-wrapper">
-                <a href="#" data-target="slide-out" class="sidenav-trigger show-on-large"><i class="material-icons">menu</i></a>
-
-                <ul class="right nav-right-icons">
-                    <li><a href="#!"><i class="material-icons">dark_mode</i></a></li>
-                    <li><a href="#!"><i class="material-icons">notifications_none</i></a></li>
-                    <li>
-                        <div class="profile-avatar dropdown-trigger" data-target="profile-dropdown">
-                            <img src="https://via.placeholder.com/150" alt="Profile">
-                            <div class="status-dot"></div>
-                        </div>
-                    </li>
-                </ul>
-
-                <!-- Profile Dropdown Structure -->
-                <ul id="profile-dropdown" class="dropdown-content">
-                    <li><a href="#!"><i class="material-icons">person</i>{{ Auth::user()->name }}</a></li>
-                    <li><a href="#!"><span class="badge new pink" data-badge-caption="">{{ ucfirst(Auth::user()->role) }}</span></a></li>
-                    <li class="divider"></li>
-                    <li><a href="#!" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="material-icons">exit_to_app</i>Logout</a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
-
-    <main>
-        <div class="container-fluid">
-            @yield('content')
-        </div>
-    </main>
-
-    <footer class="page-footer">
-        <div class="container-fluid">
-            <div class="footer-copyright">
-                © 2026 Literasia Edutekno Digital. All rights reserved.
-                <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Compiled and minified JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        $(document).ready(function(){
-            // Initialize sideNav
-            $('.sidenav').sidenav();
-            
-            // Handle sidenav toggle for both mobile and desktop
-            $('.sidenav-trigger').on('click', function(e) {
-                e.preventDefault();
-                
-                if ($(window).width() > 992) {
-                    // Desktop mode: Toggle class on body
-                    $('body').toggleClass('sidenav-collapsed');
-                } else {
-                    // Mobile mode: Use Materialize instance
-                    var instance = M.Sidenav.getInstance($('#slide-out'));
-                    if (instance) {
-                        if (instance.isOpen) {
-                            instance.close();
-                        } else {
-                            instance.open();
-                        }
-                    }
-                }
-            });
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-            // Initialize dropdowns
-            $('.dropdown-trigger').dropdown({
-                coverTrigger: false,
-                constrainWidth: false
-            });
-        });
-    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .text-fill-transparent { -webkit-text-fill-color: transparent; }
+    </style>
+    @yield('styles')
+</head>
+<body class="bg-[#f8fafc] font-['Inter'] text-slate-700 antialiased overflow-x-hidden">
+
+    <!-- Sidebar Section -->
+    <aside 
+        class="fixed left-0 top-0 z-40 h-screen transition-all duration-300 bg-white border-r border-slate-100 shadow-sm overflow-y-auto overflow-x-hidden"
+        :class="sidebarOpen ? 'w-72' : 'w-20'"
+        @resize.window="if (window.innerWidth < 1024) { sidebarOpen = false } else { sidebarOpen = true }"
+    >
+        <!-- Logo -->
+        <div class="flex items-center gap-4 px-6 py-8 mb-6">
+            <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white shadow-md shadow-pink-100">
+                <i class="material-icons text-2xl">import_contacts</i>
+            </div>
+            <span 
+                x-show="sidebarOpen" 
+                x-transition:enter="transition ease-out duration-300" 
+                x-transition:enter-start="opacity-0 -translate-x-4" 
+                x-transition:enter-end="opacity-100 translate-x-0"
+                class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] bg-clip-text text-transparent"
+            >
+                LITERASIA
+            </span>
+        </div>
+
+        <!-- Navigation items -->
+        <nav class="px-4 space-y-1.5">
+            <x-nav-item icon="dashboard" label="Dashboard Sekolah" :active="Request::is('dashboard')" />
+            <x-nav-item icon="assignment_turned_in" label="E-Raport" />
+            <x-nav-item icon="computer" label="CBT" />
+            <x-nav-item icon="warning" label="Pelanggaran" />
+            <x-nav-item icon="article" label="Berita" />
+            <x-nav-item icon="school" label="Sekolah" />
+            <x-nav-item icon="people" label="Fungsionaris" :active="Request::is('fungsionaris*')" href="{{ route('fungsionaris.index') }}" />
+            <x-nav-item icon="notifications" label="Pengumuman" />
+            <x-nav-item icon="image" label="Slider Admin" />
+            <x-nav-item icon="calendar_today" label="Kalender" />
+            <x-nav-item icon="account_balance" label="Mata Pelajaran" />
+            <x-nav-item icon="record_voice_over" label="Sambutan" />
+
+            <div class="pt-4 mt-4 border-t border-slate-50">
+                <a 
+                    href="#" 
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                    class="group flex items-center gap-4 px-4 py-3 text-slate-500 font-medium rounded-xl hover:bg-red-50 hover:text-red-500 transition-all duration-200"
+                >
+                    <i class="material-icons text-xl group-hover:scale-110 transition-transform">exit_to_app</i>
+                    <span x-show="sidebarOpen" class="whitespace-nowrap">Keluar Aplikasi</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content wrapper -->
+    <div 
+        class="min-h-screen flex flex-col transition-all duration-300"
+        :class="sidebarOpen ? 'pl-72' : 'pl-20'"
+    >
+        <!-- Navbar -->
+        <header class="sticky top-0 z-30 flex items-center justify-between h-20 px-8 bg-white/80 backdrop-blur-md border-b border-slate-100">
+            <!-- Left: Toggle & Page Title -->
+            <div class="flex items-center gap-6">
+                <button 
+                    @click="sidebarOpen = !sidebarOpen" 
+                    class="p-2.5 rounded-xl bg-slate-50 text-slate-500 hover:text-[#d90d8b] hover:bg-pink-50 transition-all duration-200"
+                >
+                    <i class="material-icons" x-text="sidebarOpen ? 'menu_open' : 'menu'"></i>
+                </button>
+                <div class="hidden sm:block">
+                    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Administrator</h2>
+                </div>
+            </div>
+
+            <!-- Right: Search & Profile -->
+            <div class="flex items-center gap-3 sm:gap-6">
+                <!-- Notifications -->
+                <button class="relative p-2.5 rounded-xl text-slate-400 hover:text-[#d90d8b] hover:bg-pink-50 transition-all duration-200">
+                    <i class="material-icons">notifications_none</i>
+                    <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+
+                <!-- Profile Dropdown -->
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button 
+                        @click="open = !open"
+                        class="flex items-center gap-3 p-1.5 pl-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-md transition-all duration-300"
+                    >
+                        <div class="text-right hidden md:block">
+                            <p class="text-xs font-bold text-slate-800 leading-tight">{{ Auth::user()->name }}</p>
+                            <p class="text-[10px] uppercase font-bold text-[#d90d8b] tracking-wider">{{ Auth::user()->role }}</p>
+                        </div>
+                        <img class="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=ba80e8&color=fff" alt="Avatar">
+                        <i class="material-icons text-slate-400 text-lg transition-transform duration-300" :class="open ? 'rotate-180' : ''">expand_more</i>
+                    </button>
+
+                    <!-- Profile Dropdown Menu -->
+                    <div 
+                        x-show="open"
+                        x-cloak
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                        class="absolute right-0 mt-3 w-56 p-2 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 origin-top-right"
+                    >
+                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 transition-colors">
+                            <i class="material-icons text-slate-400 text-lg">person_outline</i> Profil Saya
+                        </a>
+                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 transition-colors">
+                            <i class="material-icons text-slate-400 text-lg">settings</i> Pengaturan
+                        </a>
+                        <div class="my-2 border-t border-slate-50"></div>
+                        <a 
+                            href="#" 
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                            class="flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 rounded-xl hover:bg-red-50 transition-colors"
+                        >
+                            <i class="material-icons text-lg">exit_to_app</i> Keluar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content -->
+        <main class="flex-grow p-8">
+            @yield('content')
+        </main>
+
+        <!-- Footer -->
+        <footer class="px-8 py-6 bg-white border-t border-slate-50">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-slate-400 font-medium">
+                    &copy; 2026 <span class="text-[#d90d8b] font-bold uppercase">Literasia</span>. Seluruh hak cipta dilindungi.
+                </p>
+                <div class="flex gap-6">
+                    <a href="#" class="text-xs font-bold text-slate-300 hover:text-[#d90d8b] transition-colors">BANTUAN</a>
+                    <a href="#" class="text-xs font-bold text-slate-300 hover:text-[#d90d8b] transition-colors">PRIVASI</a>
+                    <a href="#" class="text-xs font-bold text-slate-300 hover:text-[#d90d8b] transition-colors">SYARAT & KETENTUAN</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Forms & Utilities -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+        @csrf
+    </form>
+
+    @stack('scripts')
     @yield('scripts')
 </body>
 </html>

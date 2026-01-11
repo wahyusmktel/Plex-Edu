@@ -1,327 +1,102 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Sekolah - Literasia')
-
-@section('styles')
-<style>
-    .page-header {
-        padding: 20px 0;
-        display: flex;              /* WAJIB */
-        align-items: center;        /* SEJAJAR TENGAH */
-        gap: 16px;                  /* JARAK ICON & TEKS */
-    }
-    
-    .page-header .icon-box-circle-header {
-        flex-shrink: 0;
-    }
-    
-    .icon-box-circle-header {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #fce4ec;
-        color: #d81b60;
-    }
-
-    .school-info {
-    display: flex;              /* TAMBAHAN */
-    flex-direction: column;     /* TEKS ATAS-BAWAH */
-    justify-content: center;
-}
-
-    .school-info .label {
-        font-size: 12px;
-        color: #9e9e9e;
-        display: block;
-    }
-    
-    .school-info .name {
-        font-size: 20px;
-        font-weight: 700;
-        color: #333;
-    }
-
-    .stats-card {
-        border-radius: 16px;
-        padding: 24px;
-        background: #fff;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        /* Clean Box Styling */
-        border: 1px solid #f0f0f0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
-        margin-bottom: 24px; /* Fix for mobile stacking */
-    }
-    
-    .stats-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 20px rgba(0,0,0,0.06);
-        border-color: #e2e8f0;
-    }
-    
-    .stats-card .icon-round {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
-    }
-    
-    .stats-card .label {
-        color: #757575;
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 6px;
-    }
-    
-    .stats-card .value {
-        font-size: 28px;
-        font-weight: 800;
-        color: #2d3748;
-    }
-    
-    /* Stats Colors */
-    .icon-pink { background-color: #fff0f3; color: #ff2d55; }
-    .icon-purple { background-color: #f3f0ff; color: #7048e8; }
-    .icon-yellow { background-color: #fff9db; color: #fcc419; }
-    .icon-blue { background-color: #e7f5ff; color: #228be6; }
-    .icon-red { background-color: #fff5f5; color: #fa5252; }
-    .icon-lavender { background-color: #f8f0fc; color: #be4bdb; }
-    
-    .main-chart-card {
-        background: #fff;
-        border-radius: 16px;
-        padding: 30px;
-        border: 1px solid #f0f0f0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        min-height: 450px;
-        margin-bottom: 24px; /* Fix for mobile stacking */
-    }
-    
-    .small-info-card {
-        background: #fff;
-        border-radius: 16px;
-        padding: 24px;
-        border: 1px solid #f0f0f0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-        margin-bottom: 24px; /* Fix for mobile stacking */
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-    
-    .small-info-card .icon-box {
-        width: 54px;
-        height: 54px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .small-info-card.yellow-box .icon-box { background-color: #fff9db; color: #fcc419; }
-    .small-info-card.blue-box .icon-box { background-color: #e7f5ff; color: #228be6; }
-    .small-info-card.purple-box .icon-box { background-color: #f3f0ff; color: #7048e8; }
-    .small-info-card.red-box .icon-box { background-color: #fff5f5; color: #fa5252; }
-    
-    .small-info-card .content .title {
-        font-size: 15px;
-        color: #718096;
-        font-weight: 600;
-        display: block;
-    }
-    
-    .small-info-card .content .number {
-        font-size: 20px;
-        font-weight: 800;
-        color: #1a202c;
-    }
-    
-    .donut-placeholder {
-        width: 100%;
-        height: 280px;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .donut-ring {
-        width: 220px;
-        height: 220px;
-        border-radius: 50%;
-        border: 30px solid #f7fafc;
-        border-top-color: #d90d8b;
-        border-right-color: #d90d8b;
-        transform: rotate(45deg);
-    }
-    
-    .chart-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-    }
-    
-    .chart-header select {
-        display: block;
-        width: auto;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 6px 12px;
-        height: auto;
-        font-size: 13px;
-        color: #4a5568;
-    }
-</style>
-@endsection
+@section('title', 'Dashboard - Literasia')
 
 @section('content')
-<div class="row">
-    <div class="col s12">
-        <div class="page-header">
-            <!-- <div class="icon-box-circle-header">
-                <i class="material-icons">school</i>
-            </div> -->
-            <div class="school-info">
-                <span class="label">Sekolah</span>
-                <span class="name">Sekolah Literasia Edutekno Digital</span>
-            </div>
+<!-- Header Section -->
+<div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex items-center gap-5">
+        <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-[#d90d8b]">
+            <i class="material-icons text-3xl">school</i>
         </div>
+        <div>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">UNIT PENDIDIKAN</p>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Sekolah Literasia Edutekno Digital</h1>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <span class="px-4 py-2 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg border border-emerald-100 flex items-center gap-2">
+            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+            SISTEM ONLINE
+        </span>
     </div>
 </div>
 
-<div class="row">
-    <div class="col s12 m4 l2">
-        <div class="stats-card">
-            <div class="icon-round icon-pink">
-                <i class="material-icons">book</i>
-            </div>
-            <span class="label">E-Book</span>
-            <span class="value">1921</span>
-        </div>
-    </div>
-    <div class="col s12 m4 l2">
-        <div class="stats-card">
-            <div class="icon-round icon-purple">
-                <i class="material-icons">music_note</i>
-            </div>
-            <span class="label">Audio Book</span>
-            <span class="value">733</span>
-        </div>
-    </div>
-    <div class="col s12 m4 l2">
-        <div class="stats-card">
-            <div class="icon-round icon-yellow">
-                <i class="material-icons">play_circle_filled</i>
-            </div>
-            <span class="label">Video Book</span>
-            <span class="value">745</span>
-        </div>
-    </div>
-    <div class="col s12 m4 l2">
-        <div class="stats-card">
-            <div class="icon-round icon-blue">
-                <i class="material-icons">people</i>
-            </div>
-            <span class="label">Siswa</span>
-            <span class="value">36</span>
-        </div>
-    </div>
-    <div class="col s12 m4 l2">
-        <div class="stats-card">
-            <div class="icon-round icon-red">
-                <i class="material-icons">person</i>
-            </div>
-            <span class="label">Guru</span>
-            <span class="value">13</span>
-        </div>
-    </div>
-    <div class="col s12 m4 l2">
-        <div class="stats-card">
-            <div class="icon-round icon-lavender">
-                <i class="material-icons">person</i>
-            </div>
-            <span class="label">Pegawai</span>
-            <span class="value">13</span>
-        </div>
-    </div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-10">
+    <x-stat-card icon="book" label="E-Book" value="1,921" color="pink" />
+    <x-stat-card icon="music_note" label="Audio Book" value="733" color="purple" />
+    <x-stat-card icon="play_circle" label="Video Book" value="745" color="yellow" />
+    <x-stat-card icon="people" label="Siswa" value="3,120" color="blue" />
+    <x-stat-card icon="person" label="Guru" value="142" color="red" />
+    <x-stat-card icon="badge" label="Pegawai" value="56" color="cyan" />
 </div>
 
-<div class="row">
-    <div class="col s12 l7">
-        <div class="main-chart-card">
-            <div class="chart-header">
-                <span style="font-weight:700; font-size: 18px; color: #1a202c;">Absensi Siswa</span>
-                <select class="browser-default">
-                    <option value="1">June 2022 - May 2022</option>
-                </select>
+<!-- Main Section Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Chart Section -->
+    <div class="lg:col-span-8 bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h3 class="text-xl font-extrabold text-slate-800">Absensi Siswa</h3>
+                <p class="text-sm text-slate-400 font-medium">Statistik kehadiran murid hari ini</p>
             </div>
-            <div class="donut-placeholder">
-                <div class="donut-ring"></div>
-                <div style="position: absolute; text-align: center;">
-                    <div style="font-size: 13px; color: #718096; font-weight: 500;">Hadir</div>
-                    <div style="font-size: 32px; font-weight: 800; color: #1a202c;">80%</div>
+            <select class="bg-slate-50 border border-slate-100 text-slate-500 text-sm font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-100 transition-all cursor-pointer">
+                <option>Minggu Ini</option>
+                <option>Bulan Ini</option>
+                <option>Tahun Ini</option>
+            </select>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-center justify-around gap-12 py-6">
+            <!-- Semi-Donut Placeholder (Tailwind/SVG) -->
+            <div class="relative flex items-center justify-center w-64 h-64">
+                <svg class="w-full h-full transform -rotate-90">
+                    <circle cx="128" cy="128" r="100" stroke="#f1f5f9" stroke-width="24" fill="transparent" />
+                    <circle cx="128" cy="128" r="100" stroke="#d90d8b" stroke-width="24" stroke-dasharray="628" stroke-dashoffset="125" stroke-linecap="round" fill="transparent" class="transition-all duration-1000 ease-out" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span class="text-4xl font-black text-slate-800 tracking-tighter">80%</span>
+                    <span class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">Hadir</span>
                 </div>
             </div>
-            <div style="display: flex; justify-content: center; gap: 40px; margin-top: 30px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 14px; height: 14px; background: #d90d8b; border-radius: 4px;"></div>
-                    <span style="font-size: 13px; font-weight: 600; color: #4a5568;">Hadir</span>
+
+            <!-- Chart Legend -->
+            <div class="space-y-6 w-full max-w-[240px]">
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-[#d90d8b]"></span>
+                            <span class="text-sm font-bold text-slate-600">Hadir</span>
+                        </div>
+                        <span class="text-sm font-black text-slate-800">2,496</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div class="w-[80%] h-full bg-[#d90d8b] rounded-full"></div>
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 14px; height: 14px; background: #f7fafc; border-radius: 4px; border: 1px solid #e2e8f0;"></div>
-                    <span style="font-size: 13px; font-weight: 600; color: #4a5568;">Absen</span>
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-slate-300"></span>
+                            <span class="text-sm font-bold text-slate-600">Absen</span>
+                        </div>
+                        <span class="text-sm font-black text-slate-800">624</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div class="w-[20%] h-full bg-slate-400 rounded-full"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col s12 l5">
-        <div class="small-info-card yellow-box">
-            <div class="icon-box">
-                <i class="material-icons">cast_for_education</i>
-            </div>
-            <div class="content">
-                <span class="title">Materi E-Learning</span>
-                <span class="number">9</span>
-            </div>
-        </div>
-        <div class="small-info-card blue-box">
-            <div class="icon-box">
-                <i class="material-icons">account_balance</i>
-            </div>
-            <div class="content">
-                <span class="title">Bank Soal</span>
-                <span class="number">6</span>
-            </div>
-        </div>
-        <div class="small-info-card purple-box">
-            <div class="icon-box">
-                <i class="material-icons">forum</i>
-            </div>
-            <div class="content">
-                <span class="title">Postingan Forum</span>
-                <span class="number">1</span>
-            </div>
-        </div>
-        <div class="small-info-card red-box">
-            <div class="icon-box">
-                <i class="material-icons">report_problem</i>
-            </div>
-            <div class="content">
-                <span class="title">Pelanggaran</span>
-                <span class="number">6</span>
-            </div>
-        </div>
+
+    <!-- Info Cards Section -->
+    <div class="lg:col-span-4 space-y-6">
+        <x-info-item icon="cast_for_education" label="Materi E-Learning" value="128" color="yellow" />
+        <x-info-item icon="account_balance" label="Bank Soal" value="45" color="blue" />
+        <x-info-item icon="forum" label="Postingan Forum" value="12" color="purple" />
+        <x-info-item icon="report_problem" label="Pelanggaran" value="3" color="red" />
     </div>
 </div>
 @endsection
