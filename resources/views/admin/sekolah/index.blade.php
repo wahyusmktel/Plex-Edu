@@ -3,7 +3,7 @@
 @section('title', 'Manajemen Sekolah - Literasia')
 
 @section('content')
-<div x-data="sekolahPage()" class="max-w-7xl mx-auto">
+<div x-data="sekolahPage()">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
