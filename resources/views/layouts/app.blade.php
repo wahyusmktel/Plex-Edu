@@ -182,6 +182,24 @@
             right: 0;
         }
         
+        /* Dropdown Styling */
+        .dropdown-content {
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            min-width: 200px !important;
+        }
+
+        .dropdown-content li > a, .dropdown-content li > span {
+            font-size: 14px;
+            color: #4a4a4a;
+            padding: 14px 16px;
+        }
+
+        .dropdown-content li > a > i {
+            margin-right: 15px;
+            color: #9e9e9e;
+        }
+
         /* Footer */
         .page-footer {
             background-color: #fff;
@@ -216,7 +234,7 @@
             <i class="material-icons">import_contacts</i>
             <span class="logo-text">Literasia</span>
         </li>
-        <li class="active"><a href="#!"><i class="material-icons">dashboard</i>Dashboard Sekolah</a></li>
+        <li class="active"><a href="{{ route('dashboard') }}"><i class="material-icons">dashboard</i>Dashboard Sekolah</a></li>
         <li><a href="#!"><i class="material-icons">assignment_turned_in</i>E-Raport</a></li>
         <li><a href="#!"><i class="material-icons">computer</i>CBT</a></li>
         <li><a href="#!"><i class="material-icons">warning</i>Pelanggaran</a></li>
@@ -228,6 +246,13 @@
         <li><a href="#!"><i class="material-icons">calendar_today</i>Kalender</a></li>
         <li><a href="#!"><i class="material-icons">account_balance</i>Mata Pelajaran</a></li>
         <li><a href="#!"><i class="material-icons">record_voice_over</i>Sambutan</a></li>
+        <li><div class="divider"></div></li>
+        <li><a class="waves-effect logout-btn" href="#!" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <i class="material-icons">exit_to_app</i>Logout
+        </a></li>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
     </ul>
     
     <header>
@@ -239,11 +264,19 @@
                     <li><a href="#!"><i class="material-icons">dark_mode</i></a></li>
                     <li><a href="#!"><i class="material-icons">notifications_none</i></a></li>
                     <li>
-                        <div class="profile-avatar">
+                        <div class="profile-avatar dropdown-trigger" data-target="profile-dropdown">
                             <img src="https://via.placeholder.com/150" alt="Profile">
                             <div class="status-dot"></div>
                         </div>
                     </li>
+                </ul>
+
+                <!-- Profile Dropdown Structure -->
+                <ul id="profile-dropdown" class="dropdown-content">
+                    <li><a href="#!"><i class="material-icons">person</i>{{ Auth::user()->name }}</a></li>
+                    <li><a href="#!"><span class="badge new pink" data-badge-caption="">{{ ucfirst(Auth::user()->role) }}</span></a></li>
+                    <li class="divider"></li>
+                    <li><a href="#!" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="material-icons">exit_to_app</i>Logout</a></li>
                 </ul>
             </div>
         </nav>
@@ -290,6 +323,12 @@
                         }
                     }
                 }
+            });
+
+            // Initialize dropdowns
+            $('.dropdown-trigger').dropdown({
+                coverTrigger: false,
+                constrainWidth: false
             });
         });
     </script>
