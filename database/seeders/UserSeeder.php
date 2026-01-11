@@ -17,6 +17,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Administrator Literasia',
             'email' => 'admin@literasia.com',
+            'username' => 'admin',
             'password' => Hash::make('password'),
             'role' => 'admin',
         ]);
@@ -25,6 +26,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Guru Literasia',
             'email' => 'guru@literasia.com',
+            'username' => 'guru',
             'password' => Hash::make('password'),
             'role' => 'guru',
         ]);
@@ -33,6 +35,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Siswa Literasia',
             'email' => 'siswa@literasia.com',
+            'username' => 'siswa',
             'password' => Hash::make('password'),
             'role' => 'siswa',
         ]);

@@ -21,9 +21,15 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
         'password',
         'role',
     ];
+
+    public function fungsionaris()
+    {
+        return $this->hasOne(Fungsionaris::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

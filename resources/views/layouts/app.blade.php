@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
     <style>
         :root {
@@ -240,7 +242,7 @@
         <li><a href="#!"><i class="material-icons">warning</i>Pelanggaran</a></li>
         <li><a href="#!"><i class="material-icons">article</i>Berita</a></li>
         <li><a href="#!"><i class="material-icons">school</i>Sekolah</a></li>
-        <li><a href="#!"><i class="material-icons">people</i>Fungsionaris</a></li>
+        <li class="{{ Request::is('fungsionaris*') ? 'active' : '' }}"><a href="{{ route('fungsionaris.index') }}"><i class="material-icons">people</i>Fungsionaris</a></li>
         <li><a href="#!"><i class="material-icons">notifications</i>Pengumuman</a></li>
         <li><a href="#!"><i class="material-icons">image</i>Slider Admin</a></li>
         <li><a href="#!"><i class="material-icons">calendar_today</i>Kalender</a></li>
@@ -300,6 +302,8 @@
     <!-- Compiled and minified JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function(){
             // Initialize sideNav
