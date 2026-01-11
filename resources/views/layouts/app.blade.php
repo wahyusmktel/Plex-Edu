@@ -14,6 +14,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
     <style>
         [x-cloak] { display: none !important; }
         .text-fill-transparent { -webkit-text-fill-color: transparent; }
@@ -83,7 +86,7 @@
             <div class="flex items-center gap-6">
                 <button 
                     @click="sidebarOpen = !sidebarOpen" 
-                    class="p-2.5 rounded-xl bg-slate-50 text-slate-500 hover:text-[#d90d8b] hover:bg-pink-50 transition-all duration-200"
+                    class="p-2.5 rounded-xl bg-slate-50 text-slate-500 hover:text-[#d90d8b] hover:bg-pink-50 transition-all duration-200 cursor-pointer"
                 >
                     <i class="material-icons" x-text="sidebarOpen ? 'menu_open' : 'menu'"></i>
                 </button>
@@ -104,7 +107,7 @@
                 <div class="relative" x-data="{ open: false }" @click.away="open = false">
                     <button 
                         @click="open = !open"
-                        class="flex items-center gap-3 p-1.5 pl-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-md transition-all duration-300"
+                        class="flex items-center gap-3 p-1.5 pl-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-md transition-all duration-300 cursor-pointer"
                     >
                         <div class="text-right hidden md:block">
                             <p class="text-xs font-bold text-slate-800 leading-tight">{{ Auth::user()->name }}</p>

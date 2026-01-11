@@ -30,14 +30,14 @@
         <div class="flex p-4 border-b border-slate-50 gap-2">
             <button 
                 @click="activeTab = 'guru'" 
-                class="px-8 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2"
+                class="px-8 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer"
                 :class="activeTab === 'guru' ? 'bg-pink-50 text-[#d90d8b]' : 'text-slate-400 hover:bg-slate-50'"
             >
                 <i class="material-icons text-[20px]">school</i> Guru
             </button>
             <button 
                 @click="activeTab = 'pegawai'" 
-                class="px-8 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2"
+                class="px-8 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer"
                 :class="activeTab === 'pegawai' ? 'bg-pink-50 text-[#d90d8b]' : 'text-slate-400 hover:bg-slate-50'"
             >
                 <i class="material-icons text-[20px]">badge</i> Pegawai
@@ -91,11 +91,11 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
-                                <div class="flex items-center justify-end gap-2 opactiy-0 group-hover:opacity-100 transition-opacity">
-                                    <button @click="editData('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
+                                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button @click="editData('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
                                         <i class="material-icons text-lg">edit</i>
                                     </button>
-                                    <button @click="deleteData('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors">
+                                    <button @click="deleteData('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer">
                                         <i class="material-icons text-lg">delete</i>
                                     </button>
                                 </div>
@@ -162,11 +162,11 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
-                                <div class="flex items-center justify-end gap-2 opactiy-0 group-hover:opacity-100 transition-opacity">
-                                    <button @click="editData('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
+                                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button @click="editData('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
                                         <i class="material-icons text-lg">edit</i>
                                     </button>
-                                    <button @click="deleteData('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors">
+                                    <button @click="deleteData('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer">
                                         <i class="material-icons text-lg">delete</i>
                                     </button>
                                 </div>
@@ -221,14 +221,14 @@
                 <div class="flex gap-4 mb-8">
                     <button 
                         @click="formTab = 'wajib'"
-                        class="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                        class="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
                         :class="formTab === 'wajib' ? 'bg-[#d90d8b] text-white' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'"
                     >
                         Info Utama
                     </button>
                     <button 
                         @click="formTab = 'opsional'"
-                        class="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                        class="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
                         :class="formTab === 'opsional' ? 'bg-[#d90d8b] text-white' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'"
                     >
                         Info Tambahan
@@ -412,8 +412,12 @@
                         }).then(() => location.reload());
                     },
                     error: (err) => {
-                        const errors = err.responseJSON.errors;
-                        let msg = Object.values(errors).join('<br>');
+                        let msg = 'Terjadi kesalahan pada server.';
+                        if (err.responseJSON && err.responseJSON.errors) {
+                            msg = Object.values(err.responseJSON.errors).join('<br>');
+                        } else if (err.responseJSON && err.responseJSON.message) {
+                            msg = err.responseJSON.message;
+                        }
                         Swal.fire('Oops...', msg, 'error');
                     }
                 });
