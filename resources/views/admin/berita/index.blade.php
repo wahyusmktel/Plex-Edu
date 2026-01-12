@@ -158,6 +158,17 @@
             },
 
             initQuill() {
+                if (this.quill) return;
+                
+                const editorContainer = document.getElementById('deskripsi-editor');
+                if (!editorContainer) return;
+
+                // Remove existing toolbar if it exists to prevent duplication
+                const existingToolbar = editorContainer.parentElement.querySelector('.ql-toolbar');
+                if (existingToolbar) {
+                    existingToolbar.remove();
+                }
+
                 this.quill = new Quill('#deskripsi-editor', {
                     theme: 'snow',
                     placeholder: 'Tulis konten berita di sini...',
