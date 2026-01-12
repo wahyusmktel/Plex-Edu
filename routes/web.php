@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\FungsionarisController; // Added
 use App\Http\Controllers\SiswaController; // Added
+use App\Http\Controllers\ERaportController; // Added
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -38,6 +39,15 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/destroy/{id}', [SiswaController::class, 'destroy'])->name('destroy');
         Route::post('/import', [SiswaController::class, 'import'])->name('import');
         Route::get('/download-template', [SiswaController::class, 'downloadTemplate'])->name('download-template');
+    });
+
+    // E-Raport Routes
+    Route::prefix('e-raport')->name('e-raport.')->group(function () {
+        Route::get('/', [ERaportController::class, 'index'])->name('index');
+        Route::post('/store', [ERaportController::class, 'store'])->name('store');
+        Route::get('/show/{id}', [ERaportController::class, 'show'])->name('show');
+        Route::post('/update/{id}', [ERaportController::class, 'update'])->name('update');
+        Route::delete('/destroy/{id}', [ERaportController::class, 'destroy'])->name('destroy');
     });
 
     // Sekolah Routes

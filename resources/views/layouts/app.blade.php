@@ -50,7 +50,7 @@
         <!-- Navigation items -->
         <nav class="px-4 space-y-1.5">
             <x-nav-item icon="dashboard" label="Dashboard Sekolah" :active="Request::is('dashboard')" />
-            <x-nav-item icon="assignment_turned_in" label="E-Raport" />
+            <x-nav-item icon="assignment_turned_in" label="E-Raport" :active="Request::is('e-raport*')" href="{{ route('e-raport.index') }}" />
             <x-nav-item icon="menu_book" label="Mata Pelajaran" :active="Request::is('mata-pelajaran*')" href="{{ route('mata-pelajaran.index') }}" />
             <x-nav-item icon="computer" label="CBT" />
             <x-nav-item icon="warning" label="Pelanggaran" />
