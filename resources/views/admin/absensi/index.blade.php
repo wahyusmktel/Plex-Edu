@@ -33,9 +33,14 @@
                 <i class="material-icons text-[20px]">print</i> Cetak Seluruh Kelas
             </a>
             @if($selectedClass)
-            <a href="{{ route('absensi.export.class') }}?format=excel&kelas_id={{ $selectedClass }}&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                <i class="material-icons text-[20px]">file_download</i> Excel Kelas Ini
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('absensi.export.class') }}?format=excel&kelas_id={{ $selectedClass }}&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    <i class="material-icons text-[20px]">description</i> Excel Kelas Ini
+                </a>
+                <a href="{{ route('absensi.export.class') }}?format=pdf&kelas_id={{ $selectedClass }}&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    <i class="material-icons text-[20px]">picture_as_pdf</i> PDF Kelas Ini
+                </a>
+            </div>
             @endif
         </div>
     </div>
