@@ -12,6 +12,7 @@ use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\SambutanController;
+use App\Http\Controllers\EVotingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -111,6 +112,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('slider', SliderController::class);
     Route::resource('calendar', CalendarController::class);
     Route::resource('sambutan', SambutanController::class);
+    Route::resource('e-voting', EVotingController::class);
+    Route::get('e-voting/{id}/export/excel', [EVotingController::class, 'exportExcel'])->name('e-voting.export.excel');
+    Route::get('e-voting/{id}/export/pdf', [EVotingController::class, 'exportPdf'])->name('e-voting.export.pdf');
     Route::get('api/calendar/events', [CalendarController::class, 'getEvents'])->name('calendar.events');
 
     // Mata Pelajaran Routes

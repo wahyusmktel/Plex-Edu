@@ -63,6 +63,7 @@
             <x-nav-item icon="calendar_today" label="Kalender" :active="Request::is('calendar*')" href="{{ route('calendar.index') }}" />
             <x-nav-item icon="account_balance" label="Mata Pelajaran" />
             <x-nav-item icon="record_voice_over" label="Sambutan" :active="Request::is('sambutan*')" href="{{ route('sambutan.index') }}" />
+            <x-nav-item icon="how_to_vote" label="E-Voting" :active="Request::is('e-voting*')" href="{{ route('e-voting.index') }}" />
 
             <div class="pt-4 mt-4 border-t border-slate-50">
                 <a 
