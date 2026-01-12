@@ -32,24 +32,28 @@
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori Agenda</label>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <button 
+                        type="button"
                         @click="formData.category = 'event'"
                         :class="formData.category === 'event' ? 'border-[#ba80e8] bg-purple-50 text-[#ba80e8]' : 'border-slate-100 bg-white text-slate-400'"
                         class="px-4 py-3 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all text-center"
                     >Event</button>
                     <button 
+                        type="button"
                         @click="formData.category = 'holiday'"
-                        :class="formData.category === 'holiday' ? 'border-rose-400 bg-rose-50 text-rose-500'"
-                        class="px-4 py-3 rounded-2xl border-2 border-slate-100 bg-white text-slate-400 text-[10px] font-black uppercase tracking-widest transition-all text-center"
+                        :class="formData.category === 'holiday' ? 'border-rose-400 bg-rose-50 text-rose-500' : 'border-slate-100 bg-white text-slate-400'"
+                        class="px-4 py-3 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all text-center"
                     >Libur</button>
                     <button 
+                        type="button"
                         @click="formData.category = 'exam'"
-                        :class="formData.category === 'exam' ? 'border-blue-400 bg-blue-50 text-blue-500'"
-                        class="px-4 py-3 rounded-2xl border-2 border-slate-100 bg-white text-slate-400 text-[10px] font-black uppercase tracking-widest transition-all text-center"
+                        :class="formData.category === 'exam' ? 'border-blue-400 bg-blue-50 text-blue-500' : 'border-slate-100 bg-white text-slate-400'"
+                        class="px-4 py-3 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all text-center"
                     >Ujian</button>
                     <button 
+                        type="button"
                         @click="formData.category = 'other'"
-                        :class="formData.category === 'other' ? 'border-slate-400 bg-slate-50 text-slate-500'"
-                        class="px-4 py-3 rounded-2xl border-2 border-slate-100 bg-white text-slate-400 text-[10px] font-black uppercase tracking-widest transition-all text-center"
+                        :class="formData.category === 'other' ? 'border-slate-400 bg-slate-50 text-slate-500' : 'border-slate-100 bg-white text-slate-400'"
+                        class="px-4 py-3 rounded-2xl border-2 text-[10px] font-black uppercase tracking-widest transition-all text-center"
                     >Lainnya</button>
                 </div>
             </div>
