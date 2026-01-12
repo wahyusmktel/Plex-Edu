@@ -10,6 +10,7 @@ use App\Http\Controllers\SekolahController;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\SliderController;
+use App\Http\Controllers\CalendarController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -107,6 +108,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('berita', BeritaController::class);
     Route::resource('pengumuman', PengumumanController::class);
     Route::resource('slider', SliderController::class);
+    Route::resource('calendar', CalendarController::class);
+    Route::get('api/calendar/events', [CalendarController::class, 'getEvents'])->name('calendar.events');
 
     // Mata Pelajaran Routes
     Route::prefix('mata-pelajaran')->name('mata-pelajaran.')->group(function () {
