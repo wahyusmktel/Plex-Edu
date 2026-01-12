@@ -85,9 +85,9 @@ Route::middleware(['auth'])->group(function () {
     // Sekolah Routes
     Route::prefix('sekolah')->name('sekolah.')->group(function () {
         Route::get('/', [SekolahController::class, 'index'])->name('index');
-        Route::post('/settings/update', [SekolahController::class, 'updateSettings'])->name('settings.update');
-        Route::post('/settings/activate/{id}', [SekolahController::class, 'activateSettings'])->name('settings.activate');
-        Route::delete('/settings/destroy/{id}', [SekolahController::class, 'destroySettings'])->name('settings.destroy');
+        Route::post('/settings/update', [SekolahController::class, 'updateSettings'])->name('update-settings');
+        Route::post('/settings/activate/{id}', [SekolahController::class, 'activateSettings'])->name('activate-settings');
+        Route::delete('/settings/destroy/{id}', [SekolahController::class, 'destroySettings'])->name('destroy-settings');
 
         Route::post('/jurusan/store', [SekolahController::class, 'storeJurusan'])->name('jurusan.store');
         Route::get('/jurusan/show/{id}', [SekolahController::class, 'showJurusan'])->name('jurusan.show');
