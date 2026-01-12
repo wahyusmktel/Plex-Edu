@@ -58,7 +58,7 @@
             <x-nav-item icon="school" label="Sekolah" :active="Request::is('sekolah*')" href="{{ route('sekolah.index') }}" />
             <x-nav-item icon="people" label="Fungsionaris" :active="Request::is('fungsionaris*')" href="{{ route('fungsionaris.index') }}" />
             <x-nav-item icon="person_outline" label="Siswa" :active="Request::is('siswa*')" href="{{ route('siswa.index') }}" />
-            <x-nav-item icon="notifications" label="Pengumuman" />
+            <x-nav-item icon="campaign" label="Pengumuman" :active="Request::is('pengumuman*')" href="{{ route('pengumuman.index') }}" />
             <x-nav-item icon="image" label="Slider Admin" />
             <x-nav-item icon="calendar_today" label="Kalender" />
             <x-nav-item icon="account_balance" label="Mata Pelajaran" />

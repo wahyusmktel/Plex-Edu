@@ -8,6 +8,7 @@ use App\Http\Controllers\PelanggaranController;
 use App\Http\Controllers\MataPelajaranController;
 use App\Http\Controllers\SekolahController;
 use App\Http\Controllers\BeritaController;
+use App\Http\Controllers\PengumumanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -103,6 +104,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Berita Routes
     Route::resource('berita', BeritaController::class);
+    Route::resource('pengumuman', PengumumanController::class);
 
     // Mata Pelajaran Routes
     Route::prefix('mata-pelajaran')->name('mata-pelajaran.')->group(function () {
