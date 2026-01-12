@@ -31,6 +31,11 @@ class User extends Authenticatable
         return $this->hasOne(Fungsionaris::class);
     }
 
+    public function siswa()
+    {
+        return $this->hasOne(Siswa::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

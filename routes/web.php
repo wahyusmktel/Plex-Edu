@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\FungsionarisController; // Added
+use App\Http\Controllers\SiswaController; // Added
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -26,6 +27,17 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/destroy/{id}', [FungsionarisController::class, 'destroy'])->name('destroy');
         Route::post('/import', [FungsionarisController::class, 'import'])->name('import');
         Route::get('/download-template', [FungsionarisController::class, 'downloadTemplate'])->name('download-template');
+    });
+
+    // Siswa Routes
+    Route::prefix('siswa')->name('siswa.')->group(function () {
+        Route::get('/', [SiswaController::class, 'index'])->name('index');
+        Route::post('/store', [SiswaController::class, 'store'])->name('store');
+        Route::get('/show/{id}', [SiswaController::class, 'show'])->name('show');
+        Route::post('/update/{id}', [SiswaController::class, 'update'])->name('update');
+        Route::delete('/destroy/{id}', [SiswaController::class, 'destroy'])->name('destroy');
+        Route::post('/import', [SiswaController::class, 'import'])->name('import');
+        Route::get('/download-template', [SiswaController::class, 'downloadTemplate'])->name('download-template');
     });
 
     // Sekolah Routes

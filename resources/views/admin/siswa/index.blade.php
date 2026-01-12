@@ -1,0 +1,368 @@
+@extends('layouts.app')
+
+@section('title', 'Manajemen Siswa - Literasia')
+
+@section('content')
+<div x-data="siswaPage()" x-init="init()" class="space-y-8">
+    
+    <!-- Header Area -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Siswa</h1>
+            <p class="text-slate-500 font-medium mt-1">Kelola data Peserta Didik Literasia</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="{{ route('siswa.download-template') }}" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+                <i class="material-icons text-[20px]">file_download</i> Template
+            </a>
+            <button @click="openImportModal = true" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+                <i class="material-icons text-[20px]">file_upload</i> Import
+            </button>
+            <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <i class="material-icons text-[20px]">add_circle</i> Tambah Siswa
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Table Card -->
+    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden p-2">
+        <!-- Table Container -->
+        <div class="overflow-x-auto p-4">
+            <table class="w-full text-left border-separate border-spacing-y-3">
+                <thead>
+                    <tr class="text-slate-400 text-[11px] uppercase font-black tracking-widest">
+                        <th class="px-6 py-3">Nama Lengkap</th>
+                        <th class="px-6 py-3">NIS / NISN</th>
+                        <th class="px-6 py-3">Kelas</th>
+                        <th class="px-6 py-3 text-center">L/P</th>
+                        <th class="px-6 py-3 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    @forelse($siswas as $item)
+                    <tr class="group hover:scale-[1.005] transition-transform duration-200">
+                        <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-l border-transparent group-hover:border-slate-100 first:rounded-l-2xl">
+                            <div class="flex items-center gap-3">
+                                <img class="w-9 h-9 rounded-xl border-2 border-white shadow-sm" src="https://ui-avatars.com/api/?name={{ urlencode($item->nama_lengkap) }}&background=fdf2f8&color=d90d8b" alt="">
+                                <div>
+                                    <p class="font-bold text-slate-800 leading-none">{{ $item->nama_lengkap }}</p>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase">{{ $item->user->username ?? '-' }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100">
+                            <p class="font-bold text-slate-700 leading-none">{{ $item->nis }}</p>
+                            <p class="text-[10px] font-medium text-slate-400 mt-1">{{ $item->nisn }}</p>
+                        </td>
+                        <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100">
+                            <span class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600">
+                                {{ $item->kelas->nama ?? 'Tanpa Kelas' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center">
+                            <span class="font-bold text-slate-600">{{ $item->jenis_kelamin }}</span>
+                        </td>
+                        <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
+                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button @click="editData('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
+                                    <i class="material-icons text-lg">edit</i>
+                                </button>
+                                <button @click="deleteData('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer">
+                                    <i class="material-icons text-lg">delete</i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="py-20 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+                                    <i class="material-icons text-4xl">inventory_2</i>
+                                </div>
+                                <p class="text-sm font-bold text-slate-400">Belum ada data siswa</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Management Modal -->
+    <div 
+        x-show="openModal" 
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:p-0"
+    >
+        <div x-show="openModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="openModal = false"></div>
+
+        <div 
+            x-show="openModal" 
+            x-transition:enter="ease-out duration-300" 
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden relative z-10 flex flex-col"
+        >
+            <!-- Modal Header -->
+            <div class="px-10 py-8 flex items-center justify-between border-b border-slate-50">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight" x-text="editMode ? 'Edit Siswa' : 'Tambah Siswa Baru'"></h2>
+                    <p class="text-slate-400 font-medium text-sm mt-1">Lengkapi informasi siswa di bawah ini.</p>
+                </div>
+                <button @click="openModal = false" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+
+            <!-- Modal Tabs (Internal) -->
+            <div class="px-10 mt-6 overflow-y-auto flex-grow h-full custom-scrollbar">
+                <div class="flex gap-4 mb-8">
+                    <button 
+                        @click="formTab = 'wajib'"
+                        class="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
+                        :class="formTab === 'wajib' ? 'bg-[#d90d8b] text-white' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'"
+                    >
+                        Data Wajib
+                    </button>
+                    <button 
+                        @click="formTab = 'opsional'"
+                        class="px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
+                        :class="formTab === 'opsional' ? 'bg-[#d90d8b] text-white' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'"
+                    >
+                        Data Diri (Opsional)
+                    </button>
+                </div>
+
+                <form id="siswaForm" class="pb-10">
+                    @csrf
+                    <input type="hidden" name="id" x-model="formData.id">
+                    
+                    <!-- Tab Data Wajib -->
+                    <div x-show="formTab === 'wajib'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <x-form-input label="Nama Lengkap" name="nama_lengkap" placeholder="Contoh: Ahmad Syahputra" x-model="formData.nama_lengkap" />
+                        <x-form-input label="NIS" name="nis" placeholder="Nomor Induk Siswa" x-model="formData.nis" />
+                        <x-form-input label="NISN" name="nisn" placeholder="Nomor Induk Siswa Nasional" x-model="formData.nisn" />
+                        
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Kelas</label>
+                            <select name="kelas_id" x-model="formData.kelas_id" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all">
+                                <option value="">Pilih Kelas</option>
+                                @foreach($kelas as $k)
+                                    <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Jenis Kelamin</label>
+                            <select name="jenis_kelamin" x-model="formData.jenis_kelamin" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all">
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+
+                        <x-form-input label="Username Login" name="username" placeholder="ahmad123" x-model="formData.username" />
+                        
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Password</label>
+                            <input 
+                                type="password" 
+                                name="password" 
+                                x-model="formData.password"
+                                class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all"
+                                placeholder="••••••••"
+                            >
+                            <p class="text-[10px] text-slate-400 font-bold px-1" x-show="editMode">* Kosongkan jika tidak ingin mengubah</p>
+                        </div>
+                    </div>
+
+                    <!-- Tab Data Opsional -->
+                    <div x-show="formTab === 'opsional'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <x-form-input label="Tempat Lahir" name="tempat_lahir" x-model="formData.tempat_lahir" />
+                        <x-form-input type="date" label="Tanggal Lahir" name="tanggal_lahir" x-model="formData.tanggal_lahir" />
+                        
+                        <x-form-input label="Nama Ayah" name="nama_ayah" x-model="formData.nama_ayah" />
+                        <x-form-input label="Nama Ibu" name="nama_ibu" x-model="formData.nama_ibu" />
+                        
+                        <x-form-input label="No. HP Siswa" name="no_hp" x-model="formData.no_hp" />
+                        <x-form-input label="No. HP Orang Tua" name="no_hp_ortu" x-model="formData.no_hp_ortu" />
+                        
+                        <div class="md:col-span-2 space-y-1.5">
+                            <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
+                            <textarea name="alamat" x-model="formData.alamat" rows="3" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all"></textarea>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <x-form-input label="Sekolah Asal" name="sekolah_asal" placeholder="SMPN 1..." x-model="formData.sekolah_asal" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-10 py-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button @click="openModal = false" class="px-8 py-3.5 rounded-2xl text-sm font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">Batal</button>
+                <button @click="saveData()" class="px-10 py-3.5 rounded-2xl bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    Simpan Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div x-show="openImportModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="openImportModal = false"></div>
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-10 relative z-10">
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Import Data Siswa</h3>
+            <p class="text-slate-400 font-medium text-sm mb-8">Pilih file Excel sesuai format template.</p>
+            
+            <form id="importForm" enctype="multipart/form-data">
+                @csrf
+                <div class="relative group">
+                    <input type="file" name="file" class="hidden" id="excelFile" @change="fileName = $event.target.files[0].name">
+                    <label for="excelFile" class="flex flex-col items-center justify-center w-full h-48 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer group-hover:bg-pink-50 group-hover:border-[#d90d8b]/30 transition-all">
+                        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm mb-4 group-hover:text-[#d90d8b]">
+                            <i class="material-icons text-3xl">cloud_upload</i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500" x-text="fileName || 'Klik untuk pilih file'"></p>
+                    </label>
+                </div>
+            </form>
+
+            <div class="flex gap-3 mt-8">
+                <button @click="openImportModal = false" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
+                <button @click="importData()" class="flex-1 py-4 bg-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:bg-[#ba80e8] transition-all">Import</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+@endsection
+
+@section('scripts')
+<script>
+    function siswaPage() {
+        return {
+            openModal: false,
+            openImportModal: false,
+            editMode: false,
+            formTab: 'wajib',
+            fileName: '',
+            formData: {
+                id: '',
+                nama_lengkap: '',
+                nis: '',
+                nisn: '',
+                kelas_id: '',
+                jenis_kelamin: 'L',
+                username: '',
+                password: '',
+                tempat_lahir: '',
+                tanggal_lahir: '',
+                nama_ayah: '',
+                nama_ibu: '',
+                no_hp: '',
+                no_hp_ortu: '',
+                alamat: '',
+                sekolah_asal: ''
+            },
+            init() {},
+            openCreateModal() {
+                this.editMode = false;
+                this.openModal = true;
+                this.formTab = 'wajib';
+                this.formData = {
+                    id: '', nama_lengkap: '', nis: '', nisn: '', kelas_id: '', jenis_kelamin: 'L',
+                    username: '', password: '', tempat_lahir: '', tanggal_lahir: '',
+                    nama_ayah: '', nama_ibu: '', no_hp: '', no_hp_ortu: '', alamat: '', sekolah_asal: ''
+                };
+            },
+            saveData() {
+                const url = this.formData.id ? `{{ url('siswa/update') }}/${this.formData.id}` : `{{ route('siswa.store') }}`;
+                Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: $('#siswaForm').serialize(),
+                    success: (res) => {
+                        this.openModal = false;
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: res.success, timer: 1500, showConfirmButton: false }).then(() => location.reload());
+                    },
+                    error: (err) => {
+                        let msg = err.responseJSON?.message || 'Terjadi kesalahan.';
+                        if (err.responseJSON?.errors) msg = Object.values(err.responseJSON.errors).join('<br>');
+                        Swal.fire('Oops...', msg, 'error');
+                    }
+                });
+            },
+            editData(id) {
+                $.get(`{{ url('siswa/show') }}/${id}`, (data) => {
+                    this.formData = {
+                        id: data.id,
+                        nama_lengkap: data.nama_lengkap,
+                        nis: data.nis,
+                        nisn: data.nisn,
+                        kelas_id: data.kelas_id,
+                        jenis_kelamin: data.jenis_kelamin,
+                        username: data.user.username,
+                        password: '',
+                        tempat_lahir: data.tempat_lahir || '',
+                        tanggal_lahir: data.tanggal_lahir || '',
+                        nama_ayah: data.nama_ayah || '',
+                        nama_ibu: data.nama_ibu || '',
+                        no_hp: data.no_hp || '',
+                        no_hp_ortu: data.no_hp_ortu || '',
+                        alamat: data.alamat || '',
+                        sekolah_asal: data.sekolah_asal || ''
+                    };
+                    this.editMode = true;
+                    this.openModal = true;
+                    this.formTab = 'wajib';
+                });
+            },
+            deleteData(id) {
+                Swal.fire({
+                    title: 'Hapus Data?',
+                    text: "Data user terkait akan ikut terhapus!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d90d8b',
+                    confirmButtonText: 'Ya, Hapus'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `{{ url('siswa/destroy') }}/${id}`,
+                            method: 'DELETE',
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: (res) => {
+                                Swal.fire('Dihapus!', res.success, 'success').then(() => location.reload());
+                            }
+                        });
+                    }
+                });
+            },
+            importData() {
+                let formData = new FormData($('#importForm')[0]);
+                Swal.fire({ title: 'Mengimport...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                $.ajax({
+                    url: `{{ route('siswa.import') }}`,
+                    method: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: (res) => {
+                        Swal.fire('Berhasil', res.success, 'success').then(() => location.reload());
+                    },
+                    error: () => {
+                        Swal.fire('Gagal', 'Pastikan format Excel sesuai template.', 'error');
+                    }
+                });
+            }
+        }
+    }
+</script>
+@endsection
