@@ -7,6 +7,7 @@ use App\Http\Controllers\ERaportController;
 use App\Http\Controllers\PelanggaranController;
 use App\Http\Controllers\MataPelajaranController;
 use App\Http\Controllers\SekolahController;
+use App\Http\Controllers\BeritaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -99,6 +100,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/kelas/update/{id}', [SekolahController::class, 'updateKelas'])->name('kelas.update');
         Route::delete('/kelas/destroy/{id}', [SekolahController::class, 'destroyKelas'])->name('kelas.destroy');
     });
+
+    // Berita Routes
+    Route::resource('berita', BeritaController::class);
 
     // Mata Pelajaran Routes
     Route::prefix('mata-pelajaran')->name('mata-pelajaran.')->group(function () {
