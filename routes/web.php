@@ -13,6 +13,7 @@ use App\Http\Controllers\SliderController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\SambutanController;
 use App\Http\Controllers\EVotingController;
+use App\Http\Controllers\AbsensiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -113,6 +114,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('calendar', CalendarController::class);
     Route::resource('sambutan', SambutanController::class);
     Route::resource('e-voting', EVotingController::class);
+    Route::get('absensi', [AbsensiController::class, 'index'])->name('absensi.index');
+    Route::get('absensi/export/class', [AbsensiController::class, 'exportClass'])->name('absensi.export.class');
+    Route::get('absensi/export/all', [AbsensiController::class, 'exportAll'])->name('absensi.export.all');
+    Route::get('absensi/export/student/{id}', [AbsensiController::class, 'exportStudent'])->name('absensi.export.student');
     Route::get('e-voting/{id}/export/excel', [EVotingController::class, 'exportExcel'])->name('e-voting.export.excel');
     Route::get('e-voting/{id}/export/pdf', [EVotingController::class, 'exportPdf'])->name('e-voting.export.pdf');
     Route::get('api/calendar/events', [CalendarController::class, 'getEvents'])->name('calendar.events');

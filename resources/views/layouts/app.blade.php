@@ -64,6 +64,7 @@
             <x-nav-item icon="account_balance" label="Mata Pelajaran" />
             <x-nav-item icon="record_voice_over" label="Sambutan" :active="Request::is('sambutan*')" href="{{ route('sambutan.index') }}" />
             <x-nav-item icon="how_to_vote" label="E-Voting" :active="Request::is('e-voting*')" href="{{ route('e-voting.index') }}" />
+            <x-nav-item icon="assignment_ind" label="Absensi" :active="Request::is('absensi*')" href="{{ route('absensi.index') }}" />
 
             <div class="pt-4 mt-4 border-t border-slate-50">
                 <a 
