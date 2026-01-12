@@ -17,6 +17,7 @@ class AbsensiExport implements FromView, ShouldAutoSize
 
     public function view(): View
     {
-        return view('admin.absensi.export_excel', $this->data);
+        $view = $this->data['view'] ?? 'admin.absensi.export_excel';
+        return view($view, $this->data);
     }
 }

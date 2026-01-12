@@ -29,10 +29,16 @@
             <p class="text-slate-500 font-medium mt-1">Pantau kehadiran siswa berdasarkan kelas dan periode tertentu</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-            <a href="{{ route('absensi.export.all') }}?format=pdf&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-50 transition-all">
-                <i class="material-icons text-[20px]">print</i> Cetak Seluruh Kelas
-            </a>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('absensi.export.all') }}?format=pdf&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-50 transition-all">
+                    <i class="material-icons text-[20px]">print</i> PDF Seluruh Kelas
+                </a>
+                <a href="{{ route('absensi.export.all') }}?format=excel&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-2xl text-sm font-bold hover:bg-emerald-100 transition-all">
+                    <i class="material-icons text-[20px]">description</i> Excel Seluruh Kelas
+                </a>
+            </div>
             @if($selectedClass)
+            <div class="h-8 w-px bg-slate-100 mx-2"></div>
             <div class="flex items-center gap-3">
                 <a href="{{ route('absensi.export.class') }}?format=excel&kelas_id={{ $selectedClass }}&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                     <i class="material-icons text-[20px]">description</i> Excel Kelas Ini

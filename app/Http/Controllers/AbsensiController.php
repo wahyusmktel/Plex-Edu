@@ -147,8 +147,7 @@ class AbsensiController extends Controller
         ];
 
         if ($format === 'excel') {
-             // For student individual, we might want a different view but for now let's reuse or just PDF which is more common for individual
-             return Excel::download(new AbsensiExport($data), 'Absensi_' . $siswa->nama_lengkap . '.xlsx');
+             return Excel::download(new AbsensiExport($data + ['view' => 'admin.absensi.export_student_excel']), 'Absensi_' . $siswa->nama_lengkap . '.xlsx');
         }
 
         $pdf = Pdf::loadView('admin.absensi.export_student_pdf', $data);
