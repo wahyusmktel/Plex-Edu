@@ -186,6 +186,9 @@
                                 </td>
                                 <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
                                     <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button @click="showDetail('siswa', '{{ $item->id }}')" class="p-2 text-slate-500 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer" title="Detail">
+                                            <i class="material-icons text-lg">visibility</i>
+                                        </button>
                                         <button @click="editSiswa('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
                                             <i class="material-icons text-lg">edit</i>
                                         </button>
@@ -248,8 +251,9 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-slate-700 font-bold">
-                                    {{ $item->masterPelanggaran->nama }}
+                                <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100">
+                                    <p class="font-bold text-slate-700 leading-none">{{ $item->masterPelanggaran->nama }}</p>
+                                    <p class="text-[10px] text-slate-400 font-medium mt-1 uppercase">{{ Str::limit($item->deskripsi, 30) }}</p>
                                 </td>
                                 <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 font-bold text-slate-600">
                                     {{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}
@@ -265,6 +269,9 @@
                                 </td>
                                 <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
                                     <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button @click="showDetail('pegawai', '{{ $item->id }}')" class="p-2 text-slate-500 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer" title="Detail">
+                                            <i class="material-icons text-lg">visibility</i>
+                                        </button>
                                         <button @click="editPegawai('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
                                             <i class="material-icons text-lg">edit</i>
                                         </button>
@@ -291,6 +298,7 @@
 
     <!-- Modals (Master, Siswa, Pegawai) -->
     @include('admin.pelanggaran.modals')
+    @include('admin.pelanggaran.detail-modal')
 
 </div>
 @endsection
@@ -301,7 +309,9 @@
         return {
             activeTab: '{{ $tab }}',
             openModal: false,
+            openDetailModal: false,
             modalType: '', // 'master', 'siswa', 'pegawai'
+            detailData: null,
             editMode: false,
             masterData: { id: '', nama: '', jenis: 'siswa', poin: 0, status: 1 },
             siswaData: { id: '', siswa_id: '', master_pelanggaran_id: '', tanggal: '{{ date('Y-m-d') }}', deskripsi: '', tindak_lanjut: '' },
@@ -383,6 +393,16 @@
             },
             deletePegawai(id) {
                 this.confirmDelete(`{{ url('pelanggaran/destroy-pegawai') }}/${id}`);
+            },
+
+            // Show Detail
+            showDetail(type, id) {
+                const endpoint = type === 'siswa' ? `{{ url('pelanggaran/show-siswa') }}/${id}` : `{{ url('pelanggaran/show-pegawai') }}/${id}`;
+                $.get(endpoint, (data) => {
+                    this.detailData = data;
+                    this.modalType = type;
+                    this.openDetailModal = true;
+                });
             },
 
             // Helper Requests

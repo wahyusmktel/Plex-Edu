@@ -110,7 +110,7 @@ class PelanggaranController extends Controller
 
     public function showSiswa($id)
     {
-        return response()->json(PelanggaranSiswa::findOrFail($id));
+        return response()->json(PelanggaranSiswa::with(['siswa.kelas', 'masterPelanggaran'])->findOrFail($id));
     }
 
     public function updateSiswa(Request $request, $id)
@@ -152,7 +152,7 @@ class PelanggaranController extends Controller
 
     public function showPegawai($id)
     {
-        return response()->json(PelanggaranPegawai::findOrFail($id));
+        return response()->json(PelanggaranPegawai::with(['fungsionaris', 'masterPelanggaran'])->findOrFail($id));
     }
 
     public function updatePegawai(Request $request, $id)
