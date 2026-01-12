@@ -11,13 +11,25 @@ use Illuminate\Support\Facades\DB;
 
 class ERaportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $raports = ERaport::with('siswa.kelas')->orderBy('created_at', 'desc')->get();
+        $search = $request->query('search');
+        
+        $raports = ERaport::with('siswa.kelas')
+            ->when($search, function($query) use ($search) {
+                $query->whereHas('siswa', function($q) use ($search) {
+                    $q->where('nama_lengkap', 'like', "%{$search}%")
+                      ->orWhere('nis', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
         $siswas = Siswa::with('kelas')->orderBy('nama_lengkap', 'asc')->get();
         $activeSetting = SchoolSetting::where('is_active', true)->first();
         
-        return view('admin.e-raport.index', compact('raports', 'siswas', 'activeSetting'));
+        return view('admin.e-raport.index', compact('raports', 'siswas', 'activeSetting', 'search'));
     }
 
     public function store(Request $request)

@@ -34,6 +34,22 @@
         </div>
     </div>
 
+    <!-- Filter & Search Area -->
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="w-full md:w-96 relative group">
+            <form action="{{ route('e-raport.index') }}" method="GET">
+                <input 
+                    type="text" 
+                    name="search" 
+                    value="{{ $search }}" 
+                    placeholder="Cari Nama Siswa atau NIS..." 
+                    class="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-6 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 focus:border-[#d90d8b]/30 transition-all outline-none"
+                >
+                <i class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#d90d8b] transition-colors">search</i>
+            </form>
+        </div>
+    </div>
+
     <!-- Main Table Card -->
     <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden p-2">
         <div class="overflow-x-auto p-4">
@@ -99,6 +115,11 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-slate-50">
+            {{ $raports->links() }}
         </div>
     </div>
 
