@@ -30,20 +30,20 @@
         </div>
         <div class="flex flex-wrap items-center gap-3">
             <div class="flex items-center gap-2">
-                <a href="{{ route('absensi.export.all') }}?format=pdf&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-50 transition-all">
+                <a href="{{ route('absensi.export.all') }}?format=pdf&start_date={{ $startDate }}&end_date={{ $endDate }}&subject_id={{ $selectedSubject }}" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-50 transition-all">
                     <i class="material-icons text-[20px]">print</i> PDF Seluruh Kelas
                 </a>
-                <a href="{{ route('absensi.export.all') }}?format=excel&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-2xl text-sm font-bold hover:bg-emerald-100 transition-all">
+                <a href="{{ route('absensi.export.all') }}?format=excel&start_date={{ $startDate }}&end_date={{ $endDate }}&subject_id={{ $selectedSubject }}" class="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-2xl text-sm font-bold hover:bg-emerald-100 transition-all">
                     <i class="material-icons text-[20px]">description</i> Excel Seluruh Kelas
                 </a>
             </div>
             @if($selectedClass)
             <div class="h-8 w-px bg-slate-100 mx-2"></div>
             <div class="flex items-center gap-3">
-                <a href="{{ route('absensi.export.class') }}?format=excel&kelas_id={{ $selectedClass }}&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <a href="{{ route('absensi.export.class') }}?format=excel&kelas_id={{ $selectedClass }}&start_date={{ $startDate }}&end_date={{ $endDate }}&subject_id={{ $selectedSubject }}" class="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                     <i class="material-icons text-[20px]">description</i> Excel Kelas Ini
                 </a>
-                <a href="{{ route('absensi.export.class') }}?format=pdf&kelas_id={{ $selectedClass }}&start_date={{ $startDate }}&end_date={{ $endDate }}" class="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <a href="{{ route('absensi.export.class') }}?format=pdf&kelas_id={{ $selectedClass }}&start_date={{ $startDate }}&end_date={{ $endDate }}&subject_id={{ $selectedSubject }}" class="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                     <i class="material-icons text-[20px]">picture_as_pdf</i> PDF Kelas Ini
                 </a>
             </div>
@@ -53,7 +53,7 @@
 
     <!-- Filter Area -->
     <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8">
-        <form action="{{ route('absensi.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+        <form action="{{ route('absensi.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
             <!-- Class Selection -->
             <div class="space-y-2">
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Kelas</label>
@@ -68,13 +68,29 @@
                 </div>
             </div>
 
+            <!-- Subject Selection -->
+            <div class="space-y-2">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mata Pelajaran</label>
+                <div class="relative">
+                    <select name="subject_id" class="w-full bg-slate-50 border-none rounded-2xl px-6 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-[#ba80e8]/20 transition-all appearance-none cursor-pointer">
+                        <option value="">Semua Mapel</option>
+                        @foreach($subjects as $subject)
+                        <option value="{{ $subject->id }}" {{ $selectedSubject == $subject->id ? 'selected' : '' }}>
+                            {{ $subject->nama_pelajaran }} ({{ $subject->guru->nama ?? 'No Guru' }})
+                        </option>
+                        @endforeach
+                    </select>
+                    <i class="material-icons absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">book</i>
+                </div>
+            </div>
+
             <!-- Date Range -->
             <div class="space-y-2">
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dari Tanggal</label>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mulai</label>
                 <input type="date" name="start_date" value="{{ $startDate }}" class="w-full bg-slate-50 border-none rounded-2xl px-6 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-[#ba80e8]/20 transition-all">
             </div>
             <div class="space-y-2">
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sampai Tanggal</label>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sampai</label>
                 <input type="date" name="end_date" value="{{ $endDate }}" class="w-full bg-slate-50 border-none rounded-2xl px-6 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-[#ba80e8]/20 transition-all">
             </div>
 
@@ -180,10 +196,10 @@
                         </td>
                         <td class="px-8 py-5 text-right">
                             <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <a href="{{ route('absensi.export.student', $item['id']) }}?format=pdf&start_date={{ $startDate }}&end_date={{ $endDate }}" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors" title="Cetak PDF">
+                                <a href="{{ route('absensi.export.student', $item['id']) }}?format=pdf&start_date={{ $startDate }}&end_date={{ $endDate }}&subject_id={{ $selectedSubject }}" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors" title="Cetak PDF">
                                     <i class="material-icons text-lg">picture_as_pdf</i>
                                 </a>
-                                <a href="{{ route('absensi.export.student', $item['id']) }}?format=excel&start_date={{ $startDate }}&end_date={{ $endDate }}" class="p-2 text-emerald-500 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors" title="Cetak Excel">
+                                <a href="{{ route('absensi.export.student', $item['id']) }}?format=excel&start_date={{ $startDate }}&end_date={{ $endDate }}&subject_id={{ $selectedSubject }}" class="p-2 text-emerald-500 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors" title="Cetak Excel">
                                     <i class="material-icons text-lg">description</i>
                                 </a>
                             </div>

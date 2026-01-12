@@ -31,7 +31,15 @@
         </div>
     </div>
 
-    <div class="title">Riwayat Kehadiran ({{ $startDate }} - {{ $endDate }})</div>
+    <div class="title">
+        Riwayat Kehadiran 
+        @if($selectedSubject)
+            Mapel: {{ $selectedSubject->nama_pelajaran }} ({{ $selectedSubject->guru->nama ?? '-' }})
+        @else
+            Semua Mata Pelajaran
+        @endif
+        ({{ $startDate }} - {{ $endDate }})
+    </div>
 
     <div class="summary">
         <div class="summary-item">
@@ -55,8 +63,11 @@
     <table style="margin-top: 30px;">
         <thead>
             <tr>
-                <th width="20%">Tanggal</th>
-                <th width="20%">Status</th>
+                <th width="15%">Tanggal</th>
+                @if(!$selectedSubject)
+                <th width="25%">Mata Pelajaran</th>
+                @endif
+                <th width="15%">Status</th>
                 <th>Keterangan</th>
             </tr>
         </thead>
@@ -64,6 +75,9 @@
             @forelse($history as $record)
             <tr>
                 <td>{{ $record->tanggal->format('d/m/Y') }}</td>
+                @if(!$selectedSubject)
+                <td>{{ $record->subject->nama_pelajaran ?? '-' }}</td>
+                @endif
                 <td class="status-{{ $record->status }}">
                     @if($record->status == 'H') Hadir
                     @elseif($record->status == 'A') Alfa

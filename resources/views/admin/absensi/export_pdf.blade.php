@@ -24,6 +24,10 @@
     <div class="header">
         <div class="title">REKAPITULASI ABSENSI SISWA</div>
         <div class="subtitle">Periode: {{ $startDate }} - {{ $endDate }}</div>
+        @if($selectedSubject)
+        <div class="subtitle">Mata Pelajaran: {{ $selectedSubject->nama_pelajaran }}</div>
+        <div class="subtitle">Guru: {{ $selectedSubject->guru->nama ?? '-' }}</div>
+        @endif
         @if($selectedClass)
         <div class="subtitle">Kelas: {{ $selectedClass->nama }}</div>
         @endif

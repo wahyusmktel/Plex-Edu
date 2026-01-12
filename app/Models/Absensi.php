@@ -12,6 +12,7 @@ class Absensi extends Model
 
     protected $fillable = [
         'siswa_id',
+        'subject_id',
         'tanggal',
         'status',
         'keterangan',
@@ -24,5 +25,10 @@ class Absensi extends Model
     public function siswa()
     {
         return $this->belongsTo(Siswa::class);
+    }
+
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
     }
 }

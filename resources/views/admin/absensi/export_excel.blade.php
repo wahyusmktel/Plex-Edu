@@ -6,6 +6,14 @@
         <tr>
             <th colspan="6" style="text-align: center;">Periode: {{ $startDate }} s/d {{ $endDate }}</th>
         </tr>
+        @if($selectedSubject)
+        <tr>
+            <th colspan="6" style="text-align: center;">Mata Pelajaran: {{ $selectedSubject->nama_pelajaran }}</th>
+        </tr>
+        <tr>
+            <th colspan="6" style="text-align: center;">Guru: {{ $selectedSubject->guru->nama ?? '-' }}</th>
+        </tr>
+        @endif
         @if($selectedClass)
         <tr>
             <th colspan="6" style="text-align: center;">Kelas: {{ $selectedClass->nama }}</th>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absensi;
 use App\Models\Kelas;
 use App\Models\Siswa;
+use App\Models\Subject;
 use App\Exports\AbsensiExport;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -18,9 +19,13 @@ class AbsensiController extends Controller
     {
         $classes = Kelas::orderBy('nama')->get();
         $selectedClass = $request->input('kelas_id');
+        $selectedSubject = $request->input('subject_id');
         $search = $request->input('search');
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
+
+        // Subjects filtered by class if class is selected, otherwise all subjects
+        $subjects = Subject::with('guru')->orderBy('nama_pelajaran')->get();
 
         $students = Siswa::when($selectedClass, function ($query, $classId) {
                 return $query->where('kelas_id', $classId);
@@ -31,11 +36,13 @@ class AbsensiController extends Controller
             ->with(['kelas'])
             ->paginate(30);
 
-        $recap = $this->getRecapData($students->pluck('id')->toArray(), $startDate, $endDate);
+        $recap = $this->getRecapData($students->pluck('id')->toArray(), $startDate, $endDate, $selectedSubject);
 
         return view('admin.absensi.index', [
             'classes' => $classes,
+            'subjects' => $subjects,
             'selectedClass' => $selectedClass,
+            'selectedSubject' => $selectedSubject,
             'search' => $search,
             'startDate' => $startDate,
             'endDate' => $endDate,
@@ -44,10 +51,13 @@ class AbsensiController extends Controller
         ]);
     }
 
-    private function getRecapData($studentIds, $startDate, $endDate)
+    private function getRecapData($studentIds, $startDate, $endDate, $subjectId = null)
     {
         $counts = Absensi::whereBetween('tanggal', [$startDate, $endDate])
             ->whereIn('siswa_id', $studentIds)
+            ->when($subjectId, function ($query, $subjectId) {
+                return $query->where('subject_id', $subjectId);
+            })
             ->select('siswa_id', 'status', DB::raw('count(*) as total'))
             ->groupBy('siswa_id', 'status')
             ->get()
@@ -72,62 +82,75 @@ class AbsensiController extends Controller
     public function exportClass(Request $request)
     {
         $classId = $request->input('kelas_id');
+        $subjectId = $request->input('subject_id');
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
         $format = $request->input('format', 'excel');
 
         $kelas = Kelas::findOrFail($classId);
+        $subject = $subjectId ? Subject::findOrFail($subjectId) : null;
         $studentIds = Siswa::where('kelas_id', $classId)->pluck('id')->toArray();
-        $recap = $this->getRecapData($studentIds, $startDate, $endDate);
+        $recap = $this->getRecapData($studentIds, $startDate, $endDate, $subjectId);
 
         $data = [
             'recap' => $recap,
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'selectedClass' => $kelas
+            'selectedClass' => $kelas,
+            'selectedSubject' => $subject
         ];
 
         if ($format === 'pdf') {
             $pdf = Pdf::loadView('admin.absensi.export_pdf', $data);
-            return $pdf->download('Rekap_Absensi_' . $kelas->nama . '.pdf');
+            return $pdf->download('Rekap_Absensi_' . $kelas->nama . ($subject ? '_' . $subject->nama_pelajaran : '') . '.pdf');
         }
 
-        return Excel::download(new AbsensiExport($data), 'Rekap_Absensi_' . $kelas->nama . '.xlsx');
+        return Excel::download(new AbsensiExport($data), 'Rekap_Absensi_' . $kelas->nama . ($subject ? '_' . $subject->nama_pelajaran : '') . '.xlsx');
     }
 
     public function exportAll(Request $request)
     {
+        $subjectId = $request->input('subject_id');
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
         $format = $request->input('format', 'excel');
 
+        $subject = $subjectId ? Subject::findOrFail($subjectId) : null;
         $studentIds = Siswa::pluck('id')->toArray();
-        $recap = $this->getRecapData($studentIds, $startDate, $endDate);
+        $recap = $this->getRecapData($studentIds, $startDate, $endDate, $subjectId);
 
         $data = [
             'recap' => $recap,
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'selectedClass' => null
+            'selectedClass' => null,
+            'selectedSubject' => $subject
         ];
 
         if ($format === 'pdf') {
             $pdf = Pdf::loadView('admin.absensi.export_pdf', $data);
-            return $pdf->download('Rekap_Absensi_Seluruh_Siswa.pdf');
+            return $pdf->download('Rekap_Absensi_Seluruh_Siswa' . ($subject ? '_' . $subject->nama_pelajaran : '') . '.pdf');
         }
 
-        return Excel::download(new AbsensiExport($data), 'Rekap_Absensi_Seluruh_Siswa.xlsx');
+        return Excel::download(new AbsensiExport($data), 'Rekap_Absensi_Seluruh_Siswa' . ($subject ? '_' . $subject->nama_pelajaran : '') . '.xlsx');
     }
 
     public function exportStudent($id, Request $request)
     {
+        $subjectId = $request->input('subject_id');
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
         $format = $request->input('format', 'pdf');
 
         $siswa = Siswa::with('kelas')->findOrFail($id);
+        $subject = $subjectId ? Subject::findOrFail($subjectId) : null;
+        
         $history = Absensi::where('siswa_id', $id)
             ->whereBetween('tanggal', [$startDate, $endDate])
+            ->when($subjectId, function ($query, $subjectId) {
+                return $query->where('subject_id', $subjectId);
+            })
+            ->with('subject')
             ->orderBy('tanggal', 'desc')
             ->get();
 
@@ -143,14 +166,15 @@ class AbsensiController extends Controller
             'history' => $history,
             'recap' => $recap,
             'startDate' => $startDate,
-            'endDate' => $endDate
+            'endDate' => $endDate,
+            'selectedSubject' => $subject
         ];
 
         if ($format === 'excel') {
-             return Excel::download(new AbsensiExport($data + ['view' => 'admin.absensi.export_student_excel']), 'Absensi_' . $siswa->nama_lengkap . '.xlsx');
+             return Excel::download(new AbsensiExport($data + ['view' => 'admin.absensi.export_student_excel']), 'Absensi_' . $siswa->nama_lengkap . ($subject ? '_' . $subject->nama_pelajaran : '') . '.xlsx');
         }
 
         $pdf = Pdf::loadView('admin.absensi.export_student_pdf', $data);
-        return $pdf->download('Absensi_' . $siswa->nama_lengkap . '.pdf');
+        return $pdf->download('Absensi_' . $siswa->nama_lengkap . ($subject ? '_' . $subject->nama_pelajaran : '') . '.pdf');
     }
 }
