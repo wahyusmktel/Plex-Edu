@@ -62,7 +62,7 @@
             <x-nav-item icon="image" label="Slider Admin" :active="Request::is('slider*')" href="{{ route('slider.index') }}" />
             <x-nav-item icon="calendar_today" label="Kalender" :active="Request::is('calendar*')" href="{{ route('calendar.index') }}" />
             <x-nav-item icon="account_balance" label="Mata Pelajaran" />
-            <x-nav-item icon="record_voice_over" label="Sambutan" />
+            <x-nav-item icon="record_voice_over" label="Sambutan" :active="Request::is('sambutan*')" href="{{ route('sambutan.index') }}" />
 
             <div class="pt-4 mt-4 border-t border-slate-50">
                 <a 
