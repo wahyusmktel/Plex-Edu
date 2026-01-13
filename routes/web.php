@@ -18,6 +18,7 @@ use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ELearningController;
 use App\Http\Controllers\BankSoalController;
 use App\Http\Controllers\TeacherCertificateController;
+use App\Http\Controllers\LibraryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -199,6 +200,19 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/topic/{id}/mute', [ForumController::class, 'toggleMute'])->name('topic.mute');
         Route::post('/topic/{id}/moderate', [ForumController::class, 'moderateTopic'])->name('topic.moderate');
         Route::post('/user/{id}/suspend', [ForumController::class, 'suspendUser'])->name('user.suspend');
+    });
+
+    // E-Library Routes
+    Route::prefix('library')->name('library.')->group(function () {
+        Route::get('/', [LibraryController::class, 'index'])->name('index');
+        Route::get('/create', [LibraryController::class, 'create'])->name('create');
+        Route::post('/store', [LibraryController::class, 'store'])->name('store');
+        Route::delete('/{id}', [LibraryController::class, 'destroy'])->name('destroy');
+        
+        // Loans
+        Route::get('/loans', [LibraryController::class, 'loans'])->name('loans');
+        Route::post('/loans/store', [LibraryController::class, 'storeLoan'])->name('loans.store');
+        Route::post('/loans/{id}/return', [LibraryController::class, 'returnLoan'])->name('loans.return');
     });
 
     // CBT Routes
