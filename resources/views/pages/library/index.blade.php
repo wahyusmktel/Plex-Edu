@@ -67,7 +67,7 @@
 
         <div class="p-6">
             <!-- Books Tab -->
-            <div x-show="tab === 'books'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div x-show="tab === 'books'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                 @forelse($books as $book)
                     <div class="group bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md transition-all">
                         <div class="aspect-[3/4] bg-slate-200 relative">
