@@ -194,14 +194,24 @@
                     <h3 class="font-bold text-slate-800" x-text="$store.reader.title"></h3>
                     <p class="text-xs text-slate-500" x-text="'Halaman ' + ($store.reader.currentPage + 1) + ' dari ' + $store.reader.totalPages"></p>
                 </div>
-                <div class="flex gap-4">
+                <div class="flex gap-2">
+                    <!-- Zoom Controls -->
+                    <button @click="$store.reader.zoomOut()" class="p-2 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#d90d8b] transition-all" title="Perkecil">
+                        <i class="material-icons">zoom_out</i>
+                    </button>
+                    <span class="px-2 py-1 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg" x-text="($store.reader.zoom * 100).toFixed(0) + '%'"></span>
+                    <button @click="$store.reader.zoomIn()" class="p-2 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#d90d8b] transition-all" title="Perbesar">
+                        <i class="material-icons">zoom_in</i>
+                    </button>
+                    <div class="w-px h-6 bg-slate-100 mx-2"></div>
+                    <!-- Page Controls -->
                     <button @click="$store.reader.prev()" class="p-2 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#d90d8b] transition-all">
                         <i class="material-icons">chevron_left</i>
                     </button>
                     <button @click="$store.reader.next()" class="p-2 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#d90d8b] transition-all">
                         <i class="material-icons">chevron_right</i>
                     </button>
-                    <div class="w-px h-6 bg-slate-100"></div>
+                    <div class="w-px h-6 bg-slate-100 mx-2"></div>
                     <button @click="$store.reader.closeModal()" class="p-2 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
                         <i class="material-icons">close</i>
                     </button>
@@ -209,8 +219,11 @@
             </div>
 
             <!-- Reader Container -->
-            <div class="flex-grow bg-slate-100 flex items-center justify-center overflow-hidden p-8 relative">
-                <div id="book-container" class="shadow-2xl opacity-0 transition-opacity duration-500" :class="$store.reader.loading ? 'opacity-0' : 'opacity-100'">
+            <div class="flex-grow bg-slate-100 flex items-center justify-center overflow-auto p-4 relative">
+                <div id="book-container" 
+                    class="transition-all duration-300" 
+                    :class="$store.reader.loading ? 'opacity-0' : 'opacity-100'"
+                    :style="'transform: scale(' + $store.reader.zoom + '); transform-origin: center center;'">
                     <!-- Pages will be rendered here -->
                 </div>
                 
@@ -230,13 +243,26 @@
     .st-page-flip {
         background-color: transparent !important;
     }
-    .page-content {
+    .page {
         background-color: white;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        width: 550px;
+        height: 733px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .page-content {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+    }
+    #book-container {
+        min-width: 1100px;
+        min-height: 733px;
     }
     #book-container canvas {
-        max-width: 100%;
-        height: auto !important;
+        width: 100% !important;
+        height: 100% !important;
     }
     [x-cloak] { display: none !important; }
 </style>
@@ -256,6 +282,7 @@
             totalPages: 0,
             currentPage: 0,
             pageFlip: null,
+            zoom: 1,
 
             async openModal(title, url) {
                 console.log('Reader: Opening', title, url);
@@ -270,10 +297,11 @@
             },
 
             async initReader() {
+                console.log('Reader: Starting initialization...');
                 const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
                 if (!pdfjsLib) {
-                    console.error('Reader: pdf.js not loaded');
-                    alert('Gagal memuat sistem pembaca PDF.');
+                    console.error('Reader: pdf.js not found');
+                    this.loading = false;
                     return;
                 }
                 
@@ -283,14 +311,28 @@
                     const loadingTask = pdfjsLib.getDocument(this.url);
                     const pdf = await loadingTask.promise;
                     this.totalPages = pdf.numPages;
+                    console.log('Reader: PDF loaded, pages:', this.totalPages);
 
-                    const container = document.getElementById('book-container');
-                    if (!container) return;
-                    container.innerHTML = '';
+                    const rootContainer = document.getElementById('book-container');
+                    if (!rootContainer) {
+                        this.loading = false;
+                        return;
+                    }
+                    
+                    // Always start with a clean root
+                    rootContainer.innerHTML = '';
+                    rootContainer.style.opacity = '1';
+                    
+                    // Create a fresh flipbook element
+                    const flipbook = document.createElement('div');
+                    flipbook.style.width = '600px';
+                    flipbook.style.height = '800px';
+                    rootContainer.appendChild(flipbook);
 
+                    console.log('Reader: Rendering pages...');
                     for (let n = 1; n <= this.totalPages; n++) {
                         const page = await pdf.getPage(n);
-                        const scale = 1.5;
+                        const scale = 2; // Higher quality
                         const viewport = page.getViewport({ scale });
 
                         const canvas = document.createElement('canvas');
@@ -306,45 +348,77 @@
                         const pageDiv = document.createElement('div');
                         pageDiv.classList.add('page');
                         pageDiv.appendChild(canvas);
-                        container.appendChild(pageDiv);
+                        flipbook.appendChild(pageDiv);
+                        
+                        page.cleanup();
                     }
 
-                    if (this.pageFlip) this.pageFlip.destroy();
+                    console.log('Reader: DOM ready, starting PageFlip');
 
-                    this.pageFlip = new St.PageFlip(container, {
-                        width: 600,
-                        height: 800,
-                        size: "stretch",
-                        minWidth: 315,
-                        maxWidth: 1000,
-                        minHeight: 420,
-                        maxHeight: 1350,
-                        maxShadowOpacity: 0.5,
-                        showCover: true,
-                        mobileScrollSupport: false
-                    });
+                    if (this.pageFlip) {
+                        try { this.pageFlip.destroy(); } catch(e) {}
+                        this.pageFlip = null;
+                    }
 
-                    this.pageFlip.loadFromHTML(document.querySelectorAll('.page'));
-                    
-                    this.pageFlip.on('flip', (e) => {
-                        this.currentPage = e.data;
-                    });
+                    // Give browser time to recognize new DOM nodes and their sizes
+                    setTimeout(() => {
+                        try {
+                            this.pageFlip = new St.PageFlip(flipbook, {
+                                width: 600,
+                                height: 800,
+                                size: "stretch",
+                                minWidth: 315,
+                                maxWidth: 1000,
+                                minHeight: 420,
+                                maxHeight: 1350,
+                                maxShadowOpacity: 0.5,
+                                showCover: true,
+                                mobileScrollSupport: false,
+                                usePortrait: false, // Force spread if possible
+                                startPage: 0
+                            });
 
-                    this.loading = false;
+                            this.pageFlip.loadFromHTML(flipbook.querySelectorAll('.page'));
+                            
+                            this.pageFlip.on('flip', (e) => {
+                                this.currentPage = e.data;
+                            });
+
+                            this.loading = false;
+                            console.log('Reader: Initialization complete');
+                        } catch (err) {
+                            console.error('PageFlip Error:', err);
+                            this.loading = false;
+                            alert('Gagal menginisialisasi efek buku.');
+                        }
+                    }, 300);
                 } catch (error) {
                     console.error('Reader Error:', error);
                     this.loading = false;
-                    alert('Gagal memuat buku. Pastikan fail PDF valid.');
+                    alert('Gagal memuat buku. Pastikan file PDF valid.');
+                    this.closeModal();
                 }
             },
 
             next() { if (this.pageFlip) this.pageFlip.flipNext(); },
             prev() { if (this.pageFlip) this.pageFlip.flipPrev(); },
 
+            zoomIn() { 
+                if (this.zoom < 2) this.zoom = Math.min(2, this.zoom + 0.1); 
+            },
+            zoomOut() { 
+                if (this.zoom > 0.5) this.zoom = Math.max(0.5, this.zoom - 0.1); 
+            },
+
             closeModal() {
+                console.log('Reader: Closing');
                 this.open = false;
+                this.loading = false;
+                this.zoom = 1;
                 if (this.pageFlip) {
-                    this.pageFlip.destroy();
+                    try {
+                        this.pageFlip.destroy();
+                    } catch(e) { console.warn('PageFlip destroy error', e); }
                     this.pageFlip = null;
                 }
                 const container = document.getElementById('book-container');
