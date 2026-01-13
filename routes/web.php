@@ -203,6 +203,7 @@ Route::middleware(['auth'])->group(function () {
         // Questions
         Route::get('/{id}/questions', [App\Http\Controllers\CbtController::class, 'questions'])->name('questions');
         Route::post('/questions/store', [App\Http\Controllers\CbtController::class, 'storeQuestion'])->name('questions.store');
+        Route::post('/{id}/import-bank', [App\Http\Controllers\CbtController::class, 'importFromBankSoal'])->name('questions.import-bank');
         Route::get('/questions/show/{question_id}', [App\Http\Controllers\CbtController::class, 'showQuestion'])->name('questions.show');
         Route::post('/questions/update/{question_id}', [App\Http\Controllers\CbtController::class, 'updateQuestion'])->name('questions.update');
         Route::delete('/questions/destroy/{question_id}', [App\Http\Controllers\CbtController::class, 'destroyQuestion'])->name('questions.destroy');
