@@ -60,6 +60,7 @@
                     </div>
                 </div>
 
+                @if(auth()->user()->role === 'guru' || auth()->user()->role === 'admin')
                 <div class="mt-8 pt-6 border-t border-slate-50 flex gap-3">
                     <a href="{{ route('elearning.show', $course->id) }}" class="flex-1 py-3 bg-slate-50 text-slate-600 text-xs font-bold rounded-xl text-center hover:bg-indigo-50 hover:text-indigo-500 transition-colors">
                         KELOLA KONTEN
@@ -72,6 +73,13 @@
                         </button>
                     </form>
                 </div>
+                @else
+                <div class="mt-8 pt-6 border-t border-slate-50">
+                    <a href="{{ route('elearning.show', $course->id) }}" class="block w-full py-3 bg-indigo-50 text-indigo-500 text-xs font-black rounded-xl text-center hover:bg-indigo-500 hover:text-white transition-all uppercase tracking-widest">
+                        BUKA KURSUS
+                    </a>
+                </div>
+                @endif
             </div>
         </div>
         @empty

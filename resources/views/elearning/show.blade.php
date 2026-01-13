@@ -28,6 +28,7 @@
                     <p class="text-sm text-slate-400 font-medium">Mata Pelajaran: {{ $elearning->subject->nama_pelajaran }}</p>
                 </div>
             </div>
+            @if(auth()->user()->role === 'guru' || auth()->user()->role === 'admin')
             <button 
                 @click="chapterModalOpen = true"
                 class="flex items-center gap-2 px-6 py-3 bg-slate-800 text-white text-sm font-bold rounded-2xl shadow-lg shadow-slate-200 hover:scale-[1.02] transition-all cursor-pointer"
@@ -35,6 +36,7 @@
                 <i class="material-icons text-lg">playlist_add</i>
                 TAMBAH BAB
             </button>
+            @endif
         </div>
     </div>
 
@@ -56,6 +58,7 @@
                         </div>
                         <h3 class="text-xl font-black text-slate-800 tracking-tight">{{ $chapter->title }}</h3>
                     </div>
+                    @if(auth()->user()->role === 'guru' || auth()->user()->role === 'admin')
                     <div class="flex items-center gap-3">
                         <button 
                             @click="activeChapterId = '{{ $chapter->id }}'; activeChapterTitle = '{{ $chapter->title }}'; moduleModalOpen = true"
@@ -71,11 +74,12 @@
                             </button>
                         </form>
                     </div>
+                    @endif
                 </div>
 
                 <div class="p-8 md:p-10 space-y-4">
                     @forelse($chapter->modules as $module)
-                    <div class="flex items-center justify-between p-5 bg-white border border-slate-50 rounded-2xl hover:border-indigo-100 transition-all group/module">
+                    <a href="{{ route('elearning.module.view', $module->id) }}" class="flex items-center justify-between p-5 bg-white border border-slate-50 rounded-2xl hover:border-indigo-100 hover:shadow-md transition-all group/module">
                         <div class="flex items-center gap-5">
                             <div class="w-10 h-10 rounded-xl flex items-center justify-center 
                                 @if($module->type === 'material') bg-blue-50 text-blue-400 
@@ -102,6 +106,7 @@
                                 </div>
                             </div>
                         </div>
+                        @if(auth()->user()->role === 'guru' || auth()->user()->role === 'admin')
                         <form action="{{ route('elearning.module.destroy', $module->id) }}" method="POST" onsubmit="return confirm('Hapus modul ini?')">
                             @csrf
                             @method('DELETE')
@@ -109,7 +114,10 @@
                                 <i class="material-icons text-sm">close</i>
                             </button>
                         </form>
-                    </div>
+                        @else
+                        <i class="material-icons text-slate-200 group-hover/module:translate-x-1 group-hover/module:text-[#d90d8b] transition-all">arrow_forward</i>
+                        @endif
+                    </a>
                     @empty
                     <div class="py-6 text-center border-2 border-dashed border-slate-50 rounded-[2rem]">
                         <p class="text-xs font-bold text-slate-300 uppercase tracking-widest">Belum ada modul di BAB ini</p>

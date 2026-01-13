@@ -7,6 +7,8 @@ use App\Models\ELearningChapter;
 use App\Models\ELearningModule;
 use App\Models\Subject;
 use App\Models\Cbt;
+use App\Models\Schedule;
+use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -17,24 +19,39 @@ class ELearningController extends Controller
     public function index()
     {
         $user = Auth::user();
-        if ($user->role !== 'guru' && $user->role !== 'admin') {
+        $elearnings = collect();
+
+        if ($user->role === 'siswa') {
+            $siswa = $user->siswa;
+            if (!$siswa) {
+                return redirect()->route('dashboard')->with('error', 'Profil Siswa tidak ditemukan.');
+            }
+
+            $subjectIds = Schedule::where('kelas_id', $siswa->kelas_id)
+                ->pluck('subject_id')
+                ->unique();
+
+            $elearnings = ELearning::with(['subject', 'chapters'])
+                ->whereIn('subject_id', $subjectIds)
+                ->get();
+        } else if ($user->role === 'guru' || $user->role === 'admin') {
+            $fungsionaris = $user->fungsionaris;
+            
+            if ($user->role === 'guru' && !$fungsionaris) {
+                return view('elearning.index', [
+                    'elearnings' => collect(),
+                    'subjects' => Subject::all(),
+                ])->with('error', 'Profil Guru tidak ditemukan. Silakan hubungi Admin.');
+            }
+
+            $elearnings = ELearning::with(['subject', 'chapters'])
+                ->when($user->role === 'guru', function($query) use ($fungsionaris) {
+                    return $query->where('teacher_id', $fungsionaris->id);
+                })
+                ->get();
+        } else {
             return redirect()->route('dashboard')->with('error', 'Akses ditolak.');
         }
-
-        $fungsionaris = $user->fungsionaris;
-        
-        if ($user->role === 'guru' && !$fungsionaris) {
-            return view('elearning.index', [
-                'elearnings' => collect(),
-                'subjects' => Subject::all(),
-            ])->with('error', 'Profil Guru tidak ditemukan. Silakan hubungi Admin.');
-        }
-
-        $elearnings = ELearning::with(['subject', 'chapters'])
-            ->when($user->role === 'guru', function($query) use ($fungsionaris) {
-                return $query->where('teacher_id', $fungsionaris->id);
-            })
-            ->get();
 
         $subjects = Subject::all();
 
@@ -75,7 +92,24 @@ class ELearningController extends Controller
 
     public function show($id)
     {
+        $user = Auth::user();
         $elearning = ELearning::with(['subject', 'chapters.modules.cbt'])->findOrFail($id);
+
+        if ($user->role === 'siswa') {
+            $siswa = $user->siswa;
+            if (!$siswa) {
+                return redirect()->route('dashboard')->with('error', 'Profil Siswa tidak ditemukan.');
+            }
+
+            $hasAccess = Schedule::where('kelas_id', $siswa->kelas_id)
+                ->where('subject_id', $elearning->subject_id)
+                ->exists();
+
+            if (!$hasAccess) {
+                return redirect()->route('elearning.index')->with('error', 'Anda tidak memiliki akses ke e-learning ini.');
+            }
+        }
+
         $cbts = Cbt::orderBy('nama_cbt')->get();
         return view('elearning.show', compact('elearning', 'cbts'));
     }
@@ -155,5 +189,28 @@ class ELearningController extends Controller
         }
         $module->delete();
         return back()->with('success', 'Modul berhasil dihapus.');
+    }
+
+    public function viewModule($id)
+    {
+        $user = Auth::user();
+        $module = ELearningModule::with(['chapter.course.subject', 'cbt'])->findOrFail($id);
+
+        if ($user->role === 'siswa') {
+            $siswa = $user->siswa;
+            if (!$siswa) {
+                return redirect()->route('dashboard')->with('error', 'Profil Siswa tidak ditemukan.');
+            }
+
+            $hasAccess = Schedule::where('kelas_id', $siswa->kelas_id)
+                ->where('subject_id', $module->chapter->course->subject_id)
+                ->exists();
+
+            if (!$hasAccess) {
+                return redirect()->route('elearning.index')->with('error', 'Anda tidak memiliki akses ke modul ini.');
+            }
+        }
+
+        return view('elearning.module', compact('module'));
     }
 }
