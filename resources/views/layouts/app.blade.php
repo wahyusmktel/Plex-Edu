@@ -53,6 +53,7 @@
             <x-nav-item icon="assignment_turned_in" label="E-Raport" :active="Request::is('e-raport*')" href="{{ route('e-raport.index') }}" />
             <x-nav-item icon="menu_book" label="Mata Pelajaran" :active="Request::is('mata-pelajaran*')" href="{{ route('mata-pelajaran.index') }}" />
             <x-nav-item icon="computer" label="CBT" :active="Request::is('cbt*')" href="{{ route('cbt.index') }}" />
+            <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
             <x-nav-item icon="warning" label="Pelanggaran" :active="Request::is('pelanggaran*')" href="{{ route('pelanggaran.index') }}" />
             <x-nav-item icon="article" label="Berita" :active="Request::is('berita*')" href="{{ route('berita.index') }}" />
             <x-nav-item icon="school" label="Sekolah" :active="Request::is('sekolah*')" href="{{ route('sekolah.index') }}" />
@@ -176,5 +177,29 @@
 
     @stack('scripts')
     @yield('scripts')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: "{{ session('success') }}",
+                    confirmButtonColor: '#d90d8b',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: "{{ session('error') }}",
+                    confirmButtonColor: '#d90d8b'
+                });
+            @endif
+        });
+    </script>
 </body>
 </html>

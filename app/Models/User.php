@@ -24,6 +24,7 @@ class User extends Authenticatable
         'username',
         'password',
         'role',
+        'is_suspended_from_forum',
     ];
 
     public function fungsionaris()

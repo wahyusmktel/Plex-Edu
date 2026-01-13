@@ -14,6 +14,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\SambutanController;
 use App\Http\Controllers\EVotingController;
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\ForumController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -146,6 +147,20 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/destroy/{id}', [MataPelajaranController::class, 'destroySchedule'])->name('destroy');
             Route::get('/get-by-kelas/{kelas_id}', [MataPelajaranController::class, 'getSchedulesByKelas'])->name('kelas');
         });
+    });
+
+    // Forum Routes
+    Route::prefix('forum')->name('forum.')->group(function () {
+        Route::get('/', [ForumController::class, 'index'])->name('index');
+        Route::post('/store', [ForumController::class, 'store'])->name('store');
+        Route::get('/{id}', [ForumController::class, 'show'])->name('show');
+        Route::post('/{id}/topic', [ForumController::class, 'storeTopic'])->name('topic.store');
+        Route::get('/topic/{id}', [ForumController::class, 'showTopic'])->name('topic.show');
+        Route::post('/topic/{id}/post', [ForumController::class, 'storePost'])->name('post.store');
+        Route::post('/topic/{id}/bookmark', [ForumController::class, 'toggleBookmark'])->name('topic.bookmark');
+        Route::post('/topic/{id}/mute', [ForumController::class, 'toggleMute'])->name('topic.mute');
+        Route::post('/topic/{id}/moderate', [ForumController::class, 'moderateTopic'])->name('topic.moderate');
+        Route::post('/user/{id}/suspend', [ForumController::class, 'suspendUser'])->name('user.suspend');
     });
 
     // CBT Routes
