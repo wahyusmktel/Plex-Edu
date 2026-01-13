@@ -19,6 +19,7 @@ use App\Http\Controllers\ELearningController;
 use App\Http\Controllers\BankSoalController;
 use App\Http\Controllers\TeacherCertificateController;
 use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -30,9 +31,7 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Fungsionaris Routes
     Route::prefix('fungsionaris')->name('fungsionaris.')->group(function () {
