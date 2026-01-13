@@ -81,13 +81,19 @@
                     <!-- Essay Analysis -->
                     <div class="bg-slate-50 rounded-2xl p-6">
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Status Penilaian</p>
-                        <div class="flex items-center gap-4">
-                            <div class="px-4 py-2 bg-emerald-100 rounded-xl">
-                                <span class="text-sm font-bold text-emerald-600">{{ $q->answers->where('is_graded', true)->count() }} Dinilai</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="px-4 py-2 bg-emerald-100 rounded-xl">
+                                    <span class="text-sm font-bold text-emerald-600">{{ $q->answers->where('is_graded', true)->count() }} Dinilai</span>
+                                </div>
+                                <div class="px-4 py-2 bg-amber-100 rounded-xl">
+                                    <span class="text-sm font-bold text-amber-600">{{ $q->answers->where('is_graded', false)->count() }} Belum Dinilai</span>
+                                </div>
                             </div>
-                            <div class="px-4 py-2 bg-amber-100 rounded-xl">
-                                <span class="text-sm font-bold text-amber-600">{{ $q->answers->where('is_graded', false)->count() }} Belum Dinilai</span>
-                            </div>
+                            <a href="{{ route('cbt.gradeEssay', $q->id) }}" class="flex items-center justify-center gap-2 px-6 py-3 bg-[#ba80e8] hover:bg-[#d90d8b] text-white rounded-xl font-bold transition-all shadow-lg shadow-purple-100 hover:shadow-pink-200">
+                                <i class="material-icons text-sm">edit_note</i>
+                                <span>Nilai Jawaban</span>
+                            </a>
                         </div>
                     </div>
                     @endif

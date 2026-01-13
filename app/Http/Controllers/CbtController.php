@@ -7,6 +7,7 @@ use App\Models\Subject;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\CbtQuestion;
+use App\Models\CbtAnswer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -231,8 +232,45 @@ class CbtController extends Controller
 
     public function analysis($id)
     {
-        $cbt = Cbt::with(['subject', 'questions.options', 'questions.answers', 'sessions'])->findOrFail($id);
+        $cbt = Cbt::with(['subject', 'questions.answers', 'questions.options'])->findOrFail($id);
         return view('admin.cbt.analysis', compact('cbt'));
+    }
+
+    public function gradeEssay($question_id)
+    {
+        $question = CbtQuestion::with(['cbt.subject', 'answers.session.siswa', 'answers.session.cbt'])->findOrFail($question_id);
+        
+        // Ensure it's an essay question
+        if ($question->jenis_soal != 'essay') {
+            return redirect()->back()->with('error', 'Bukan soal esai.');
+        }
+
+        return view('admin.cbt.grade-essay', compact('question'));
+    }
+
+    public function storeGrade(Request $request)
+    {
+        $request->validate([
+            'answer_id' => 'required|exists:cbt_answers,id',
+            'poin' => 'required|integer|min:0',
+        ]);
+
+        $answer = CbtAnswer::with('question', 'session')->findOrFail($request->answer_id);
+
+        if ($request->poin > $answer->question->poin) {
+            return response()->json(['message' => 'Poin tidak boleh melebihi poin maksimal soal (' . $answer->question->poin . ')'], 422);
+        }
+
+        $answer->update([
+            'poin_didapat' => $request->poin,
+            'is_graded' => true
+        ]);
+
+        // Recalculate total score for the session
+        $totalScore = $answer->session->answers->sum('poin_didapat');
+        $answer->session->update(['skor' => $totalScore]);
+
+        return response()->json(['success' => 'Nilai berhasil disimpan']);
     }
 }
 
