@@ -34,7 +34,6 @@ class CbtController extends Controller
             'jam_selesai' => 'required',
             'subject_id' => 'nullable|exists:subjects,id',
             'skor_maksimal' => 'required|integer|min:1',
-            'show_result' => 'nullable|boolean',
         ]);
 
         $data = $request->all();
@@ -60,7 +59,6 @@ class CbtController extends Controller
             'jam_selesai' => 'required',
             'subject_id' => 'nullable|exists:subjects,id',
             'skor_maksimal' => 'required|integer|min:1',
-            'show_result' => 'nullable|boolean',
         ]);
 
         $cbt = Cbt::findOrFail($id);

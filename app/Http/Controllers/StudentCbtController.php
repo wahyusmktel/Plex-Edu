@@ -44,8 +44,8 @@ class StudentCbtController extends Controller
 
         // Check date and time
         $now = now();
-        $startTime = \Carbon\Carbon::parse($cbt->tanggal . ' ' . $cbt->jam_mulai);
-        $endTime = \Carbon\Carbon::parse($cbt->tanggal . ' ' . $cbt->jam_selesai);
+        $startTime = \Carbon\Carbon::parse($cbt->tanggal->format('Y-m-d') . ' ' . $cbt->jam_mulai);
+        $endTime = \Carbon\Carbon::parse($cbt->tanggal->format('Y-m-d') . ' ' . $cbt->jam_selesai);
 
         if ($now->lt($startTime)) {
             return back()->withErrors(['token' => 'Ujian belum dimulai. Dimulai pada ' . $startTime->format('H:i')]);
