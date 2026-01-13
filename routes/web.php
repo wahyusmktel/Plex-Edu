@@ -162,6 +162,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/questions/show/{question_id}', [App\Http\Controllers\CbtController::class, 'showQuestion'])->name('questions.show');
         Route::post('/questions/update/{question_id}', [App\Http\Controllers\CbtController::class, 'updateQuestion'])->name('questions.update');
         Route::delete('/questions/destroy/{question_id}', [App\Http\Controllers\CbtController::class, 'destroyQuestion'])->name('questions.destroy');
+        Route::get('/{id}/results', [App\Http\Controllers\CbtController::class, 'results'])->name('results');
+        Route::get('/{id}/export-excel', [App\Http\Controllers\CbtController::class, 'exportExcel'])->name('exportExcel');
+        Route::get('/{id}/export-pdf', [App\Http\Controllers\CbtController::class, 'exportPdf'])->name('exportPdf');
+        Route::get('/{id}/analysis', [App\Http\Controllers\CbtController::class, 'analysis'])->name('analysis');
     });
 
     // Student CBT Routes
@@ -169,6 +173,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [App\Http\Controllers\StudentCbtController::class, 'index'])->name('index');
         Route::post('/join', [App\Http\Controllers\StudentCbtController::class, 'join'])->name('join');
         Route::get('/exam/{session_id}', [App\Http\Controllers\StudentCbtController::class, 'exam'])->name('exam');
+        Route::post('/exam/{session_id}/save-answer', [App\Http\Controllers\StudentCbtController::class, 'saveAnswer'])->name('saveAnswer');
         Route::post('/exam/{session_id}/submit', [App\Http\Controllers\StudentCbtController::class, 'submit'])->name('submit');
+        Route::get('/result/{session_id}', [App\Http\Controllers\StudentCbtController::class, 'result'])->name('result');
     });
 });

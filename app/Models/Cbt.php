@@ -19,7 +19,13 @@ class Cbt extends Model
         'subject_id',
         'token',
         'skor_maksimal',
+        'show_result',
         'created_by',
+    ];
+
+    protected $casts = [
+        'tanggal' => 'date',
+        'show_result' => 'boolean',
     ];
 
     protected static function boot()

@@ -130,9 +130,14 @@
 
             <!-- Footer Actions -->
             <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
-                <a href="{{ route('cbt.questions', $item->id) }}" class="flex-grow flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#ba80e8] hover:text-white hover:border-[#ba80e8] transition-all">
-                    <i class="material-icons text-lg">quiz</i> BANK SOAL
-                </a>
+                <div class="flex items-center gap-2 flex-grow">
+                    <a href="{{ route('cbt.questions', $item->id) }}" class="flex-grow flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#ba80e8] hover:text-white hover:border-[#ba80e8] transition-all">
+                        <i class="material-icons text-lg">quiz</i> SOAL
+                    </a>
+                    <a href="{{ route('cbt.results', $item->id) }}" class="flex-grow flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all">
+                        <i class="material-icons text-lg">leaderboard</i> HASIL
+                    </a>
+                </div>
                 <div class="flex items-center gap-2">
                     <button @click="editCbt('{{ $item->id }}')" class="w-10 h-10 flex items-center justify-center text-blue-500 bg-white border border-slate-200 hover:bg-blue-50 hover:border-blue-100 rounded-xl transition-all cursor-pointer" title="Edit">
                         <i class="material-icons text-lg">edit</i>
@@ -228,6 +233,27 @@
                     </div>
                     <p class="text-[9px] text-slate-400 font-medium ml-1">Ini akan digunakan sebagai batas validasi jumlah poin pada soal.</p>
                 </div>
+
+                <!-- Show Result Toggle -->
+                <div class="p-6 bg-slate-50 rounded-2xl">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700">Tampilkan Hasil Ujian</label>
+                            <p class="text-[10px] text-slate-400 font-medium mt-1">Jika aktif, siswa dapat melihat hasil dan review jawaban setelah ujian selesai.</p>
+                        </div>
+                        <button 
+                            type="button"
+                            @click="formData.show_result = !formData.show_result"
+                            :class="formData.show_result ? 'bg-emerald-500' : 'bg-slate-300'"
+                            class="relative w-14 h-8 rounded-full transition-colors duration-200 focus:outline-none"
+                        >
+                            <span 
+                                :class="formData.show_result ? 'translate-x-6' : 'translate-x-1'"
+                                class="absolute top-1 left-0 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-200"
+                            ></span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="px-10 py-6 border-t border-slate-50 flex justify-between items-center bg-white sticky bottom-0 z-20">
@@ -263,7 +289,8 @@
                 jam_mulai: '07:00',
                 jam_selesai: '09:00',
                 subject_id: '',
-                skor_maksimal: 100
+                skor_maksimal: 100,
+                show_result: true
             },
 
             init() {},
@@ -277,7 +304,8 @@
                     jam_mulai: '07:00',
                     jam_selesai: '09:00',
                     subject_id: '',
-                    skor_maksimal: 100
+                    skor_maksimal: 100,
+                    show_result: true
                 };
                 this.openModal = true;
             },
@@ -291,7 +319,8 @@
                         jam_mulai: data.jam_mulai.substring(0, 5),
                         jam_selesai: data.jam_selesai.substring(0, 5),
                         subject_id: data.subject_id || '',
-                        skor_maksimal: data.skor_maksimal
+                        skor_maksimal: data.skor_maksimal,
+                        show_result: data.show_result ?? true
                     };
                     this.editMode = true;
                     this.openModal = true;

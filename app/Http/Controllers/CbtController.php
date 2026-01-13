@@ -34,9 +34,11 @@ class CbtController extends Controller
             'jam_selesai' => 'required',
             'subject_id' => 'nullable|exists:subjects,id',
             'skor_maksimal' => 'required|integer|min:1',
+            'show_result' => 'nullable|boolean',
         ]);
 
         $data = $request->all();
+        $data['show_result'] = $request->boolean('show_result');
         $data['created_by'] = Auth::id();
 
         Cbt::create($data);
@@ -58,10 +60,13 @@ class CbtController extends Controller
             'jam_selesai' => 'required',
             'subject_id' => 'nullable|exists:subjects,id',
             'skor_maksimal' => 'required|integer|min:1',
+            'show_result' => 'nullable|boolean',
         ]);
 
         $cbt = Cbt::findOrFail($id);
-        $cbt->update($request->all());
+        $data = $request->all();
+        $data['show_result'] = $request->boolean('show_result');
+        $cbt->update($data);
 
         return response()->json(['success' => 'CBT berhasil diperbarui']);
     }
@@ -171,4 +176,32 @@ class CbtController extends Controller
         $question->delete();
         return response()->json(['success' => 'Soal berhasil dihapus']);
     }
+
+    public function results($id)
+    {
+        $cbt = Cbt::with(['subject', 'sessions.siswa', 'sessions.answers', 'questions'])->findOrFail($id);
+        return view('admin.cbt.results', compact('cbt'));
+    }
+
+    public function exportExcel($id)
+    {
+        $cbt = Cbt::with(['subject', 'sessions.siswa', 'sessions.answers', 'questions'])->findOrFail($id);
+        
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\CbtResultsExport($cbt), 'hasil_cbt_' . str_replace(' ', '_', $cbt->nama_cbt) . '.xlsx');
+    }
+
+    public function exportPdf($id)
+    {
+        $cbt = Cbt::with(['subject', 'sessions.siswa', 'sessions.answers', 'questions'])->findOrFail($id);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.cbt-results', compact('cbt'));
+        return $pdf->download('hasil_cbt_' . str_replace(' ', '_', $cbt->nama_cbt) . '.pdf');
+    }
+
+    public function analysis($id)
+    {
+        $cbt = Cbt::with(['subject', 'questions.options', 'questions.answers', 'sessions'])->findOrFail($id);
+        return view('admin.cbt.analysis', compact('cbt'));
+    }
 }
+
