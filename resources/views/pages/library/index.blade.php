@@ -85,13 +85,11 @@
                                     class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-[#d90d8b] hover:text-white transition-colors cursor-pointer shadow-lg outline-none border-none">
                                     <i class="material-icons">visibility</i>
                                 </button>
-                                <form action="{{ route('library.destroy', $book->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="w-10 h-10 rounded-full bg-white text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-lg cursor-pointer">
-                                        <i class="material-icons">delete</i>
-                                    </button>
-                                </form>
+                                <button type="button" 
+                                    @click="deleteItem('{{ $book->id }}', '{{ addslashes($book->title) }}')"
+                                    class="w-10 h-10 rounded-full bg-white text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-lg cursor-pointer">
+                                    <i class="material-icons">delete</i>
+                                </button>
                             </div>
                         </div>
                         <div class="p-4">
@@ -122,13 +120,9 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <audio src="{{ asset('storage/' . $audio->file_path) }}" controls class="h-8 max-w-[200px]"></audio>
-                            <form action="{{ route('library.destroy', $audio->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                                    <i class="material-icons">delete</i>
-                                </button>
-                            </form>
+                            <button type="button" @click="deleteItem('{{ $audio->id }}', '{{ addslashes($audio->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
+                                <i class="material-icons">delete</i>
+                            </button>
                         </div>
                     </div>
                 @empty
@@ -146,9 +140,11 @@
                         <div class="aspect-video bg-black relative">
                             <video src="{{ asset('storage/' . $video->file_path) }}" class="w-full h-full object-cover"></video>
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                <a href="{{ asset('storage/' . $video->file_path) }}" target="_blank" class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-[#d90d8b] hover:text-white transition-colors shadow-lg">
+                                <button type="button" 
+                                    @click="$store.videoPlayer.openModal('{{ addslashes($video->title) }}', '{{ asset('storage/' . $video->file_path) }}')"
+                                    class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-[#d90d8b] hover:text-white transition-colors shadow-lg cursor-pointer">
                                     <i class="material-icons text-3xl">play_arrow</i>
-                                </a>
+                                </button>
                             </div>
                         </div>
                         <div class="p-4 flex items-center justify-between">
@@ -156,13 +152,9 @@
                                 <h4 class="font-bold text-slate-800 line-clamp-1">{{ $video->title }}</h4>
                                 <p class="text-xs text-slate-500 mt-1">{{ $video->author }}</p>
                             </div>
-                            <form action="{{ route('library.destroy', $video->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                                    <i class="material-icons text-xl">delete</i>
-                                </button>
-                            </form>
+                            <button type="button" @click="deleteItem('{{ $video->id }}', '{{ addslashes($video->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
+                                <i class="material-icons text-xl">delete</i>
+                            </button>
                         </div>
                     </div>
                 @empty
@@ -187,7 +179,8 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
     >
-        <div class="relative w-full max-w-6xl h-[90vh] bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl" @click.away="$store.reader.closeModal()">
+        <div class="relative w-full h-full bg-white overflow-hidden flex flex-col shadow-2xl transition-all duration-300"
+             :class="$store.reader.fullscreen ? 'rounded-none' : 'max-w-6xl max-h-[90vh] rounded-3xl m-4'">
             <!-- Modal Header -->
             <div class="flex items-center justify-between px-8 py-4 border-b border-slate-100 bg-white">
                 <div>
@@ -212,6 +205,10 @@
                         <i class="material-icons">chevron_right</i>
                     </button>
                     <div class="w-px h-6 bg-slate-100 mx-2"></div>
+                    <!-- Fullscreen Toggle -->
+                    <button @click="$store.reader.fullscreen = !$store.reader.fullscreen" class="p-2 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#d90d8b] transition-all" title="Layar Penuh">
+                        <i class="material-icons" x-text="$store.reader.fullscreen ? 'fullscreen_exit' : 'fullscreen'"></i>
+                    </button>
                     <button @click="$store.reader.closeModal()" class="p-2 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
                         <i class="material-icons">close</i>
                     </button>
@@ -232,6 +229,39 @@
                     <div class="w-12 h-12 border-4 border-[#d90d8b]/20 border-t-[#d90d8b] rounded-full animate-spin mb-4"></div>
                     <p class="text-sm font-bold text-[#d90d8b] animate-pulse">Menyiapkan Buku...</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div 
+        x-show="$store.videoPlayer && $store.videoPlayer.open" 
+        x-cloak
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div class="relative w-full max-w-5xl bg-slate-900 rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 bg-slate-800">
+                <h3 class="font-bold text-white" x-text="$store.videoPlayer.title"></h3>
+                <button @click="$store.videoPlayer.closeModal()" class="p-2 rounded-xl hover:bg-slate-700 text-slate-400 hover:text-white transition-all">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+            <!-- Video Player -->
+            <div class="aspect-video bg-black">
+                <video id="video-player" 
+                    :src="$store.videoPlayer.url" 
+                    class="w-full h-full" 
+                    controls 
+                    autoplay
+                    x-ref="videoElement">
+                </video>
             </div>
         </div>
     </div>
@@ -283,6 +313,7 @@
             currentPage: 0,
             pageFlip: null,
             zoom: 1,
+            fullscreen: false,
 
             async openModal(title, url) {
                 console.log('Reader: Opening', title, url);
@@ -415,6 +446,7 @@
                 this.open = false;
                 this.loading = false;
                 this.zoom = 1;
+                this.fullscreen = false;
                 if (this.pageFlip) {
                     try {
                         this.pageFlip.destroy();
@@ -426,13 +458,62 @@
             }
         };
 
+        const videoStoreData = {
+            open: false,
+            title: '',
+            url: '',
+
+            openModal(title, url) {
+                this.title = title;
+                this.url = url;
+                this.open = true;
+            },
+
+            closeModal() {
+                this.open = false;
+                this.url = '';
+                const video = document.getElementById('video-player');
+                if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                }
+            }
+        };
+
         if (window.Alpine) {
             Alpine.store('reader', storeData);
+            Alpine.store('videoPlayer', videoStoreData);
         } else {
             document.addEventListener('alpine:init', () => {
                 Alpine.store('reader', storeData);
+                Alpine.store('videoPlayer', videoStoreData);
             });
         }
+    }
+
+    function deleteItem(id, title) {
+        Swal.fire({
+            title: 'Hapus Koleksi?',
+            html: `Apakah Anda yakin ingin menghapus <strong>"${title}"</strong>?<br>Tindakan ini tidak dapat dibatalkan.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d90d8b',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/library/${id}`;
+                form.innerHTML = `
+                    @csrf
+                    @method('DELETE')
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
     }
 
     initLibraryReader();
