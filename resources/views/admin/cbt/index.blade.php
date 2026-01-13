@@ -285,18 +285,34 @@
 
                     <!-- Siswa Selection (shown when participant_type = siswa) -->
                     <template x-if="formData.participant_type === 'siswa'">
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Siswa <span class="text-red-500">*</span></label>
-                            <div class="max-h-64 overflow-y-auto bg-slate-50 rounded-2xl p-4 space-y-2 custom-scrollbar">
-                                @foreach($siswaList as $siswa)
-                                <label class="flex items-center gap-3 p-3 hover:bg-white rounded-xl cursor-pointer transition-colors">
-                                    <input type="checkbox" value="{{ $siswa->id }}" x-model="formData.selected_siswa" class="w-5 h-5 rounded border-slate-300 text-[#d90d8b] focus:ring-[#ba80e8]">
-                                    <div class="flex-grow">
-                                        <p class="font-bold text-slate-700 text-sm">{{ $siswa->nama_lengkap }}</p>
-                                        <p class="text-[10px] text-slate-400">{{ $siswa->nis }} • {{ $siswa->kelas->nama ?? '-' }}</p>
-                                    </div>
-                                </label>
-                                @endforeach
+                        <div class="space-y-4">
+                            <!-- Class Filter for Students -->
+                            <div class="space-y-2">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Filter Kelas</label>
+                                <select x-model="formData.studentClassFilter" class="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
+                                    <option value="">-- Tampilkan Semua Kelas --</option>
+                                    @foreach($kelasList as $kelas)
+                                        <option value="{{ $kelas->id }}">{{ $kelas->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Siswa <span class="text-red-500">*</span></label>
+                                <div class="max-h-64 overflow-y-auto bg-slate-50 rounded-2xl p-4 space-y-2 custom-scrollbar">
+                                    @foreach($siswaList as $siswa)
+                                    <label 
+                                        x-show="!formData.studentClassFilter || formData.studentClassFilter == '{{ $siswa->kelas_id }}'"
+                                        class="flex items-center gap-3 p-3 hover:bg-white rounded-xl cursor-pointer transition-colors"
+                                    >
+                                        <input type="checkbox" value="{{ $siswa->id }}" x-model="formData.selected_siswa" class="w-5 h-5 rounded border-slate-300 text-[#d90d8b] focus:ring-[#ba80e8]">
+                                        <div class="flex-grow">
+                                            <p class="font-bold text-slate-700 text-sm">{{ $siswa->nama_lengkap }}</p>
+                                            <p class="text-[10px] text-slate-400">{{ $siswa->nis }} • {{ $siswa->kelas->nama ?? '-' }}</p>
+                                        </div>
+                                    </label>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -340,7 +356,8 @@
                 show_result: true,
                 participant_type: 'all',
                 selected_kelas: [],
-                selected_siswa: []
+                selected_siswa: [],
+                studentClassFilter: ''
             },
 
             init() {},
@@ -358,7 +375,8 @@
                     show_result: true,
                     participant_type: 'all',
                     selected_kelas: [],
-                    selected_siswa: []
+                    selected_siswa: [],
+                    studentClassFilter: ''
                 };
                 this.openModal = true;
             },
@@ -376,7 +394,8 @@
                         show_result: data.show_result ?? true,
                         participant_type: data.participant_type || 'all',
                         selected_kelas: data.allowed_kelas ? data.allowed_kelas.map(k => k.id) : [],
-                        selected_siswa: data.allowed_siswas ? data.allowed_siswas.map(s => s.id) : []
+                        selected_siswa: data.allowed_siswas ? data.allowed_siswas.map(s => s.id) : [],
+                        studentClassFilter: ''
                     };
                     this.editMode = true;
                     this.openModal = true;

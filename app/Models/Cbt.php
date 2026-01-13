@@ -71,12 +71,12 @@ class Cbt extends Model
 
     public function allowedKelas()
     {
-        return $this->belongsToMany(Kelas::class, 'cbt_kelas', 'cbt_id', 'kelas_id');
+        return $this->belongsToMany(Kelas::class, 'cbt_kelas', 'cbt_id', 'kelas_id')->withTimestamps();
     }
 
     public function allowedSiswas()
     {
-        return $this->belongsToMany(Siswa::class, 'cbt_siswa', 'cbt_id', 'siswa_id');
+        return $this->belongsToMany(Siswa::class, 'cbt_siswa', 'cbt_id', 'siswa_id')->withTimestamps();
     }
 
     public function canParticipate(Siswa $siswa): bool

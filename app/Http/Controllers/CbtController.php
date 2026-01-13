@@ -63,7 +63,9 @@ class CbtController extends Controller
     public function show($id)
     {
         $cbt = Cbt::with(['subject', 'allowedKelas', 'allowedSiswas'])->findOrFail($id);
-        return response()->json($cbt);
+        $data = $cbt->toArray();
+        $data['tanggal'] = $cbt->tanggal->format('Y-m-d');
+        return response()->json($data);
     }
 
     public function update(Request $request, $id)
