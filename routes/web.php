@@ -17,6 +17,7 @@ use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ELearningController;
 use App\Http\Controllers\BankSoalController;
+use App\Http\Controllers\TeacherCertificateController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -176,6 +177,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/question', [BankSoalController::class, 'storeQuestion'])->name('question.store');
         Route::post('/question/{question_id}', [BankSoalController::class, 'updateQuestion'])->name('question.update');
         Route::delete('/question/{question_id}', [BankSoalController::class, 'destroyQuestion'])->name('question.destroy');
+    });
+
+    // Teacher Certificate Routes
+    Route::prefix('certificates')->name('certificates.')->group(function () {
+        Route::get('/', [TeacherCertificateController::class, 'index'])->name('index');
+        Route::post('/store', [TeacherCertificateController::class, 'store'])->name('store');
+        Route::post('/{id}/update', [TeacherCertificateController::class, 'update'])->name('update');
+        Route::delete('/{id}', [TeacherCertificateController::class, 'destroy'])->name('destroy');
     });
 
     // Forum Routes
