@@ -54,6 +54,7 @@
             <x-nav-item icon="menu_book" label="Mata Pelajaran" :active="Request::is('mata-pelajaran*')" href="{{ route('mata-pelajaran.index') }}" />
             <x-nav-item icon="computer" label="CBT" :active="Request::is('cbt*')" href="{{ route('cbt.index') }}" />
             <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
+            <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />
             <x-nav-item icon="warning" label="Pelanggaran" :active="Request::is('pelanggaran*')" href="{{ route('pelanggaran.index') }}" />
             <x-nav-item icon="article" label="Berita" :active="Request::is('berita*')" href="{{ route('berita.index') }}" />
             <x-nav-item icon="school" label="Sekolah" :active="Request::is('sekolah*')" href="{{ route('sekolah.index') }}" />

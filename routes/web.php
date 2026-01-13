@@ -15,6 +15,7 @@ use App\Http\Controllers\SambutanController;
 use App\Http\Controllers\EVotingController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\ForumController;
+use App\Http\Controllers\ELearningController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -147,6 +148,18 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/destroy/{id}', [MataPelajaranController::class, 'destroySchedule'])->name('destroy');
             Route::get('/get-by-kelas/{kelas_id}', [MataPelajaranController::class, 'getSchedulesByKelas'])->name('kelas');
         });
+    });
+
+    // E-Learning Routes
+    Route::prefix('elearning')->name('elearning.')->group(function () {
+        Route::get('/', [ELearningController::class, 'index'])->name('index');
+        Route::post('/store', [ELearningController::class, 'store'])->name('store');
+        Route::get('/{id}', [ELearningController::class, 'show'])->name('show');
+        Route::delete('/{id}', [ELearningController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/chapter', [ELearningController::class, 'storeChapter'])->name('chapter.store');
+        Route::delete('/chapter/{id}', [ELearningController::class, 'destroyChapter'])->name('chapter.destroy');
+        Route::post('/chapter/{chapter_id}/module', [ELearningController::class, 'storeModule'])->name('module.store');
+        Route::delete('/module/{id}', [ELearningController::class, 'destroyModule'])->name('module.destroy');
     });
 
     // Forum Routes
