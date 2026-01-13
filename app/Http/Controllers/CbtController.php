@@ -1,0 +1,174 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Cbt;
+use App\Models\Subject;
+use App\Models\CbtQuestion;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
+class CbtController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Cbt::with(['subject', 'creator']);
+        
+        if ($request->has('search')) {
+            $query->where('nama_cbt', 'like', '%' . $request->search . '%');
+        }
+
+        $cbts = $query->paginate(10)->withQueryString();
+        $subjects = Subject::where('is_active', true)->get();
+
+        return view('admin.cbt.index', compact('cbts', 'subjects'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama_cbt' => 'required|string|max:255',
+            'tanggal' => 'required|date',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
+            'subject_id' => 'nullable|exists:subjects,id',
+            'skor_maksimal' => 'required|integer|min:1',
+        ]);
+
+        $data = $request->all();
+        $data['created_by'] = Auth::id();
+
+        Cbt::create($data);
+
+        return response()->json(['success' => 'CBT berhasil ditambahkan']);
+    }
+
+    public function show($id)
+    {
+        return response()->json(Cbt::with('subject')->findOrFail($id));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama_cbt' => 'required|string|max:255',
+            'tanggal' => 'required|date',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
+            'subject_id' => 'nullable|exists:subjects,id',
+            'skor_maksimal' => 'required|integer|min:1',
+        ]);
+
+        $cbt = Cbt::findOrFail($id);
+        $cbt->update($request->all());
+
+        return response()->json(['success' => 'CBT berhasil diperbarui']);
+    }
+
+    public function destroy($id)
+    {
+        Cbt::destroy($id);
+        return response()->json(['success' => 'CBT berhasil dihapus']);
+    }
+
+    public function questions($id)
+    {
+        $cbt = Cbt::with(['subject', 'questions.options'])->findOrFail($id);
+        return view('admin.cbt.questions', compact('cbt'));
+    }
+
+    public function storeQuestion(Request $request)
+    {
+        $request->validate([
+            'cbt_id' => 'required|exists:cbts,id',
+            'jenis_soal' => 'required|in:pilihan_ganda,essay',
+            'pertanyaan' => 'required|string',
+            'poin' => 'required|integer|min:0',
+            'gambar' => 'nullable|image|max:2048',
+            'options' => 'nullable|array',
+            'options.*' => 'nullable|string',
+            'correct_option' => 'nullable|integer'
+        ]);
+
+        // Max score validation
+        $cbt = Cbt::findOrFail($request->cbt_id);
+        $currentTotalPoin = $cbt->questions()->sum('poin');
+        if ($currentTotalPoin + $request->poin > $cbt->skor_maksimal) {
+            return response()->json(['message' => 'Total poin melebihi skor maksimal CBT ' . $cbt->skor_maksimal], 422);
+        }
+
+        $data = $request->only(['cbt_id', 'jenis_soal', 'pertanyaan', 'poin']);
+        if ($request->hasFile('gambar')) {
+            $data['gambar'] = $request->file('gambar')->store('cbt/questions', 'public');
+        }
+
+        $question = $cbt->questions()->create($data);
+
+        if ($request->jenis_soal == 'pilihan_ganda' && $request->has('options')) {
+            foreach ($request->options as $index => $optText) {
+                if ($optText) {
+                    $question->options()->create([
+                        'opsi' => $optText,
+                        'is_correct' => $request->correct_option == $index
+                    ]);
+                }
+            }
+        }
+
+        return response()->json(['success' => 'Soal berhasil ditambahkan']);
+    }
+
+    public function showQuestion($question_id)
+    {
+        return response()->json(CbtQuestion::with('options')->findOrFail($question_id));
+    }
+
+    public function updateQuestion(Request $request, $question_id)
+    {
+        $question = CbtQuestion::findOrFail($question_id);
+        $cbt = $question->cbt;
+
+        $request->validate([
+            'pertanyaan' => 'required|string',
+            'poin' => 'required|integer|min:0',
+            'gambar' => 'nullable|image|max:2048',
+        ]);
+
+        // Max score validation for update
+        $currentTotalPoin = $cbt->questions()->where('id', '!=', $question_id)->sum('poin');
+        if ($currentTotalPoin + $request->poin > $cbt->skor_maksimal) {
+            return response()->json(['message' => 'Total poin melebihi skor maksimal CBT ' . $cbt->skor_maksimal], 422);
+        }
+
+        $data = $request->only(['pertanyaan', 'poin']);
+        if ($request->hasFile('gambar')) {
+            if ($question->gambar) Storage::disk('public')->delete($question->gambar);
+            $data['gambar'] = $request->file('gambar')->store('cbt/questions', 'public');
+        }
+
+        $question->update($data);
+
+        if ($question->jenis_soal == 'pilihan_ganda' && $request->has('options')) {
+            $question->options()->delete();
+            foreach ($request->options as $index => $optText) {
+                if ($optText) {
+                    $question->options()->create([
+                        'opsi' => $optText,
+                        'is_correct' => $request->correct_option == $index
+                    ]);
+                }
+            }
+        }
+
+        return response()->json(['success' => 'Soal berhasil diperbarui']);
+    }
+
+    public function destroyQuestion($question_id)
+    {
+        $question = CbtQuestion::findOrFail($question_id);
+        if ($question->gambar) Storage::disk('public')->delete($question->gambar);
+        $question->delete();
+        return response()->json(['success' => 'Soal berhasil dihapus']);
+    }
+}

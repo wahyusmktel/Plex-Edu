@@ -147,4 +147,28 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/get-by-kelas/{kelas_id}', [MataPelajaranController::class, 'getSchedulesByKelas'])->name('kelas');
         });
     });
+
+    // CBT Routes
+    Route::prefix('cbt')->name('cbt.')->group(function () {
+        Route::get('/', [App\Http\Controllers\CbtController::class, 'index'])->name('index');
+        Route::post('/store', [App\Http\Controllers\CbtController::class, 'store'])->name('store');
+        Route::get('/show/{id}', [App\Http\Controllers\CbtController::class, 'show'])->name('show');
+        Route::post('/update/{id}', [App\Http\Controllers\CbtController::class, 'update'])->name('update');
+        Route::delete('/destroy/{id}', [App\Http\Controllers\CbtController::class, 'destroy'])->name('destroy');
+        
+        // Questions
+        Route::get('/{id}/questions', [App\Http\Controllers\CbtController::class, 'questions'])->name('questions');
+        Route::post('/questions/store', [App\Http\Controllers\CbtController::class, 'storeQuestion'])->name('questions.store');
+        Route::get('/questions/show/{question_id}', [App\Http\Controllers\CbtController::class, 'showQuestion'])->name('questions.show');
+        Route::post('/questions/update/{question_id}', [App\Http\Controllers\CbtController::class, 'updateQuestion'])->name('questions.update');
+        Route::delete('/questions/destroy/{question_id}', [App\Http\Controllers\CbtController::class, 'destroyQuestion'])->name('questions.destroy');
+    });
+
+    // Student CBT Routes
+    Route::prefix('test')->name('test.')->group(function () {
+        Route::get('/', [App\Http\Controllers\StudentCbtController::class, 'index'])->name('index');
+        Route::post('/join', [App\Http\Controllers\StudentCbtController::class, 'join'])->name('join');
+        Route::get('/exam/{session_id}', [App\Http\Controllers\StudentCbtController::class, 'exam'])->name('exam');
+        Route::post('/exam/{session_id}/submit', [App\Http\Controllers\StudentCbtController::class, 'submit'])->name('submit');
+    });
 });
