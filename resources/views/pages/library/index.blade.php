@@ -3,7 +3,7 @@
 @section('title', 'E-Library - Literasia')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{ tab: 'books' }">
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -52,7 +52,7 @@
     </div>
 
     <!-- Tabs Section -->
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" x-data="{ tab: 'books' }">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div class="flex border-b border-slate-100 px-4">
             <button @click="tab = 'books'" :class="tab === 'books' ? 'text-[#d90d8b] border-[#d90d8b]' : 'text-slate-400 border-transparent'" class="px-6 py-4 text-sm font-bold border-b-2 transition-all cursor-pointer">
                 E-BOOK (PDF)
@@ -78,14 +78,17 @@
                                     <i class="material-icons text-5xl">book</i>
                                 </div>
                             @endif
-                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                <a href="{{ asset('storage/' . $book->file_path) }}" target="_blank" class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-[#d90d8b] hover:text-white transition-colors">
+                            <!-- Overlay actions -->
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-10">
+                                <button type="button" 
+                                    @click="$store.reader.openModal('{{ addslashes($book->title) }}', '{{ asset('storage/' . $book->file_path) }}')" 
+                                    class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-[#d90d8b] hover:text-white transition-colors cursor-pointer shadow-lg outline-none border-none">
                                     <i class="material-icons">visibility</i>
-                                </a>
+                                </button>
                                 <form action="{{ route('library.destroy', $book->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="w-10 h-10 rounded-full bg-white text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors">
+                                    <button type="submit" class="w-10 h-10 rounded-full bg-white text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-lg cursor-pointer">
                                         <i class="material-icons">delete</i>
                                     </button>
                                 </form>
@@ -171,5 +174,193 @@
             </div>
         </div>
     </div>
+
+    <!-- Reader Modal -->
+    <div 
+        x-show="$store.reader && $store.reader.open" 
+        x-cloak
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div class="relative w-full max-w-6xl h-[90vh] bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl" @click.away="$store.reader.closeModal()">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-8 py-4 border-b border-slate-100 bg-white">
+                <div>
+                    <h3 class="font-bold text-slate-800" x-text="$store.reader.title"></h3>
+                    <p class="text-xs text-slate-500" x-text="'Halaman ' + ($store.reader.currentPage + 1) + ' dari ' + $store.reader.totalPages"></p>
+                </div>
+                <div class="flex gap-4">
+                    <button @click="$store.reader.prev()" class="p-2 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#d90d8b] transition-all">
+                        <i class="material-icons">chevron_left</i>
+                    </button>
+                    <button @click="$store.reader.next()" class="p-2 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#d90d8b] transition-all">
+                        <i class="material-icons">chevron_right</i>
+                    </button>
+                    <div class="w-px h-6 bg-slate-100"></div>
+                    <button @click="$store.reader.closeModal()" class="p-2 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
+                        <i class="material-icons">close</i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reader Container -->
+            <div class="flex-grow bg-slate-100 flex items-center justify-center overflow-hidden p-8 relative">
+                <div id="book-container" class="shadow-2xl opacity-0 transition-opacity duration-500" :class="$store.reader.loading ? 'opacity-0' : 'opacity-100'">
+                    <!-- Pages will be rendered here -->
+                </div>
+                
+                <!-- Loading State -->
+                <div x-show="$store.reader.loading" class="absolute inset-0 flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm z-50">
+                    <div class="w-12 h-12 border-4 border-[#d90d8b]/20 border-t-[#d90d8b] rounded-full animate-spin mb-4"></div>
+                    <p class="text-sm font-bold text-[#d90d8b] animate-pulse">Menyiapkan Buku...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+@endsection
+
+@section('styles')
+<style>
+    .st-page-flip {
+        background-color: transparent !important;
+    }
+    .page-content {
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #book-container canvas {
+        max-width: 100%;
+        height: auto !important;
+    }
+    [x-cloak] { display: none !important; }
+</style>
+@endsection
+
+@section('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+
+<script>
+    function initLibraryReader() {
+        const storeData = {
+            open: false,
+            title: '',
+            url: '',
+            loading: false,
+            totalPages: 0,
+            currentPage: 0,
+            pageFlip: null,
+
+            async openModal(title, url) {
+                console.log('Reader: Opening', title, url);
+                this.title = title;
+                this.url = url;
+                this.open = true;
+                this.loading = true;
+                this.currentPage = 0;
+                
+                // Allow modal to show before heavy PDF processing
+                setTimeout(() => this.initReader(), 300);
+            },
+
+            async initReader() {
+                const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
+                if (!pdfjsLib) {
+                    console.error('Reader: pdf.js not loaded');
+                    alert('Gagal memuat sistem pembaca PDF.');
+                    return;
+                }
+                
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+                try {
+                    const loadingTask = pdfjsLib.getDocument(this.url);
+                    const pdf = await loadingTask.promise;
+                    this.totalPages = pdf.numPages;
+
+                    const container = document.getElementById('book-container');
+                    if (!container) return;
+                    container.innerHTML = '';
+
+                    for (let n = 1; n <= this.totalPages; n++) {
+                        const page = await pdf.getPage(n);
+                        const scale = 1.5;
+                        const viewport = page.getViewport({ scale });
+
+                        const canvas = document.createElement('canvas');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        canvas.classList.add('page-content');
+
+                        await page.render({
+                            canvasContext: canvas.getContext('2d'),
+                            viewport: viewport
+                        }).promise;
+
+                        const pageDiv = document.createElement('div');
+                        pageDiv.classList.add('page');
+                        pageDiv.appendChild(canvas);
+                        container.appendChild(pageDiv);
+                    }
+
+                    if (this.pageFlip) this.pageFlip.destroy();
+
+                    this.pageFlip = new St.PageFlip(container, {
+                        width: 600,
+                        height: 800,
+                        size: "stretch",
+                        minWidth: 315,
+                        maxWidth: 1000,
+                        minHeight: 420,
+                        maxHeight: 1350,
+                        maxShadowOpacity: 0.5,
+                        showCover: true,
+                        mobileScrollSupport: false
+                    });
+
+                    this.pageFlip.loadFromHTML(document.querySelectorAll('.page'));
+                    
+                    this.pageFlip.on('flip', (e) => {
+                        this.currentPage = e.data;
+                    });
+
+                    this.loading = false;
+                } catch (error) {
+                    console.error('Reader Error:', error);
+                    this.loading = false;
+                    alert('Gagal memuat buku. Pastikan fail PDF valid.');
+                }
+            },
+
+            next() { if (this.pageFlip) this.pageFlip.flipNext(); },
+            prev() { if (this.pageFlip) this.pageFlip.flipPrev(); },
+
+            closeModal() {
+                this.open = false;
+                if (this.pageFlip) {
+                    this.pageFlip.destroy();
+                    this.pageFlip = null;
+                }
+                const container = document.getElementById('book-container');
+                if (container) container.innerHTML = '';
+            }
+        };
+
+        if (window.Alpine) {
+            Alpine.store('reader', storeData);
+        } else {
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('reader', storeData);
+            });
+        }
+    }
+
+    initLibraryReader();
+</script>
 @endsection
