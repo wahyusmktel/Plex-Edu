@@ -23,6 +23,13 @@ class ELearningController extends Controller
 
         $fungsionaris = $user->fungsionaris;
         
+        if ($user->role === 'guru' && !$fungsionaris) {
+            return view('elearning.index', [
+                'elearnings' => collect(),
+                'subjects' => Subject::all(),
+            ])->with('error', 'Profil Guru tidak ditemukan. Silakan hubungi Admin.');
+        }
+
         $elearnings = ELearning::with(['subject', 'chapters'])
             ->when($user->role === 'guru', function($query) use ($fungsionaris) {
                 return $query->where('teacher_id', $fungsionaris->id);
