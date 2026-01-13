@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ELearning;
 use App\Models\ELearningChapter;
 use App\Models\ELearningModule;
+use App\Models\ELearningProgress;
+use App\Models\CbtSession;
 use App\Models\Subject;
 use App\Models\Cbt;
 use App\Models\Schedule;
@@ -31,9 +33,42 @@ class ELearningController extends Controller
                 ->pluck('subject_id')
                 ->unique();
 
-            $elearnings = ELearning::with(['subject', 'chapters'])
+            $elearnings = ELearning::with(['subject', 'chapters.modules'])
                 ->whereIn('subject_id', $subjectIds)
-                ->get();
+                ->get()
+                ->map(function ($course) use ($siswa) {
+                    $totalModules = $course->chapters->flatMap->modules->count();
+                    if ($totalModules === 0) {
+                        $course->progress_percentage = 0;
+                        return $course;
+                    }
+
+                    $completedModuleIds = ELearningProgress::where('siswa_id', $siswa->id)
+                        ->whereIn('module_id', $course->chapters->flatMap->modules->pluck('id'))
+                        ->pluck('module_id')
+                        ->toArray();
+
+                    $cbtIds = $course->chapters->flatMap->modules->whereNotNull('cbt_id')->pluck('cbt_id')->toArray();
+                    $completedCbtIds = CbtSession::where('siswa_id', $siswa->id)
+                        ->where('status', 'completed')
+                        ->whereIn('cbt_id', $cbtIds)
+                        ->pluck('cbt_id')
+                        ->toArray();
+
+                    $completedCount = 0;
+                    foreach ($course->chapters as $chapter) {
+                        foreach ($chapter->modules as $module) {
+                            if (in_array($module->id, $completedModuleIds)) {
+                                $completedCount++;
+                            } elseif ($module->cbt_id && in_array($module->cbt_id, $completedCbtIds)) {
+                                $completedCount++;
+                            }
+                        }
+                    }
+
+                    $course->progress_percentage = round(($completedCount / $totalModules) * 100);
+                    return $course;
+                });
         } else if ($user->role === 'guru' || $user->role === 'admin') {
             $fungsionaris = $user->fungsionaris;
             
@@ -107,6 +142,26 @@ class ELearningController extends Controller
 
             if (!$hasAccess) {
                 return redirect()->route('elearning.index')->with('error', 'Anda tidak memiliki akses ke e-learning ini.');
+            }
+
+            // Calculate progress per module
+            $completedModuleIds = ELearningProgress::where('siswa_id', $siswa->id)
+                ->whereIn('module_id', $elearning->chapters->flatMap->modules->pluck('id'))
+                ->pluck('module_id')
+                ->toArray();
+
+            $cbtIds = $elearning->chapters->flatMap->modules->whereNotNull('cbt_id')->pluck('cbt_id')->toArray();
+            $completedCbtIds = CbtSession::where('siswa_id', $siswa->id)
+                ->where('status', 'completed')
+                ->whereIn('cbt_id', $cbtIds)
+                ->pluck('cbt_id')
+                ->toArray();
+
+            foreach ($elearning->chapters as $chapter) {
+                foreach ($chapter->modules as $module) {
+                    $module->is_completed = in_array($module->id, $completedModuleIds) || 
+                                          ($module->cbt_id && in_array($module->cbt_id, $completedCbtIds));
+                }
             }
         }
 
@@ -209,8 +264,41 @@ class ELearningController extends Controller
             if (!$hasAccess) {
                 return redirect()->route('elearning.index')->with('error', 'Anda tidak memiliki akses ke modul ini.');
             }
+
+            $isCompleted = ELearningProgress::where('siswa_id', $siswa->id)
+                ->where('module_id', $id)
+                ->exists();
+            
+            if (!$isCompleted && $module->cbt_id) {
+                $isCompleted = CbtSession::where('siswa_id', $siswa->id)
+                    ->where('cbt_id', $module->cbt_id)
+                    ->where('status', 'completed')
+                    ->exists();
+            }
+
+            $module->is_completed = $isCompleted;
         }
 
         return view('elearning.module', compact('module'));
+    }
+
+    public function completeModule($id)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'siswa') {
+            return back()->with('error', 'Hanya siswa yang dapat menandai modul selesai.');
+        }
+
+        $siswa = $user->siswa;
+        $module = ELearningModule::findOrFail($id);
+
+        ELearningProgress::updateOrCreate([
+            'siswa_id' => $siswa->id,
+            'module_id' => $id,
+        ], [
+            'completed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Modul berhasil ditandai selesai.');
     }
 }

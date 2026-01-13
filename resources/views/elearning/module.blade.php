@@ -96,6 +96,25 @@
                         </form>
                     </div>
                     @endif
+
+                    @if(auth()->user()->role === 'siswa')
+                    <div class="mt-12 flex justify-center border-t border-slate-50 pt-10">
+                        @if(!($module->is_completed ?? false))
+                        <form action="{{ route('elearning.module.complete', $module->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-emerald-400 to-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-emerald-100 hover:scale-[1.02] active:scale-95 transition-all text-xs uppercase tracking-[0.2em] cursor-pointer">
+                                <i class="material-icons">check_circle</i>
+                                SELESAI MEMPELAJARI
+                            </button>
+                        </form>
+                        @else
+                        <div class="flex items-center gap-3 px-10 py-5 bg-emerald-50 text-emerald-600 font-black rounded-2xl border border-emerald-100 text-xs uppercase tracking-[0.2em]">
+                            <i class="material-icons">verified</i>
+                            MODUL SUDAH SELESAI
+                        </div>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
             

@@ -58,6 +58,15 @@
                         </div>
                         <span class="ps-10 text-[10px] font-bold text-slate-400 uppercase tracking-widest content-center">BAB / MATERI</span>
                     </div>
+
+                    @if(auth()->user()->role === 'siswa')
+                    <div class="text-end">
+                        <p class="text-[9px] font-black text-[#d90d8b] uppercase tracking-widest mb-1">{{ $course->progress_percentage }}% SELESAI</p>
+                        <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] transition-all duration-1000" style="width: {{ $course->progress_percentage }}%"></div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
                 @if(auth()->user()->role === 'guru' || auth()->user()->role === 'admin')

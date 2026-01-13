@@ -82,12 +82,14 @@
                     <a href="{{ route('elearning.module.view', $module->id) }}" class="flex items-center justify-between p-5 bg-white border border-slate-50 rounded-2xl hover:border-indigo-100 hover:shadow-md transition-all group/module">
                         <div class="flex items-center gap-5">
                             <div class="w-10 h-10 rounded-xl flex items-center justify-center 
-                                @if($module->type === 'material') bg-blue-50 text-blue-400 
+                                @if($module->is_completed ?? false) bg-emerald-500 text-white 
+                                @elseif($module->type === 'material') bg-blue-50 text-blue-400 
                                 @elseif($module->type === 'assignment') bg-amber-50 text-amber-500 
                                 @elseif($module->type === 'exercise') bg-emerald-50 text-emerald-500 
                                 @else bg-rose-50 text-rose-400 @endif">
                                 <i class="material-icons text-xl">
-                                    @if($module->type === 'material') article
+                                    @if($module->is_completed ?? false) check
+                                    @elseif($module->type === 'material') article
                                     @elseif($module->type === 'assignment') task
                                     @elseif($module->type === 'exercise') quiz
                                     @else psychological_test @endif

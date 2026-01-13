@@ -161,6 +161,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/chapter/{chapter_id}/module', [ELearningController::class, 'storeModule'])->name('module.store');
         Route::delete('/module/{id}', [ELearningController::class, 'destroyModule'])->name('module.destroy');
         Route::get('/module/{id}', [ELearningController::class, 'viewModule'])->name('module.view');
+        Route::post('/module/{id}/complete', [ELearningController::class, 'completeModule'])->name('module.complete');
     });
 
     // Forum Routes
