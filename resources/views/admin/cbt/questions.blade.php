@@ -25,6 +25,9 @@
                 </h3>
             </div>
             <div class="w-px h-10 bg-slate-100"></div>
+            <button @click="$dispatch('open-import-modal')" class="flex items-center gap-2 px-6 py-3 bg-white text-slate-600 border border-slate-100 rounded-xl text-sm font-black shadow-sm hover:border-indigo-100 hover:text-indigo-600 transition-all cursor-pointer">
+                <i class="material-icons">import_export</i> IMPOR DARI BANK
+            </button>
             <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-xl text-sm font-black shadow-lg shadow-pink-100 hover:scale-[1.02] transition-all cursor-pointer">
                 <i class="material-icons">add_circle</i> TAMBAH SOAL
             </button>
@@ -203,6 +206,60 @@
         </div>
     </div>
 
+    <!-- Import Modal -->
+    <div 
+        x-show="openImportModal" 
+        x-cloak
+        class="fixed inset-0 z-[60] flex items-center justify-center px-4 py-6"
+    >
+        <div x-show="openImportModal" x-transition.opacity class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="openImportModal = false"></div>
+        
+        <div 
+            x-show="openImportModal" 
+            x-transition:enter="ease-out duration-300" 
+            x-transition:enter-start="opacity-0 translate-y-8 sm:scale-95" 
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            class="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden relative z-10 flex flex-col"
+        >
+            <div class="px-10 py-8 border-b border-slate-50 flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight">Impor dari Bank Soal</h2>
+                    <p class="text-slate-400 text-sm font-medium mt-1">Pilih bank soal untuk disalin.</p>
+                </div>
+                <button @click="openImportModal = false" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-all">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+
+            <form action="{{ route('cbt.questions.import-bank', $cbt->id) }}" method="POST" class="p-10 space-y-6">
+                @csrf
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Daftar Bank Soal Anda</label>
+                    <select name="bank_soal_id" required class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                        <option value="">Pilih Bank Soal...</option>
+                        @foreach($bankSoals as $bank)
+                            <option value="{{ $bank->id }}">{{ $bank->title }} ({{ count($bank->questions) }} Soal)</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                    <div class="flex gap-3">
+                        <i class="material-icons text-amber-500 text-sm">info</i>
+                        <p class="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-wider">PENTING: Soal yang diimpor akan ditambahkan ke daftar soal saat ini. Pastikan total poin tidak melebihi skor maksimal CBT.</p>
+                    </div>
+                </div>
+
+                <div class="pt-4 text-center">
+                    <button type="submit" class="w-full py-5 bg-slate-900 text-white text-[10px] font-black rounded-2xl uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg">
+                        KONFIRMASI IMPOR
+                    </button>
+                    <p class="mt-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">PROSES INI TIDAK DAPAT DIBATALKAN</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
 
 <style>
@@ -218,6 +275,7 @@
     function questionPage() {
         return {
             openModal: false,
+            openImportModal: false,
             editMode: false,
             totalPoin: {{ $cbt->questions->sum('poin') }},
             imgPreview: null,
@@ -231,7 +289,14 @@
                 correct_option: 0
             },
 
-            init() {},
+            init() {
+                this.$watch('openImportModal', (val) => {
+                    if (val) this.openModal = false;
+                });
+                window.addEventListener('open-import-modal', () => {
+                    this.openImportModal = true;
+                });
+            },
 
             openCreateModal() {
                 this.editMode = false;

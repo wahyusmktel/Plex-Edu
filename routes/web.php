@@ -16,6 +16,7 @@ use App\Http\Controllers\EVotingController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\ELearningController;
+use App\Http\Controllers\BankSoalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -162,6 +163,19 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/module/{id}', [ELearningController::class, 'destroyModule'])->name('module.destroy');
         Route::get('/module/{id}', [ELearningController::class, 'viewModule'])->name('module.view');
         Route::post('/module/{id}/complete', [ELearningController::class, 'completeModule'])->name('module.complete');
+    });
+
+    // Bank Soal Routes
+    Route::prefix('bank-soal')->name('bank-soal.')->group(function () {
+        Route::get('/', [BankSoalController::class, 'index'])->name('index');
+        Route::get('/archive', [BankSoalController::class, 'archive'])->name('archive');
+        Route::post('/store', [BankSoalController::class, 'store'])->name('store');
+        Route::get('/{id}', [BankSoalController::class, 'show'])->name('show');
+        Route::post('/{id}/update', [BankSoalController::class, 'update'])->name('update');
+        Route::delete('/{id}', [BankSoalController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/question', [BankSoalController::class, 'storeQuestion'])->name('question.store');
+        Route::post('/question/{question_id}', [BankSoalController::class, 'updateQuestion'])->name('question.update');
+        Route::delete('/question/{question_id}', [BankSoalController::class, 'destroyQuestion'])->name('question.destroy');
     });
 
     // Forum Routes

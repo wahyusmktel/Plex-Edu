@@ -7,7 +7,11 @@ use App\Models\Subject;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\CbtQuestion;
+use App\Models\CbtOption;
 use App\Models\CbtAnswer;
+use App\Models\BankSoal;
+use App\Models\BankSoalQuestion;
+use App\Models\BankSoalOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -112,7 +116,15 @@ class CbtController extends Controller
     public function questions($id)
     {
         $cbt = Cbt::with(['subject', 'questions.options'])->findOrFail($id);
-        return view('admin.cbt.questions', compact('cbt'));
+        $bankSoals = BankSoal::where('subject_id', $cbt->subject_id)
+            ->where(function($q) {
+                $q->where('teacher_id', Auth::user()->fungsionaris->id ?? Auth::id())
+                  ->orWhere('status', 'public');
+            })
+            ->latest()
+            ->get();
+
+        return view('admin.cbt.questions', compact('cbt', 'bankSoals'));
     }
 
     public function storeQuestion(Request $request)
@@ -271,6 +283,48 @@ class CbtController extends Controller
         $answer->session->update(['skor' => $totalScore]);
 
         return response()->json(['success' => 'Nilai berhasil disimpan']);
+    }
+
+    public function importFromBankSoal(Request $request, $cbt_id)
+    {
+        $request->validate([
+            'bank_soal_id' => 'required|exists:bank_soals,id'
+        ]);
+
+        $cbt = Cbt::findOrFail($cbt_id);
+        $bankSoal = BankSoal::with('questions.options')->findOrFail($request->bank_soal_id);
+
+        $currentTotalPoin = $cbt->questions()->sum('poin');
+        $importedCount = 0;
+
+        foreach ($bankSoal->questions as $question) {
+            // Check if adding this question exceeds max score
+            if ($currentTotalPoin + $question->poin > $cbt->skor_maksimal) {
+                continue; // Skip or handle error
+            }
+
+            $newQuestion = $cbt->questions()->create([
+                'jenis_soal' => $question->jenis_soal,
+                'pertanyaan' => $question->pertanyaan,
+                'gambar' => $question->gambar, // Note: This might need file copying if storage paths differ significantly
+                'poin' => $question->poin,
+            ]);
+
+            if ($question->jenis_soal === 'pilihan_ganda') {
+                foreach ($question->options as $option) {
+                    $newQuestion->options()->create([
+                        'opsi' => $option->opsi,
+                        'gambar' => $option->gambar,
+                        'is_correct' => $option->is_correct,
+                    ]);
+                }
+            }
+
+            $currentTotalPoin += $question->poin;
+            $importedCount++;
+        }
+
+        return back()->with('success', $importedCount . ' soal berhasil diimpor dari ' . $bankSoal->title);
     }
 }
 
