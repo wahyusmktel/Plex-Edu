@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Cbt;
 use App\Models\Subject;
+use App\Models\Kelas;
+use App\Models\Siswa;
 use App\Models\CbtQuestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,8 +23,10 @@ class CbtController extends Controller
 
         $cbts = $query->paginate(10)->withQueryString();
         $subjects = Subject::where('is_active', true)->get();
+        $kelasList = Kelas::orderBy('tingkat')->orderBy('nama')->get();
+        $siswaList = Siswa::with('kelas')->orderBy('nama_lengkap')->get();
 
-        return view('admin.cbt.index', compact('cbts', 'subjects'));
+        return view('admin.cbt.index', compact('cbts', 'subjects', 'kelasList', 'siswaList'));
     }
 
     public function store(Request $request)
@@ -34,20 +38,32 @@ class CbtController extends Controller
             'jam_selesai' => 'required',
             'subject_id' => 'nullable|exists:subjects,id',
             'skor_maksimal' => 'required|integer|min:1',
+            'participant_type' => 'required|in:all,kelas,siswa',
+            'selected_kelas' => 'nullable|array|required_if:participant_type,kelas',
+            'selected_siswa' => 'nullable|array|required_if:participant_type,siswa',
         ]);
 
         $data = $request->all();
         $data['show_result'] = $request->boolean('show_result');
         $data['created_by'] = Auth::id();
 
-        Cbt::create($data);
+        $cbt = Cbt::create($data);
+
+        if ($request->participant_type === 'kelas' && $request->has('selected_kelas')) {
+            $cbt->allowedKelas()->attach($request->selected_kelas);
+        }
+
+        if ($request->participant_type === 'siswa' && $request->has('selected_siswa')) {
+            $cbt->allowedSiswas()->attach($request->selected_siswa);
+        }
 
         return response()->json(['success' => 'CBT berhasil ditambahkan']);
     }
 
     public function show($id)
     {
-        return response()->json(Cbt::with('subject')->findOrFail($id));
+        $cbt = Cbt::with(['subject', 'allowedKelas', 'allowedSiswas'])->findOrFail($id);
+        return response()->json($cbt);
     }
 
     public function update(Request $request, $id)
@@ -59,12 +75,27 @@ class CbtController extends Controller
             'jam_selesai' => 'required',
             'subject_id' => 'nullable|exists:subjects,id',
             'skor_maksimal' => 'required|integer|min:1',
+            'participant_type' => 'required|in:all,kelas,siswa',
+            'selected_kelas' => 'nullable|array|required_if:participant_type,kelas',
+            'selected_siswa' => 'nullable|array|required_if:participant_type,siswa',
         ]);
 
         $cbt = Cbt::findOrFail($id);
         $data = $request->all();
         $data['show_result'] = $request->boolean('show_result');
         $cbt->update($data);
+
+        if ($request->participant_type === 'kelas') {
+            $cbt->allowedKelas()->sync($request->selected_kelas ?? []);
+            $cbt->allowedSiswas()->detach(); // Clear siswas if switching to kelas
+        } elseif ($request->participant_type === 'siswa') {
+            $cbt->allowedSiswas()->sync($request->selected_siswa ?? []);
+            $cbt->allowedKelas()->detach(); // Clear kelas if switching to siswa
+        } else {
+            // If type is 'all', clear specified restrictions
+            $cbt->allowedKelas()->detach();
+            $cbt->allowedSiswas()->detach();
+        }
 
         return response()->json(['success' => 'CBT berhasil diperbarui']);
     }

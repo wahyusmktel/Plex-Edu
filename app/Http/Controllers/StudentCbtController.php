@@ -55,6 +55,11 @@ class StudentCbtController extends Controller
             return back()->withErrors(['token' => 'Ujian telah berakhir.']);
         }
 
+        // Check participant restriction
+        if (!$cbt->canParticipate($siswa)) {
+            return back()->withErrors(['token' => 'Anda tidak memiliki akses untuk mengikuti ujian ini.']);
+        }
+
         // Check for existing ongoing session or create new
         $session = CbtSession::firstOrCreate(
             [

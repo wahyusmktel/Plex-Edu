@@ -20,6 +20,7 @@ class Cbt extends Model
         'token',
         'skor_maksimal',
         'show_result',
+        'participant_type',
         'created_by',
     ];
 
@@ -67,4 +68,47 @@ class Cbt extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function allowedKelas()
+    {
+        return $this->belongsToMany(Kelas::class, 'cbt_kelas', 'cbt_id', 'kelas_id');
+    }
+
+    public function allowedSiswas()
+    {
+        return $this->belongsToMany(Siswa::class, 'cbt_siswa', 'cbt_id', 'siswa_id');
+    }
+
+    public function canParticipate(Siswa $siswa): bool
+    {
+        if ($this->participant_type === 'all') {
+            return true;
+        }
+
+        if ($this->participant_type === 'kelas') {
+            return $this->allowedKelas()->where('kelas.id', $siswa->kelas_id)->exists();
+        }
+
+        if ($this->participant_type === 'siswa') {
+            return $this->allowedSiswas()->where('siswas.id', $siswa->id)->exists();
+        }
+
+        return false;
+    }
+
+    public function getStatusAttribute(): string
+    {
+        $now = now();
+        $startTime = \Carbon\Carbon::parse($this->tanggal->format('Y-m-d') . ' ' . $this->jam_mulai);
+        $endTime = \Carbon\Carbon::parse($this->tanggal->format('Y-m-d') . ' ' . $this->jam_selesai);
+
+        if ($now->lt($startTime)) {
+            return 'upcoming';
+        } elseif ($now->gt($endTime)) {
+            return 'completed';
+        } else {
+            return 'ongoing';
+        }
+    }
 }
+

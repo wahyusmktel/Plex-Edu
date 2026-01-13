@@ -49,8 +49,8 @@
                 <i class="material-icons text-3xl">people</i>
             </div>
             <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Partisipan</p>
-                <h3 class="text-2xl font-black text-slate-800">---</h3>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Partisipan</p>
+                <h3 class="text-2xl font-black text-slate-800">{{ \App\Models\CbtSession::count() }}</h3>
             </div>
         </div>
     </div>
@@ -82,9 +82,10 @@
                         {{ \Carbon\Carbon::parse($item->tanggal)->format('d M Y') }}
                     </span>
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full {{ $item->tanggal == date('Y-m-d') ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300' }}"></span>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            {{ $item->tanggal == date('Y-m-d') ? 'Aktif' : ($item->tanggal > date('Y-m-d') ? 'Mendatang' : 'Selesai') }}
+                        @php $status = $item->status; @endphp
+                        <span class="w-2 h-2 rounded-full {{ $status == 'ongoing' ? 'bg-emerald-500 animate-pulse' : ($status == 'upcoming' ? 'bg-amber-400' : 'bg-slate-300') }}"></span>
+                        <span class="text-[10px] font-black uppercase tracking-widest {{ $status == 'ongoing' ? 'text-emerald-500' : ($status == 'upcoming' ? 'text-amber-500' : 'text-slate-400') }}">
+                            {{ $status == 'ongoing' ? 'Berlangsung' : ($status == 'upcoming' ? 'Mendatang' : 'Selesai') }}
                         </span>
                     </div>
                 </div>
@@ -254,6 +255,52 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Participant Type Selection -->
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Peserta Ujian</label>
+                        <select x-model="formData.participant_type" class="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
+                            <option value="all">Semua Siswa</option>
+                            <option value="kelas">Kelas Tertentu</option>
+                            <option value="siswa">Siswa Tertentu</option>
+                        </select>
+                    </div>
+
+                    <!-- Kelas Selection (shown when participant_type = kelas) -->
+                    <template x-if="formData.participant_type === 'kelas'">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Kelas <span class="text-red-500">*</span></label>
+                            <div class="max-h-48 overflow-y-auto bg-slate-50 rounded-2xl p-4 space-y-2 custom-scrollbar">
+                                @foreach($kelasList as $kelas)
+                                <label class="flex items-center gap-3 p-3 hover:bg-white rounded-xl cursor-pointer transition-colors">
+                                    <input type="checkbox" value="{{ $kelas->id }}" x-model="formData.selected_kelas" class="w-5 h-5 rounded border-slate-300 text-[#d90d8b] focus:ring-[#ba80e8]">
+                                    <span class="font-bold text-slate-700">{{ $kelas->nama }}</span>
+                                    <span class="text-[10px] text-slate-400 ml-auto">{{ $kelas->tingkat }}</span>
+                                </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Siswa Selection (shown when participant_type = siswa) -->
+                    <template x-if="formData.participant_type === 'siswa'">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Siswa <span class="text-red-500">*</span></label>
+                            <div class="max-h-64 overflow-y-auto bg-slate-50 rounded-2xl p-4 space-y-2 custom-scrollbar">
+                                @foreach($siswaList as $siswa)
+                                <label class="flex items-center gap-3 p-3 hover:bg-white rounded-xl cursor-pointer transition-colors">
+                                    <input type="checkbox" value="{{ $siswa->id }}" x-model="formData.selected_siswa" class="w-5 h-5 rounded border-slate-300 text-[#d90d8b] focus:ring-[#ba80e8]">
+                                    <div class="flex-grow">
+                                        <p class="font-bold text-slate-700 text-sm">{{ $siswa->nama_lengkap }}</p>
+                                        <p class="text-[10px] text-slate-400">{{ $siswa->nis }} • {{ $siswa->kelas->nama ?? '-' }}</p>
+                                    </div>
+                                </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </div>
 
             <div class="px-10 py-6 border-t border-slate-50 flex justify-between items-center bg-white sticky bottom-0 z-20">
@@ -290,7 +337,10 @@
                 jam_selesai: '09:00',
                 subject_id: '',
                 skor_maksimal: 100,
-                show_result: true
+                show_result: true,
+                participant_type: 'all',
+                selected_kelas: [],
+                selected_siswa: []
             },
 
             init() {},
@@ -305,7 +355,10 @@
                     jam_selesai: '09:00',
                     subject_id: '',
                     skor_maksimal: 100,
-                    show_result: true
+                    show_result: true,
+                    participant_type: 'all',
+                    selected_kelas: [],
+                    selected_siswa: []
                 };
                 this.openModal = true;
             },
@@ -315,12 +368,15 @@
                     this.formData = {
                         id: data.id,
                         nama_cbt: data.nama_cbt,
-                        tanggal: data.tanggal,
+                        tanggal: data.tanggal ? data.tanggal.substring(0, 10) : '',
                         jam_mulai: data.jam_mulai.substring(0, 5),
                         jam_selesai: data.jam_selesai.substring(0, 5),
                         subject_id: data.subject_id || '',
                         skor_maksimal: data.skor_maksimal,
-                        show_result: data.show_result ?? true
+                        show_result: data.show_result ?? true,
+                        participant_type: data.participant_type || 'all',
+                        selected_kelas: data.allowed_kelas ? data.allowed_kelas.map(k => k.id) : [],
+                        selected_siswa: data.allowed_siswas ? data.allowed_siswas.map(s => s.id) : []
                     };
                     this.editMode = true;
                     this.openModal = true;
