@@ -73,7 +73,7 @@
                     <div class="pt-4 text-center">
                         <p class="text-slate-500 text-sm font-medium">
                             Belum punya akun? 
-                            <a href="#" class="text-[#d90d8b] font-bold hover:underline">Daftar Sekolah</a>
+                            <a href="{{ url('/register-school') }}" class="text-[#d90d8b] font-bold hover:underline">Daftar Sekolah</a>
                         </p>
                     </div>
                 </form>

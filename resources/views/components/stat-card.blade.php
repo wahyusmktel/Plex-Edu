@@ -8,11 +8,14 @@
         'blue' => 'bg-blue-50 text-blue-600 border-blue-100',
         'red' => 'bg-red-50 text-red-600 border-red-100',
         'cyan' => 'bg-cyan-50 text-cyan-600 border-cyan-100',
+        'emerald' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+        'orange' => 'bg-orange-50 text-orange-600 border-orange-100',
+        'indigo' => 'bg-indigo-50 text-indigo-600 border-indigo-100',
     ];
 @endphp
 
 <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 group">
-    <div class="w-12 h-12 mb-4 rounded-2xl flex items-center justify-center transition-all duration-300 {{ $colors[$color] }} group-hover:scale-110">
+    <div class="w-12 h-12 mb-4 rounded-2xl flex items-center justify-center transition-all duration-300 {{ $colors[$color] ?? $colors['blue'] }} group-hover:scale-110">
         <i class="material-icons text-2xl">{{ $icon }}</i>
     </div>
     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{{ $label }}</p>
