@@ -72,8 +72,8 @@
                                     <i class="material-icons">article</i>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-slate-800 leading-none">{{ $item->siswa->nama_lengkap }}</p>
-                                    <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase">NIS: {{ $item->siswa->nis }}</p>
+                                    <p class="font-bold text-slate-800 leading-none">{{ $item->siswa->nama_lengkap ?? 'Siswa Terhapus' }}</p>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase">NIS: {{ $item->siswa->nis ?? '-' }}</p>
                                 </div>
                             </div>
                         </td>

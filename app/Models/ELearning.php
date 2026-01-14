@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ELearning extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $table = 'e_learnings';
 
     protected $fillable = [
+        'school_id',
         'subject_id',
         'teacher_id',
         'title',

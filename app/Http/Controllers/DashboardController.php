@@ -18,6 +18,33 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+
+        if ($user->role === 'dinas') {
+            // Dinas Dashboard Statistics
+            $totalSchools = \App\Models\School::count();
+            $pendingSchools = \App\Models\School::where('status', 'pending')->count();
+            $activeSchools = \App\Models\School::where('status', 'approved')->where('is_active', true)->count();
+            
+            // Aggregated counts across all schools
+            // We use withoutGlobalScopes() to get total numbers across all tenants
+            $totalSiswaAcrossSchools = Siswa::withoutGlobalScopes()->count();
+            $totalGuruAcrossSchools = User::withoutGlobalScopes()->where('role', 'guru')->count();
+            
+            // Latest registrations for quick look
+            $latestRegistrations = \App\Models\School::latest()->take(5)->get();
+
+            return view('admin.dinas.dashboard', compact(
+                'totalSchools',
+                'pendingSchools',
+                'activeSchools',
+                'totalSiswaAcrossSchools',
+                'totalGuruAcrossSchools',
+                'latestRegistrations'
+            ));
+        }
+
+        // Regular School Dashboard stats (already scoped via BelongsToSchool)
         // Library stats
         $books = LibraryItem::where('category', 'book')->count();
         $audios = LibraryItem::where('category', 'audio')->count();
@@ -32,7 +59,7 @@ class DashboardController extends Controller
         $today = Carbon::today();
         $totalSiswa = $siswaCount > 0 ? $siswaCount : 1; // Prevent division by zero
         $hadirCount = Absensi::whereDate('tanggal', $today)->where('status', 'hadir')->count();
-        $absenCount = $totalSiswa - $hadirCount;
+        $absenCount = max(0, $totalSiswa - $hadirCount);
         $hadirPercentage = $totalSiswa > 0 ? round(($hadirCount / $totalSiswa) * 100) : 0;
 
         // Info items
@@ -40,6 +67,8 @@ class DashboardController extends Controller
         $bankSoalCount = BankSoal::count();
         $forumCount = ForumTopic::count();
         $pelanggaranCount = PelanggaranSiswa::whereDate('created_at', $today)->count();
+        
+        $schoolName = $user->school->nama_sekolah ?? 'Sekolah Literasia';
 
         return view('dashboard', compact(
             'books',
@@ -54,7 +83,8 @@ class DashboardController extends Controller
             'eLearningCount',
             'bankSoalCount',
             'forumCount',
-            'pelanggaranCount'
+            'pelanggaranCount',
+            'schoolName'
         ));
     }
 }

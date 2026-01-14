@@ -9,9 +9,10 @@ use Illuminate\Support\Str;
 
 class Cbt extends Model
 {
-    use HasUuids;
+    use HasUuids, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
+        'school_id',
         'nama_cbt',
         'tanggal',
         'jam_mulai',

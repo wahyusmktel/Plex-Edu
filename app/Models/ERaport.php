@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ERaport extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $table = 'e_raports';
 
     protected $fillable = [
+        'school_id',
         'siswa_id',
         'semester',
         'tahun_pelajaran',

@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class LibraryLoan extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
+        'school_id',
         'student_id',
         'library_item_id',
         'loan_date',

@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class LibraryItem extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
+        'school_id',
         'title',
         'author',
         'description',

@@ -121,10 +121,10 @@
 
                 <!-- Creators -->
                 <div class="flex items-center gap-3">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode($item->creator->name) }}&background=ba80e8&color=fff" class="w-8 h-8 rounded-xl shadow-sm">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode($item->creator->name ?? 'System') }}&background=ba80e8&color=fff" class="w-8 h-8 rounded-xl shadow-sm">
                     <div>
                         <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">Dibuat Oleh</p>
-                        <p class="text-[11px] font-bold text-slate-600 mt-1">{{ $item->creator->name }}</p>
+                        <p class="text-[11px] font-bold text-slate-600 mt-1">{{ $item->creator->name ?? 'System' }}</p>
                     </div>
                 </div>
             </div>

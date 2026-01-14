@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class ForumPost extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
+        'school_id',
         'topic_id',
         'user_id',
         'parent_id',

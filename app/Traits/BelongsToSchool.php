@@ -17,8 +17,13 @@ trait BelongsToSchool
         });
 
         static::addGlobalScope('school', function (Builder $builder) {
-            if (Auth::check() && Auth::user()->school_id) {
-                $builder->where($builder->getQuery()->from . '.school_id', Auth::user()->school_id);
+            // Prevent infinite recursion when scoping the User model itself
+            // during the authentication process.
+            if (Auth::hasUser()) {
+                $user = Auth::user();
+                if ($user && $user->school_id) {
+                    $builder->where($builder->getQuery()->from . '.school_id', $user->school_id);
+                }
             }
         });
     }

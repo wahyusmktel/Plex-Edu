@@ -11,7 +11,7 @@
         </div>
         <div>
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">UNIT PENDIDIKAN</p>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Sekolah Literasia Edutekno Digital</h1>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">{{ $schoolName }}</h1>
         </div>
     </div>
     <div class="flex items-center gap-3">

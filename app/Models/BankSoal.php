@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class BankSoal extends Model
 {
-    use HasUuids;
+    use HasUuids, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
+        'school_id',
         'subject_id',
         'teacher_id',
         'title',
