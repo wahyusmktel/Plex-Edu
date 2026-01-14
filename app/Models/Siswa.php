@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Siswa extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $table = 'siswas';
 
     protected $fillable = [
+        'school_id',
         'user_id',
         'kelas_id',
         'nis',

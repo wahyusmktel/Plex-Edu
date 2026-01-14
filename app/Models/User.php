@@ -19,6 +19,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'school_id',
         'name',
         'email',
         'username',
@@ -26,6 +27,11 @@ class User extends Authenticatable
         'role',
         'is_suspended_from_forum',
     ];
+
+    public function school()
+    {
+        return $this->belongsTo(School::class);
+    }
 
     public function fungsionaris()
     {

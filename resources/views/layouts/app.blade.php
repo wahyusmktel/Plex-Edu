@@ -49,27 +49,52 @@
 
         <!-- Navigation items -->
         <nav class="px-4 space-y-1.5">
-            <x-nav-item icon="dashboard" label="Dashboard Sekolah" :active="Request::is('dashboard')" href="{{ route('dashboard') }}" />
-            <x-nav-item icon="assignment_turned_in" label="E-Raport" :active="Request::is('e-raport*')" href="{{ route('e-raport.index') }}" />
-            <x-nav-item icon="menu_book" label="Mata Pelajaran" :active="Request::is('mata-pelajaran*')" href="{{ route('mata-pelajaran.index') }}" />
-            <x-nav-item icon="computer" label="CBT" :active="Request::is('cbt*')" href="{{ route('cbt.index') }}" />
-            <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
-            <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />
-            <x-nav-item icon="collections_bookmark" label="Bank Soal" :active="Request::is('bank-soal*')" href="{{ route('bank-soal.index') }}" />
-            <x-nav-item icon="library_books" label="E-Library" :active="Request::is('library*')" href="{{ route('library.index') }}" />
-            <x-nav-item icon="workspace_premium" label="Sertifikat Guru" :active="Request::is('certificates*')" href="{{ route('certificates.index') }}" />
-            <x-nav-item icon="warning" label="Pelanggaran" :active="Request::is('pelanggaran*')" href="{{ route('pelanggaran.index') }}" />
-            <x-nav-item icon="article" label="Berita" :active="Request::is('berita*')" href="{{ route('berita.index') }}" />
-            <x-nav-item icon="school" label="Sekolah" :active="Request::is('sekolah*')" href="{{ route('sekolah.index') }}" />
-            <x-nav-item icon="people" label="Fungsionaris" :active="Request::is('fungsionaris*')" href="{{ route('fungsionaris.index') }}" />
-            <x-nav-item icon="person_outline" label="Siswa" :active="Request::is('siswa*')" href="{{ route('siswa.index') }}" />
-            <x-nav-item icon="campaign" label="Pengumuman" :active="Request::is('pengumuman*')" href="{{ route('pengumuman.index') }}" />
-            <x-nav-item icon="image" label="Slider Admin" :active="Request::is('slider*')" href="{{ route('slider.index') }}" />
-            <x-nav-item icon="calendar_today" label="Kalender" :active="Request::is('calendar*')" href="{{ route('calendar.index') }}" />
-            <x-nav-item icon="account_balance" label="Mata Pelajaran" />
-            <x-nav-item icon="record_voice_over" label="Sambutan" :active="Request::is('sambutan*')" href="{{ route('sambutan.index') }}" />
-            <x-nav-item icon="how_to_vote" label="E-Voting" :active="Request::is('e-voting*')" href="{{ route('e-voting.index') }}" />
-            <x-nav-item icon="assignment_ind" label="Absensi" :active="Request::is('absensi*')" href="{{ route('absensi.index') }}" />
+            {{-- Dinas Role --}}
+            @if(Auth::user()->role === 'dinas')
+                <x-nav-item icon="admin_panel_settings" label="Manajemen Sekolah" :active="Request::is('dinas*')" href="{{ route('dinas.index') }}" />
+            @endif
+
+            {{-- Guru Role --}}
+            @if(Auth::user()->role === 'guru')
+                <x-nav-item icon="dashboard" label="Dashboard" :active="Request::is('dashboard')" href="{{ route('dashboard') }}" />
+                <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
+                <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />
+                <x-nav-item icon="how_to_vote" label="E-Voting" :active="Request::is('e-voting*')" href="{{ route('e-voting.index') }}" />
+                <x-nav-item icon="collections_bookmark" label="Bank Soal" :active="Request::is('bank-soal*')" href="{{ route('bank-soal.index') }}" />
+                <x-nav-item icon="workspace_premium" label="Sertifikat Guru" :active="Request::is('certificates*')" href="{{ route('certificates.index') }}" />
+            @endif
+
+            {{-- Admin Role (All except Dinas) --}}
+            @if(Auth::user()->role === 'admin')
+                <x-nav-item icon="dashboard" label="Dashboard Sekolah" :active="Request::is('dashboard')" href="{{ route('dashboard') }}" />
+                <x-nav-item icon="assignment_turned_in" label="E-Raport" :active="Request::is('e-raport*')" href="{{ route('e-raport.index') }}" />
+                <x-nav-item icon="menu_book" label="Mata Pelajaran" :active="Request::is('mata-pelajaran*')" href="{{ route('mata-pelajaran.index') }}" />
+                <x-nav-item icon="computer" label="CBT" :active="Request::is('cbt*')" href="{{ route('cbt.index') }}" />
+                <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
+                <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />
+                <x-nav-item icon="collections_bookmark" label="Bank Soal" :active="Request::is('bank-soal*')" href="{{ route('bank-soal.index') }}" />
+                <x-nav-item icon="library_books" label="E-Library" :active="Request::is('library*')" href="{{ route('library.index') }}" />
+                <x-nav-item icon="workspace_premium" label="Sertifikat Guru" :active="Request::is('certificates*')" href="{{ route('certificates.index') }}" />
+                <x-nav-item icon="warning" label="Pelanggaran" :active="Request::is('pelanggaran*')" href="{{ route('pelanggaran.index') }}" />
+                <x-nav-item icon="article" label="Berita" :active="Request::is('berita*')" href="{{ route('berita.index') }}" />
+                <x-nav-item icon="school" label="Sekolah" :active="Request::is('sekolah*')" href="{{ route('sekolah.index') }}" />
+                <x-nav-item icon="people" label="Fungsionaris" :active="Request::is('fungsionaris*')" href="{{ route('fungsionaris.index') }}" />
+                <x-nav-item icon="person_outline" label="Siswa" :active="Request::is('siswa*')" href="{{ route('siswa.index') }}" />
+                <x-nav-item icon="campaign" label="Pengumuman" :active="Request::is('pengumuman*')" href="{{ route('pengumuman.index') }}" />
+                <x-nav-item icon="image" label="Slider Admin" :active="Request::is('slider*')" href="{{ route('slider.index') }}" />
+                <x-nav-item icon="calendar_today" label="Kalender" :active="Request::is('calendar*')" href="{{ route('calendar.index') }}" />
+                <x-nav-item icon="record_voice_over" label="Sambutan" :active="Request::is('sambutan*')" href="{{ route('sambutan.index') }}" />
+                <x-nav-item icon="how_to_vote" label="E-Voting" :active="Request::is('e-voting*')" href="{{ route('e-voting.index') }}" />
+                <x-nav-item icon="assignment_ind" label="Absensi" :active="Request::is('absensi*')" href="{{ route('absensi.index') }}" />
+            @endif
+
+            {{-- Siswa Role (Add matching Guru for now, or keep minimal) --}}
+            @if(Auth::user()->role === 'siswa')
+                <x-nav-item icon="dashboard" label="Dashboard" :active="Request::is('dashboard')" href="{{ route('dashboard') }}" />
+                <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
+                <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />
+                <x-nav-item icon="how_to_vote" label="E-Voting" :active="Request::is('e-voting*')" href="{{ route('e-voting.index') }}" />
+            @endif
 
             <div class="pt-4 mt-4 border-t border-slate-50">
                 <a 
@@ -100,7 +125,9 @@
                     <i class="material-icons" x-text="sidebarOpen ? 'menu_open' : 'menu'"></i>
                 </button>
                 <div class="hidden sm:block">
-                    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Administrator</h2>
+                    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                        {{ Auth::user()->role === 'dinas' ? 'Admin Dinas' : (Auth::user()->role === 'admin' ? 'Administrator' : ucfirst(Auth::user()->role)) }}
+                    </h2>
                 </div>
             </div>
 

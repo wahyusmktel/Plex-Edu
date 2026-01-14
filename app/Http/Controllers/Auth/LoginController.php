@@ -21,8 +21,24 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
+            $user = Auth::user();
 
+            // If user belongs to a school, check school status
+            if ($user->role !== 'dinas' && $user->school_id) {
+                $school = $user->school;
+                
+                if (!$school || $school->status !== 'approved' || !$school->is_active) {
+                    Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+
+                    return back()->withErrors([
+                        'email' => 'Akun sekolah Anda belum disetujui atau sedang dinonaktifkan. Silahkan hubungi Admin Dinas Pendidikan.',
+                    ])->onlyInput('email');
+                }
+            }
+
+            $request->session()->regenerate();
             return redirect()->intended('dashboard');
         }
 

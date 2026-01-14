@@ -31,6 +31,10 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+Route::get('/register-school', [App\Http\Controllers\Auth\SchoolRegistrationController::class, 'showRegistrationForm'])->name('register.school');
+Route::post('/register-school', [App\Http\Controllers\Auth\SchoolRegistrationController::class, 'register']);
+Route::get('/register-school/regional/{type}/{code?}', [App\Http\Controllers\Auth\SchoolRegistrationController::class, 'getRegionalData'])->name('register.regional');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -248,5 +252,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/exam/{session_id}/save-answer', [App\Http\Controllers\StudentCbtController::class, 'saveAnswer'])->name('saveAnswer');
         Route::post('/exam/{session_id}/submit', [App\Http\Controllers\StudentCbtController::class, 'submit'])->name('submit');
         Route::get('/result/{session_id}', [App\Http\Controllers\StudentCbtController::class, 'result'])->name('result');
+    });
+
+    // Dinas Routes
+    Route::middleware(['auth', 'role:dinas'])->prefix('dinas')->name('dinas.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\DinasController::class, 'index'])->name('index');
+        Route::get('/school/{school}', [App\Http\Controllers\Admin\DinasController::class, 'show'])->name('show');
+        Route::post('/school/{school}/approve', [App\Http\Controllers\Admin\DinasController::class, 'approve'])->name('approve');
+        Route::post('/school/{school}/reject', [App\Http\Controllers\Admin\DinasController::class, 'reject'])->name('reject');
+        Route::post('/school/{school}/toggle', [App\Http\Controllers\Admin\DinasController::class, 'toggleActive'])->name('toggle');
     });
 });

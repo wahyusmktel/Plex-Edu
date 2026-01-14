@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Kelas extends Model
 {
-    use HasUuids;
+    use HasUuids, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
+        'school_id',
         'nama',
         'tingkat',
         'wali_kelas_id',

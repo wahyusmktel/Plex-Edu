@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Jurusan extends Model
 {
-    use HasUuids;
+    use HasUuids, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
+        'school_id',
         'nama',
         'deskripsi',
         'is_active',

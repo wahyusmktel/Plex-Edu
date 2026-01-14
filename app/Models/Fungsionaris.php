@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Fungsionaris extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $table = 'fungsionaris';
 
     protected $fillable = [
+        'school_id',
         'user_id',
         'nip',
         'nik',
