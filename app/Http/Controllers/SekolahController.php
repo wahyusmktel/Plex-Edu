@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\SchoolSetting;
-use App\Models\SchoolIdentity;
 use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Fungsionaris;
@@ -20,7 +19,7 @@ class SekolahController extends Controller
         $jurusans = Jurusan::all();
         $kelas = Kelas::with(['waliKelas', 'jurusan'])->get();
         $gurus = Fungsionaris::where('jabatan', 'guru')->get();
-        $identity = SchoolIdentity::first();
+        $identity = auth()->user()->school;
 
         return view('admin.sekolah.index', compact('settings', 'allSettings', 'jurusans', 'kelas', 'gurus', 'identity'));
     }
@@ -32,11 +31,9 @@ class SekolahController extends Controller
             'status_sekolah' => 'required|in:Negeri,Swasta',
         ]);
 
-        $identity = SchoolIdentity::first();
+        $identity = auth()->user()->school;
         if ($identity) {
             $identity->update($request->all());
-        } else {
-            $identity = SchoolIdentity::create($request->all());
         }
 
         return response()->json(['success' => 'Identitas sekolah berhasil diperbarui', 'data' => $identity]);

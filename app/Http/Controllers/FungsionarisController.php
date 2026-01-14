@@ -35,6 +35,7 @@ class FungsionarisController extends Controller
 
         DB::transaction(function () use ($request) {
             $user = User::create([
+                'school_id' => auth()->user()->school_id,
                 'name' => $request->nama,
                 'username' => $request->username,
                 'email' => $request->username . '@literasia.com',

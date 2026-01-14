@@ -15,9 +15,10 @@ class FungsionarisImport implements ToModel, WithHeadingRow
     {
         return DB::transaction(function () use ($row) {
             $user = User::create([
+                'school_id' => auth()->user()->school_id,
                 'name'     => $row['nama'],
                 'username' => $row['username'],
-                'password' => Hash::make($row['password']),
+                'password' => Hash::make($row['password'] ?? 'password'),
                 'role'     => $row['jabatan'] === 'guru' ? 'guru' : 'pegawai',
                 'email'    => $row['username'] . '@literasia.com',
             ]);
