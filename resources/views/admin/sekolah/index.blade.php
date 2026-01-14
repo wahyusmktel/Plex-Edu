@@ -16,7 +16,14 @@
     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-8">
         <div class="flex p-4 border-b border-slate-50 gap-2 overflow-x-auto">
             <button 
-                @click="activeTab = 'settings'" 
+                @click="activeTab = 'identity'" 
+                class="px-8 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer whitespace-nowrap"
+                :class="activeTab === 'identity' ? 'bg-pink-50 text-[#d90d8b]' : 'text-slate-400 hover:bg-slate-50'"
+            >
+                <i class="material-icons text-[20px]">info</i> Identitas Sekolah
+            </button>
+            <button 
+                @click="goToSettingsTab()" 
                 class="px-8 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer whitespace-nowrap"
                 :class="activeTab === 'settings' ? 'bg-pink-50 text-[#d90d8b]' : 'text-slate-400 hover:bg-slate-50'"
             >
@@ -31,8 +38,70 @@
             </button>
         </div>
 
-        <!-- Tab Content -->
         <div class="p-8">
+            <!-- Tab 0: Identitas Sekolah -->
+            <div x-show="activeTab === 'identity'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4">
+                <div class="max-w-4xl">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">Identitas Sekolah</h3>
+                            <p class="text-sm font-medium text-slate-400 mt-1">Lengkapi informasi dasar sekolah Anda.</p>
+                        </div>
+                    </div>
+
+                    <form @submit.prevent="saveIdentity" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Nama Sekolah</label>
+                            <input type="text" x-model="identityForm.nama_sekolah" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Masukkan nama sekolah">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">NPSN</label>
+                            <input type="text" x-model="identityForm.npsn" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Nomor Pokok Sekolah Nasional">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Status Sekolah</label>
+                            <select x-model="identityForm.status_sekolah" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
+                                <option value="Negeri">Negeri</option>
+                                <option value="Swasta">Swasta</option>
+                            </select>
+                        </div>
+
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Alamat</label>
+                            <textarea x-model="identityForm.alamat" rows="3" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Alamat lengkap sekolah"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Desa/Kelurahan</label>
+                            <input type="text" x-model="identityForm.desa_kelurahan" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Desa atau Kelurahan">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Kecamatan</label>
+                            <input type="text" x-model="identityForm.kecamatan" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Kecamatan">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Kabupaten/Kota</label>
+                            <input type="text" x-model="identityForm.kabupaten_kota" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Kabupaten atau Kota">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Provinsi</label>
+                            <input type="text" x-model="identityForm.provinsi" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Provinsi">
+                        </div>
+
+                        <div class="col-span-1 md:col-span-2 pt-4">
+                            <button type="submit" class="w-full md:w-auto px-12 py-4 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer">
+                                <i class="material-icons">save</i> SIMPAN IDENTITAS
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Tab 1: Settings -->
             <div x-show="activeTab === 'settings'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -316,7 +385,18 @@
 <script>
 function sekolahPage() {
     return {
-        activeTab: 'settings',
+        activeTab: '{{ $identity ? "settings" : "identity" }}',
+        identity: @json($identity),
+        identityForm: {
+            nama_sekolah: '{{ $identity->nama_sekolah ?? "" }}',
+            npsn: '{{ $identity->npsn ?? "" }}',
+            alamat: '{{ $identity->alamat ?? "" }}',
+            desa_kelurahan: '{{ $identity->desa_kelurahan ?? "" }}',
+            kecamatan: '{{ $identity->kecamatan ?? "" }}',
+            kabupaten_kota: '{{ $identity->kabupaten_kota ?? "" }}',
+            provinsi: '{{ $identity->provinsi ?? "" }}',
+            status_sekolah: '{{ $identity->status_sekolah ?? "Swasta" }}',
+        },
         settings: {
             semester: '',
             tahun_pelajaran: '',
@@ -342,7 +422,36 @@ function sekolahPage() {
             return this.allSettings.some(s => s.is_active);
         },
 
+        isIdentityFilled() {
+            return this.identity && this.identity.nama_sekolah && this.identity.npsn;
+        },
+
+        goToSettingsTab() {
+            if (!this.isIdentityFilled()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Perhatian',
+                    text: 'Harap lengkapi Identitas Sekolah terlebih dahulu.',
+                    confirmButtonText: 'Lengkapi Sekarang'
+                });
+                this.activeTab = 'identity';
+            } else {
+                this.activeTab = 'settings';
+            }
+        },
+
         goToKelasTab() {
+            if (!this.isIdentityFilled()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Perhatian',
+                    text: 'Harap lengkapi Identitas Sekolah terlebih dahulu.',
+                    confirmButtonText: 'Lengkapi Sekarang'
+                });
+                this.activeTab = 'identity';
+                return;
+            }
+
             if (!this.isSettingsFull()) {
                 Swal.fire({
                     icon: 'warning',
@@ -354,6 +463,18 @@ function sekolahPage() {
             } else {
                 this.activeTab = 'kelas';
             }
+        },
+
+        saveIdentity() {
+            Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
+            $.post('{{ route("sekolah.identity.update") }}', {
+                _token: '{{ csrf_token() }}',
+                ...this.identityForm
+            }).done(res => {
+                Swal.fire('Berhasil', 'Identitas sekolah diperbarui', 'success').then(() => location.reload());
+            }).fail(err => {
+                Swal.fire('Error', 'Gagal memperbarui identitas', 'error');
+            });
         },
 
         saveSettings() {
