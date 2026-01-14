@@ -23,7 +23,8 @@ use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $news = \App\Models\Berita::latest()->take(3)->get();
+    return view('welcome', compact('news'));
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
