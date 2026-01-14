@@ -74,23 +74,63 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Desa/Kelurahan</label>
-                            <input type="text" x-model="identityForm.desa_kelurahan" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Desa atau Kelurahan">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Kecamatan</label>
-                            <input type="text" x-model="identityForm.kecamatan" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Kecamatan">
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Provinsi</label>
+                            <div class="relative">
+                                <template x-if="loading.province">
+                                    <div class="absolute inset-0 bg-slate-100 animate-pulse rounded-2xl z-10"></div>
+                                </template>
+                                <select x-model="selectedProvinsi" @change="onProvinsiChange" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
+                                    <option value="">Pilih Provinsi</option>
+                                    <template x-for="item in provinceList" :key="item.code">
+                                        <option :value="item.code" x-text="item.name"></option>
+                                    </template>
+                                </select>
+                            </div>
                         </div>
 
                         <div>
                             <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Kabupaten/Kota</label>
-                            <input type="text" x-model="identityForm.kabupaten_kota" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Kabupaten atau Kota">
+                            <div class="relative">
+                                <template x-if="loading.regency">
+                                    <div class="absolute inset-0 bg-slate-100 animate-pulse rounded-2xl z-10"></div>
+                                </template>
+                                <select x-model="selectedKabupaten" @change="onKabupatenChange" :disabled="!selectedProvinsi" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700 disabled:opacity-50">
+                                    <option value="">Pilih Kabupaten/Kota</option>
+                                    <template x-for="item in regencyList" :key="item.code">
+                                        <option :value="item.code" x-text="item.name"></option>
+                                    </template>
+                                </select>
+                            </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Provinsi</label>
-                            <input type="text" x-model="identityForm.provinsi" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Provinsi">
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Kecamatan</label>
+                            <div class="relative">
+                                <template x-if="loading.district">
+                                    <div class="absolute inset-0 bg-slate-100 animate-pulse rounded-2xl z-10"></div>
+                                </template>
+                                <select x-model="selectedKecamatan" @change="onKecamatanChange" :disabled="!selectedKabupaten" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700 disabled:opacity-50">
+                                    <option value="">Pilih Kecamatan</option>
+                                    <template x-for="item in districtList" :key="item.code">
+                                        <option :value="item.code" x-text="item.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Desa/Kelurahan</label>
+                            <div class="relative">
+                                <template x-if="loading.village">
+                                    <div class="absolute inset-0 bg-slate-100 animate-pulse rounded-2xl z-10"></div>
+                                </template>
+                                <select x-model="selectedDesa" @change="onDesaChange" :disabled="!selectedKecamatan" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700 disabled:opacity-50">
+                                    <option value="">Pilih Desa/Kelurahan</option>
+                                    <template x-for="item in villageList" :key="item.code">
+                                        <option :value="item.code" x-text="item.name"></option>
+                                    </template>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="col-span-1 md:col-span-2 pt-4">
@@ -396,6 +436,139 @@ function sekolahPage() {
             kabupaten_kota: '{{ $identity->kabupaten_kota ?? "" }}',
             provinsi: '{{ $identity->provinsi ?? "" }}',
             status_sekolah: '{{ $identity->status_sekolah ?? "Swasta" }}',
+        },
+
+        provinceList: [],
+        regencyList: [],
+        districtList: [],
+        villageList: [],
+
+        selectedProvinsi: '',
+        selectedKabupaten: '',
+        selectedKecamatan: '',
+        selectedDesa: '',
+
+        loading: {
+            province: false,
+            regency: false,
+            district: false,
+            village: false
+        },
+
+        async init() {
+            await this.fetchProvinces();
+            
+            // Rehydrate saved data
+            if (this.identity && this.identity.provinsi) {
+                const p = this.provinceList.find(item => item.name === this.identity.provinsi);
+                if (p) {
+                    this.selectedProvinsi = p.code;
+                    await this.onProvinsiChange();
+                    
+                    if (this.identity.kabupaten_kota) {
+                        const k = this.regencyList.find(item => item.name === this.identity.kabupaten_kota);
+                        if (k) {
+                            this.selectedKabupaten = k.code;
+                            await this.onKabupatenChange();
+                            
+                            if (this.identity.kecamatan) {
+                                const d = this.districtList.find(item => item.name === this.identity.kecamatan);
+                                if (d) {
+                                    this.selectedKecamatan = d.code;
+                                    await this.onKecamatanChange();
+                                    
+                                    if (this.identity.desa_kelurahan) {
+                                        const v = this.villageList.find(item => item.name === this.identity.desa_kelurahan);
+                                        if (v) {
+                                            this.selectedDesa = v.code;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        async fetchProvinces() {
+            this.loading.province = true;
+            try {
+                const res = await fetch('{{ route("sekolah.regional", ["type" => "provinces"]) }}');
+                const data = await res.json();
+                this.provinceList = data.data;
+            } catch (e) { 
+                console.error(e); 
+            } finally {
+                this.loading.province = false;
+            }
+        },
+
+        async onProvinsiChange() {
+            this.identityForm.provinsi = this.provinceList.find(p => p.code === this.selectedProvinsi)?.name || '';
+            this.selectedKabupaten = '';
+            this.selectedKecamatan = '';
+            this.selectedDesa = '';
+            this.regencyList = [];
+            this.districtList = [];
+            this.villageList = [];
+            
+            if (this.selectedProvinsi) {
+                this.loading.regency = true;
+                try {
+                    const res = await fetch(`{{ url('sekolah/regional/regencies') }}/${this.selectedProvinsi}`);
+                    const data = await res.json();
+                    this.regencyList = data.data;
+                } catch (e) { 
+                    console.error(e); 
+                } finally {
+                    this.loading.regency = false;
+                }
+            }
+        },
+
+        async onKabupatenChange() {
+            this.identityForm.kabupaten_kota = this.regencyList.find(p => p.code === this.selectedKabupaten)?.name || '';
+            this.selectedKecamatan = '';
+            this.selectedDesa = '';
+            this.districtList = [];
+            this.villageList = [];
+
+            if (this.selectedKabupaten) {
+                this.loading.district = true;
+                try {
+                    const res = await fetch(`{{ url('sekolah/regional/districts') }}/${this.selectedKabupaten}`);
+                    const data = await res.json();
+                    this.districtList = data.data;
+                } catch (e) { 
+                    console.error(e); 
+                } finally {
+                    this.loading.district = false;
+                }
+            }
+        },
+
+        async onKecamatanChange() {
+            this.identityForm.kecamatan = this.districtList.find(p => p.code === this.selectedKecamatan)?.name || '';
+            this.selectedDesa = '';
+            this.villageList = [];
+
+            if (this.selectedKecamatan) {
+                this.loading.village = true;
+                try {
+                    const res = await fetch(`{{ url('sekolah/regional/villages') }}/${this.selectedKecamatan}`);
+                    const data = await res.json();
+                    this.villageList = data.data;
+                } catch (e) { 
+                    console.error(e); 
+                } finally {
+                    this.loading.village = false;
+                }
+            }
+        },
+
+        onDesaChange() {
+            this.identityForm.desa_kelurahan = this.villageList.find(p => p.code === this.selectedDesa)?.name || '';
         },
         settings: {
             semester: '',

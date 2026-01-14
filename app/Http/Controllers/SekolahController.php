@@ -9,6 +9,7 @@ use App\Models\Kelas;
 use App\Models\Fungsionaris;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 
 class SekolahController extends Controller
 {
@@ -39,6 +40,22 @@ class SekolahController extends Controller
         }
 
         return response()->json(['success' => 'Identitas sekolah berhasil diperbarui', 'data' => $identity]);
+    }
+
+    public function getRegionalData($type, $code = null)
+    {
+        $url = "https://wilayah.id/api/{$type}";
+        if ($code) {
+            $url .= "/{$code}";
+        }
+        $url .= ".json";
+
+        try {
+            $response = Http::get($url);
+            return $response->json();
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal mengambil data wilayah'], 500);
+        }
     }
 
     public function updateSettings(Request $request)

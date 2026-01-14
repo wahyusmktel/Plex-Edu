@@ -100,6 +100,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/activate/{id}', [SekolahController::class, 'activateSettings'])->name('activate-settings');
         Route::delete('/settings/destroy/{id}', [SekolahController::class, 'destroySettings'])->name('destroy-settings');
         Route::post('/identity/update', [SekolahController::class, 'updateIdentity'])->name('identity.update');
+        Route::get('/regional/{type}/{code?}', [SekolahController::class, 'getRegionalData'])->name('regional');
 
         Route::post('/jurusan/store', [SekolahController::class, 'storeJurusan'])->name('jurusan.store');
         Route::get('/jurusan/show/{id}', [SekolahController::class, 'showJurusan'])->name('jurusan.show');
