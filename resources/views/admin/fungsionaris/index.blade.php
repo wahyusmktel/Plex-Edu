@@ -481,8 +481,14 @@
                     success: (res) => {
                         Swal.fire('Berhasil', res.success, 'success').then(() => location.reload());
                     },
-                    error: () => {
-                        Swal.fire('Gagal', 'Pastikan format Excel sesuai template.', 'error');
+                    error: (err) => {
+                        let msg = 'Terjadi kesalahan pada server.';
+                        if (err.responseJSON && err.responseJSON.errors) {
+                            msg = Object.values(err.responseJSON.errors).flat().join('<br>');
+                        } else if (err.responseJSON && err.responseJSON.message) {
+                            msg = err.responseJSON.message;
+                        }
+                        Swal.fire('Gagal Import', msg, 'error');
                     }
                 });
             }

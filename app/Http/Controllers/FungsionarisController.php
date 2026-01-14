@@ -123,9 +123,19 @@ class FungsionarisController extends Controller
             'file' => 'required|mimes:xlsx,xls'
         ]);
 
-        Excel::import(new FungsionarisImport, $request->file('file'));
-
-        return response()->json(['success' => 'Data berhasil diimport']);
+        try {
+            Excel::import(new FungsionarisImport, $request->file('file'));
+            return response()->json(['success' => 'Data berhasil diimport']);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = [];
+            foreach ($failures as $failure) {
+                $errors[] = "Baris " . $failure->row() . ": " . implode(', ', $failure->errors());
+            }
+            return response()->json(['errors' => $errors], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
     }
 
     public function downloadTemplate()
