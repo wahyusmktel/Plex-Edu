@@ -31,7 +31,7 @@
                         <select name="student_id" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#d90d8b] focus:ring-0 transition-all outline-none bg-white" required>
                             <option value="">Pilih Siswa...</option>
                             @foreach($students as $student)
-                                <option value="{{ $student->id }}">{{ $student->nama_lengkap }} ({{ $student->kelas->nama_kelas ?? '-' }})</option>
+                                <option value="{{ $student->id }}">{{ $student->nama_lengkap }} ({{ $student->kelas->nama ?? '-' }})</option>
                             @endforeach
                         </select>
                     </div>
