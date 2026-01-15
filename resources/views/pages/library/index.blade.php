@@ -14,9 +14,11 @@
             <a href="{{ route('library.loans') }}" class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-600 font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all">
                 <i class="material-icons text-lg">swap_horiz</i> Transaksi Peminjaman
             </a>
+            @if(auth()->user()->role !== 'guru')
             <a href="{{ route('library.create') }}" class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white font-semibold rounded-xl shadow-md shadow-pink-100 hover:shadow-lg transition-all">
                 <i class="material-icons text-lg">add</i> Tambah Koleksi
             </a>
+            @endif
         </div>
     </div>
 
@@ -85,11 +87,13 @@
                                     class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-[#d90d8b] hover:text-white transition-colors cursor-pointer shadow-lg outline-none border-none">
                                     <i class="material-icons">visibility</i>
                                 </button>
+                                @if(auth()->user()->role !== 'guru')
                                 <button type="button" 
                                     @click="deleteItem('{{ $book->id }}', '{{ addslashes($book->title) }}')"
                                     class="w-10 h-10 rounded-full bg-white text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-lg cursor-pointer">
                                     <i class="material-icons">delete</i>
                                 </button>
+                                @endif
                             </div>
                         </div>
                         <div class="p-4">
@@ -120,9 +124,11 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <audio src="{{ asset('storage/' . $audio->file_path) }}" controls class="h-8 max-w-[200px]"></audio>
+                            @if(auth()->user()->role !== 'guru')
                             <button type="button" @click="deleteItem('{{ $audio->id }}', '{{ addslashes($audio->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
                                 <i class="material-icons">delete</i>
                             </button>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -152,9 +158,11 @@
                                 <h4 class="font-bold text-slate-800 line-clamp-1">{{ $video->title }}</h4>
                                 <p class="text-xs text-slate-500 mt-1">{{ $video->author }}</p>
                             </div>
+                            @if(auth()->user()->role !== 'guru')
                             <button type="button" @click="deleteItem('{{ $video->id }}', '{{ addslashes($video->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
                                 <i class="material-icons text-xl">delete</i>
                             </button>
+                            @endif
                         </div>
                     </div>
                 @empty

@@ -144,9 +144,11 @@
             <p class="text-slate-500 font-medium mt-1">Kelola agenda kegiatan dan hari libur sekolah</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
+            @if(Auth::user()->role !== 'guru')
             <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <i class="material-icons text-[20px]">add_circle</i> Tambah Acara
             </button>
+            @endif
         </div>
     </div>
 
@@ -212,8 +214,8 @@
                     },
                     locale: 'id',
                     events: '{{ route('calendar.events') }}',
-                    selectable: true,
-                    editable: true,
+                    selectable: {{ Auth::user()->role !== 'guru' ? 'true' : 'false' }},
+                    editable: {{ Auth::user()->role !== 'guru' ? 'true' : 'false' }},
                     dayMaxEvents: true,
                     
                     select: (info) => {

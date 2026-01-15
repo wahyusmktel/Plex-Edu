@@ -13,6 +13,9 @@ class LibraryController extends Controller
 {
     public function index()
     {
+        if (auth()->user()->role === 'guru') {
+            abort(403, 'Guru tidak memiliki akses ke fitur E-Library.');
+        }
         $books = LibraryItem::where('category', 'book')->latest()->get();
         $audios = LibraryItem::where('category', 'audio')->latest()->get();
         $videos = LibraryItem::where('category', 'video')->latest()->get();
@@ -22,11 +25,17 @@ class LibraryController extends Controller
 
     public function create()
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Akses dilarang.');
+        }
         return view('pages.library.create');
     }
 
     public function store(Request $request)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Akses dilarang.');
+        }
         $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
@@ -56,6 +65,9 @@ class LibraryController extends Controller
 
     public function destroy($id)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Akses dilarang.');
+        }
         $item = LibraryItem::findOrFail($id);
         Storage::disk('public')->delete($item->file_path);
         if ($item->cover_image) {
@@ -68,6 +80,9 @@ class LibraryController extends Controller
 
     public function loans()
     {
+        if (auth()->user()->role === 'guru') {
+            abort(403, 'Guru tidak memiliki akses ke transaksi peminjaman.');
+        }
         $loans = LibraryLoan::with(['student.kelas', 'item'])->latest()->get();
         $students = Siswa::latest()->get();
         $items = LibraryItem::latest()->get();

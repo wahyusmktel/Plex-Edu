@@ -26,8 +26,8 @@ class ForumController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        if (Auth::user()->role !== 'guru' && Auth::user()->role !== 'admin') {
-            return back()->with('error', 'Hanya guru yang dapat membuat forum.');
+        if (!in_array(Auth::user()->role, ['guru', 'admin', 'dinas'])) {
+            return back()->with('error', 'Hanya guru, admin, atau dinas yang dapat membuat forum.');
         }
 
         Forum::create([
@@ -148,7 +148,7 @@ class ForumController extends Controller
 
     public function moderateTopic(Request $request, $id)
     {
-        if (Auth::user()->role !== 'guru' && Auth::user()->role !== 'admin') {
+        if (!in_array(Auth::user()->role, ['guru', 'admin', 'dinas'])) {
             return back()->with('error', 'Unauthorized.');
         }
 
@@ -168,7 +168,7 @@ class ForumController extends Controller
 
     public function suspendUser($user_id)
     {
-        if (Auth::user()->role !== 'guru' && Auth::user()->role !== 'admin') {
+        if (!in_array(Auth::user()->role, ['guru', 'admin', 'dinas'])) {
             return back()->with('error', 'Unauthorized.');
         }
 

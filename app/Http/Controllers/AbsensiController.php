@@ -24,8 +24,19 @@ class AbsensiController extends Controller
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
 
-        // Subjects filtered by class if class is selected, otherwise all subjects
-        $subjects = Subject::with('guru')->orderBy('nama_pelajaran')->get();
+        // Subjects filtered for Guru if applicable
+        $subjectsQuery = Subject::with('guru')->orderBy('nama_pelajaran');
+        if (auth()->user()->role === 'guru') {
+            $guruId = auth()->user()->fungsionaris->id ?? null;
+            $subjectsQuery->where('guru_id', $guruId);
+            
+            // If no subject selected, default to first assigned subject to ensure they only see their data
+            if (!$selectedSubject) {
+                $firstSubject = (clone $subjectsQuery)->first();
+                $selectedSubject = $firstSubject->id ?? null;
+            }
+        }
+        $subjects = $subjectsQuery->get();
 
         $students = Siswa::when($selectedClass, function ($query, $classId) {
                 return $query->where('kelas_id', $classId);

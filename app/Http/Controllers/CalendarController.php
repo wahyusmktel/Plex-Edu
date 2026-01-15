@@ -41,6 +41,9 @@ class CalendarController extends Controller
 
     public function store(Request $request)
     {
+        if (!in_array(auth()->user()->role, ['admin', 'dinas'])) {
+            return response()->json(['error' => 'Akses dilarang.'], 403);
+        }
         $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|string',
@@ -68,6 +71,9 @@ class CalendarController extends Controller
 
     public function update(Request $request, $id)
     {
+        if (!in_array(auth()->user()->role, ['admin', 'dinas'])) {
+            return response()->json(['error' => 'Akses dilarang.'], 403);
+        }
         $event = KalenderEvent::findOrFail($id);
 
         $request->validate([
@@ -92,6 +98,9 @@ class CalendarController extends Controller
 
     public function destroy($id)
     {
+        if (!in_array(auth()->user()->role, ['admin', 'dinas'])) {
+            return response()->json(['error' => 'Akses dilarang.'], 403);
+        }
         KalenderEvent::findOrFail($id)->delete();
         return response()->json(['success' => 'Acara berhasil dihapus.']);
     }

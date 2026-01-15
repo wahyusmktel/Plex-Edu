@@ -257,6 +257,10 @@ Route::middleware(['auth'])->group(function () {
     // Dinas Routes
     Route::middleware(['auth', 'role:dinas'])->prefix('dinas')->name('dinas.')->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\DinasController::class, 'index'])->name('index');
+        Route::get('/stats', [App\Http\Controllers\Admin\DinasController::class, 'stats'])->name('stats');
+        Route::get('/schools', [App\Http\Controllers\Admin\DinasController::class, 'schools'])->name('schools');
+        Route::get('/certificates', [App\Http\Controllers\Admin\DinasController::class, 'certificates'])->name('certificates');
+        Route::get('/violations', [App\Http\Controllers\Admin\DinasController::class, 'violations'])->name('violations');
         Route::get('/school/{school}', [App\Http\Controllers\Admin\DinasController::class, 'show'])->name('show');
         Route::post('/school/{school}/approve', [App\Http\Controllers\Admin\DinasController::class, 'approve'])->name('approve');
         Route::post('/school/{school}/reject', [App\Http\Controllers\Admin\DinasController::class, 'reject'])->name('reject');

@@ -11,6 +11,8 @@ use App\Models\Forum;
 use App\Models\ForumTopic;
 use App\Models\PelanggaranSiswa;
 use App\Models\Absensi;
+use App\Models\Berita;
+use App\Models\Pengumuman;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -68,6 +70,10 @@ class DashboardController extends Controller
         $forumCount = ForumTopic::count();
         $pelanggaranCount = PelanggaranSiswa::whereDate('created_at', $today)->count();
         
+        // Latest News & Announcements (Scoped to school)
+        $latestNews = Berita::latest()->take(5)->get();
+        $latestAnnouncements = Pengumuman::latest()->take(5)->get();
+
         $schoolName = $user->school->nama_sekolah ?? 'Sekolah Literasia';
 
         return view('dashboard', compact(
@@ -84,6 +90,8 @@ class DashboardController extends Controller
             'bankSoalCount',
             'forumCount',
             'pelanggaranCount',
+            'latestNews',
+            'latestAnnouncements',
             'schoolName'
         ));
     }

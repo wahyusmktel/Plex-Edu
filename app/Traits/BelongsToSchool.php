@@ -22,7 +22,10 @@ trait BelongsToSchool
             if (Auth::hasUser()) {
                 $user = Auth::user();
                 if ($user && $user->school_id) {
-                    $builder->where($builder->getQuery()->from . '.school_id', $user->school_id);
+                    $builder->where(function($q) use ($user, $builder) {
+                        $q->where($builder->getQuery()->from . '.school_id', $user->school_id)
+                          ->orWhereNull($builder->getQuery()->from . '.school_id');
+                    });
                 }
             }
         });

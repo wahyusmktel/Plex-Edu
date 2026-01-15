@@ -27,6 +27,9 @@ class BeritaController extends Controller
 
     public function store(Request $request)
     {
+        if (!in_array(auth()->user()->role, ['admin', 'dinas'])) {
+            return response()->json(['error' => 'Akses dilarang.'], 403);
+        }
         $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'required',
@@ -54,6 +57,9 @@ class BeritaController extends Controller
 
     public function update(Request $request, $id)
     {
+        if (!in_array(auth()->user()->role, ['admin', 'dinas'])) {
+            return response()->json(['error' => 'Akses dilarang.'], 403);
+        }
         $berita = Berita::findOrFail($id);
 
         $request->validate([
@@ -80,6 +86,9 @@ class BeritaController extends Controller
 
     public function destroy($id)
     {
+        if (!in_array(auth()->user()->role, ['admin', 'dinas'])) {
+            return response()->json(['error' => 'Akses dilarang.'], 403);
+        }
         $berita = Berita::findOrFail($id);
         if ($berita->thumbnail) {
             Storage::disk('public')->delete($berita->thumbnail);

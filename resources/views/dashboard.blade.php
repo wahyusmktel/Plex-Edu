@@ -100,4 +100,52 @@
         <x-info-item icon="report_problem" label="Pelanggaran Hari Ini" value="{{ number_format($pelanggaranCount) }}" color="red" />
     </div>
 </div>
+
+<!-- News & Announcements -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
+    <!-- Announcements -->
+    <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-xl font-extrabold text-slate-800 flex items-center gap-3">
+                <i class="material-icons text-yellow-500">campaign</i>
+                Pengumuman Terbaru
+            </h3>
+            <a href="{{ route('pengumuman.index') }}" class="text-[#d90d8b] text-sm font-bold hover:underline">Lihat Semua</a>
+        </div>
+        <div class="space-y-4">
+            @forelse($latestAnnouncements as $ann)
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black text-[#d90d8b] uppercase tracking-widest mb-1">{{ $ann->created_at->translatedFormat('d M Y') }}</p>
+                    <h4 class="text-sm font-bold text-slate-800 line-clamp-1">{{ $ann->title }}</h4>
+                </div>
+            @empty
+                <p class="text-center py-8 text-slate-400 font-medium italic">Belum ada pengumuman.</p>
+            @endforelse
+        </div>
+    </div>
+
+    <!-- News -->
+    <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-xl font-extrabold text-slate-800 flex items-center gap-3">
+                <i class="material-icons text-blue-500">article</i>
+                Berita Terbaru
+            </h3>
+            <a href="{{ route('berita.index') }}" class="text-[#d90d8b] text-sm font-bold hover:underline">Lihat Semua</a>
+        </div>
+        <div class="space-y-4">
+            @forelse($latestNews as $item)
+                <div class="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
+                    <img src="{{ Storage::url($item->thumbnail) }}" class="w-16 h-16 rounded-xl object-cover" alt="">
+                    <div>
+                        <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">{{ $item->created_at->diffForHumans() }}</p>
+                        <h4 class="text-sm font-bold text-slate-800 line-clamp-1">{{ $item->judul }}</h4>
+                    </div>
+                </div>
+            @empty
+                <p class="text-center py-8 text-slate-400 font-medium italic">Belum ada berita.</p>
+            @endforelse
+        </div>
+    </div>
+</div>
 @endsection

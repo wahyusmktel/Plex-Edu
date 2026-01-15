@@ -26,8 +26,18 @@ class CbtController extends Controller
             $query->where('nama_cbt', 'like', '%' . $request->search . '%');
         }
 
+        // Filter for Guru: only show CBT for their subjects
+        if (Auth::user()->role === 'guru') {
+            $guruId = Auth::user()->fungsionaris->id ?? null;
+            $query->whereHas('subject', function($q) use ($guruId) {
+                $q->where('guru_id', $guruId);
+            });
+            $subjects = Subject::where('is_active', true)->where('guru_id', $guruId)->get();
+        } else {
+            $subjects = Subject::where('is_active', true)->get();
+        }
+
         $cbts = $query->paginate(10)->withQueryString();
-        $subjects = Subject::where('is_active', true)->get();
         $kelasList = Kelas::orderBy('tingkat')->orderBy('nama')->get();
         $siswaList = Siswa::with('kelas')->orderBy('nama_lengkap')->get();
 
@@ -118,8 +128,13 @@ class CbtController extends Controller
         $cbt = Cbt::with(['subject', 'questions.options'])->findOrFail($id);
         $bankSoals = BankSoal::where('subject_id', $cbt->subject_id)
             ->where(function($q) {
-                $q->where('teacher_id', Auth::user()->fungsionaris->id ?? Auth::id())
-                  ->orWhere('status', 'public');
+                if (Auth::user()->role === 'guru') {
+                    $q->where('teacher_id', Auth::user()->fungsionaris->id ?? null)
+                      ->orWhere('status', 'public');
+                } else {
+                    $q->where('teacher_id', Auth::user()->fungsionaris->id ?? Auth::id())
+                      ->orWhere('status', 'public');
+                }
             })
             ->latest()
             ->get();
