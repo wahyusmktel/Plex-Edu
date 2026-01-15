@@ -220,3 +220,1049 @@ endpoints:
     controller: null
     method: null
     route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/school/identity
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get School Identity'
+      description: "Get the identity details of the authenticated user's school."
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: api/school/identity
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update School Identity'
+      description: "Update the identity details of the authenticated user's school."
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      nama_sekolah:
+        custom: []
+        name: nama_sekolah
+        description: 'The name of the school.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      npsn:
+        custom: []
+        name: npsn
+        description: 'The NPSN of the school.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      alamat:
+        custom: []
+        name: alamat
+        description: 'The full address.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      provinsi:
+        custom: []
+        name: provinsi
+        description: ''
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      kabupaten_kota:
+        custom: []
+        name: kabupaten_kota
+        description: ''
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      kecamatan:
+        custom: []
+        name: kecamatan
+        description: ''
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      desa_kelurahan:
+        custom: []
+        name: desa_kelurahan
+        description: ''
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      status_sekolah:
+        custom: []
+        name: status_sekolah
+        description: 'The status (Negeri/Swasta).'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      nama_sekolah: consequatur
+      npsn: consequatur
+      alamat: consequatur
+      provinsi: consequatur
+      kabupaten_kota: consequatur
+      kecamatan: consequatur
+      desa_kelurahan: consequatur
+      status_sekolah: consequatur
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/school/settings
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List School Settings'
+      description: 'Get all school settings (academic years and semesters).'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/school/settings
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Create School Setting'
+      description: 'Add a new academic year/semester setting.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      semester:
+        custom: []
+        name: semester
+        description: 'The semester (Ganjil/Genap).'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      tahun_pelajaran:
+        custom: []
+        name: tahun_pelajaran
+        description: 'The academic year (e.g., 2023/2024).'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      jenjang:
+        custom: []
+        name: jenjang
+        description: 'The education level.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      is_active:
+        custom: []
+        name: is_active
+        description: 'active status.'
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      semester: consequatur
+      tahun_pelajaran: consequatur
+      jenjang: consequatur
+      is_active: false
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: 'api/school/settings/{id}/activate'
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Activate School Setting'
+      description: 'Set a specific academic year/semester as the active one.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the setting.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: consequatur
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/school/settings/{id}'
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Delete School Setting'
+      description: 'Remove a school setting record.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the setting.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: consequatur
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/jurusan
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List Departments (Jurusan)'
+      description: 'Get all departments in the school.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/jurusan
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Store Department (Jurusan)'
+      description: 'Create a new department.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      nama:
+        custom: []
+        name: nama
+        description: 'Must not be greater than 255 characters.'
+        required: true
+        example: vmqeopfuudtdsufvyvddq
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      deskripsi:
+        custom: []
+        name: deskripsi
+        description: ''
+        required: false
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      is_active:
+        custom: []
+        name: is_active
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      nama: vmqeopfuudtdsufvyvddq
+      deskripsi: consequatur
+      is_active: false
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: 'api/jurusan/{id}'
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update Department (Jurusan)'
+      description: 'Update an existing department.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the jurusan.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: consequatur
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      nama:
+        custom: []
+        name: nama
+        description: 'Must not be greater than 255 characters.'
+        required: true
+        example: vmqeopfuudtdsufvyvddq
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      deskripsi:
+        custom: []
+        name: deskripsi
+        description: ''
+        required: false
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      is_active:
+        custom: []
+        name: is_active
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      nama: vmqeopfuudtdsufvyvddq
+      deskripsi: consequatur
+      is_active: false
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/jurusan/{id}'
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Delete Department (Jurusan)'
+      description: 'Remove a department.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the jurusan.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: consequatur
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/kelas
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List Classes (Kelas)'
+      description: 'Get all classes in the school with relationships.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/kelas/{id}'
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get Class Detail'
+      description: 'Get details of a specific class.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the kela.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: consequatur
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/kelas
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Store Class (Kelas)'
+      description: 'Create a new class.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      nama:
+        custom: []
+        name: nama
+        description: 'Must not be greater than 255 characters.'
+        required: true
+        example: vmqeopfuudtdsufvyvddq
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      tingkat:
+        custom: []
+        name: tingkat
+        description: ''
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      wali_kelas_id:
+        custom: []
+        name: wali_kelas_id
+        description: 'The <code>id</code> of an existing record in the fungsionaris table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      jurusan_id:
+        custom: []
+        name: jurusan_id
+        description: 'The <code>id</code> of an existing record in the jurusans table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      kapasitas:
+        custom: []
+        name: kapasitas
+        description: ''
+        required: false
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      keterangan:
+        custom: []
+        name: keterangan
+        description: ''
+        required: false
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      nama: vmqeopfuudtdsufvyvddq
+      tingkat: consequatur
+      kapasitas: 17
+      keterangan: consequatur
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: 'api/kelas/{id}'
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update Class (Kelas)'
+      description: 'Update an existing class.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the kela.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: consequatur
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      nama:
+        custom: []
+        name: nama
+        description: 'Must not be greater than 255 characters.'
+        required: true
+        example: vmqeopfuudtdsufvyvddq
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      tingkat:
+        custom: []
+        name: tingkat
+        description: ''
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      wali_kelas_id:
+        custom: []
+        name: wali_kelas_id
+        description: 'The <code>id</code> of an existing record in the fungsionaris table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      jurusan_id:
+        custom: []
+        name: jurusan_id
+        description: 'The <code>id</code> of an existing record in the jurusans table.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      kapasitas:
+        custom: []
+        name: kapasitas
+        description: ''
+        required: false
+        example: 17
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      keterangan:
+        custom: []
+        name: keterangan
+        description: ''
+        required: false
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      nama: vmqeopfuudtdsufvyvddq
+      tingkat: consequatur
+      kapasitas: 17
+      keterangan: consequatur
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/kelas/{id}'
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Delete Class (Kelas)'
+      description: 'Remove a class.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the kela.'
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: consequatur
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/regional/{type}/{code?}'
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for managing school identity, settings, departments, and classes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get Regional Data'
+      description: 'Helper to fetch regional data from external API.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      type:
+        custom: []
+        name: type
+        description: ''
+        required: true
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      code:
+        custom: []
+        name: code
+        description: ''
+        required: false
+        example: consequatur
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      type: consequatur
+      code: consequatur
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
