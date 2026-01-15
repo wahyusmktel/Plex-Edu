@@ -28,11 +28,11 @@
             </tr>
             <tr>
                 <th>Nama Pegawai</th>
-                <td>{{ $data->fungsionaris->nama }}</td>
+                <td>{{ $data->fungsionaris->nama ?? 'Pegawai Tidak Ditemukan' }}</td>
             </tr>
             <tr>
                 <th>Jabatan / Role</th>
-                <td>{{ strtoupper($data->fungsionaris->jabatan) }}</td>
+                <td>{{ strtoupper($data->fungsionaris->jabatan ?? '-') }}</td>
             </tr>
             <tr>
                 <th>Jenis Pelanggaran</th>

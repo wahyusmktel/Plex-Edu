@@ -28,11 +28,11 @@
             </tr>
             <tr>
                 <th>Nama Siswa</th>
-                <td>{{ $data->siswa->nama_lengkap }}</td>
+                <td>{{ $data->siswa->nama_lengkap ?? 'Siswa Tidak Ditemukan' }}</td>
             </tr>
             <tr>
                 <th>NIS / Kelas</th>
-                <td>{{ $data->siswa->nis }} / {{ $data->siswa->kelas->nama ?? '-' }}</td>
+                <td>{{ $data->siswa->nis ?? '-' }} / {{ $data->siswa->kelas->nama ?? '-' }}</td>
             </tr>
             <tr>
                 <th>Jenis Pelanggaran</th>

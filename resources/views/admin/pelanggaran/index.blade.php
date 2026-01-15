@@ -163,8 +163,8 @@
                                             <i class="material-icons">person</i>
                                         </div>
                                         <div>
-                                            <p class="font-bold text-slate-800 leading-none">{{ $item->siswa->nama_lengkap }}</p>
-                                            <p class="text-[10px] font-bold text-slate-400 mt-1">NIS: {{ $item->siswa->nis }}</p>
+                                            <p class="font-bold text-slate-800 leading-none">{{ $item->siswa->nama_lengkap ?? 'Siswa Tidak Ditemukan' }}</p>
+                                            <p class="text-[10px] font-bold text-slate-400 mt-1">NIS: {{ $item->siswa->nis ?? '-' }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -246,8 +246,8 @@
                                             <i class="material-icons">badge</i>
                                         </div>
                                         <div>
-                                            <p class="font-bold text-slate-800 leading-none">{{ $item->fungsionaris->nama }}</p>
-                                            <p class="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-tighter">{{ $item->fungsionaris->jabatan }}</p>
+                                            <p class="font-bold text-slate-800 leading-none">{{ $item->fungsionaris->nama ?? 'Pegawai Tidak Ditemukan' }}</p>
+                                            <p class="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-tighter">{{ $item->fungsionaris->jabatan ?? '-' }}</p>
                                         </div>
                                     </div>
                                 </td>

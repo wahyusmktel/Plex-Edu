@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class PelanggaranPegawai extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
+        'school_id',
         'fungsionaris_id',
         'master_pelanggaran_id',
         'tanggal',

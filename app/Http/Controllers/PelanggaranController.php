@@ -24,21 +24,25 @@ class PelanggaranController extends Controller
             $q->where('nama', 'like', "%{$search}%");
         })->paginate(10, ['*'], 'pengaturan_page')->withQueryString();
 
-        $pelanggaranSiswas = PelanggaranSiswa::with(['siswa', 'masterPelanggaran'])
+        $pelanggaranSiswas = PelanggaranSiswa::whereHas('siswa')
+            ->with(['siswa', 'masterPelanggaran'])
             ->when($search && $tab == 'siswa', function($q) use ($search) {
                 $q->whereHas('siswa', function($sq) use ($search) {
                     $sq->where('nama_lengkap', 'like', "%{$search}%");
                 });
             })
+            ->latest()
             ->paginate(10, ['*'], 'siswa_page')
             ->withQueryString();
 
-        $pelanggaranPegawais = PelanggaranPegawai::with(['fungsionaris', 'masterPelanggaran'])
+        $pelanggaranPegawais = PelanggaranPegawai::whereHas('fungsionaris')
+            ->with(['fungsionaris', 'masterPelanggaran'])
             ->when($search && $tab == 'pegawai', function($q) use ($search) {
                 $q->whereHas('fungsionaris', function($fq) use ($search) {
                     $fq->where('nama', 'like', "%{$search}%");
                 });
             })
+            ->latest()
             ->paginate(10, ['*'], 'pegawai_page')
             ->withQueryString();
 
@@ -110,7 +114,7 @@ class PelanggaranController extends Controller
 
     public function showSiswa($id)
     {
-        return response()->json(PelanggaranSiswa::with(['siswa.kelas', 'masterPelanggaran'])->findOrFail($id));
+        return response()->json(PelanggaranSiswa::whereHas('siswa')->with(['siswa.kelas', 'masterPelanggaran'])->findOrFail($id));
     }
 
     public function updateSiswa(Request $request, $id)
@@ -152,7 +156,7 @@ class PelanggaranController extends Controller
 
     public function showPegawai($id)
     {
-        return response()->json(PelanggaranPegawai::with(['fungsionaris', 'masterPelanggaran'])->findOrFail($id));
+        return response()->json(PelanggaranPegawai::whereHas('fungsionaris')->with(['fungsionaris', 'masterPelanggaran'])->findOrFail($id));
     }
 
     public function updatePegawai(Request $request, $id)
@@ -177,14 +181,14 @@ class PelanggaranController extends Controller
     // Report Exports
     public function pdfSiswa($id)
     {
-        $data = PelanggaranSiswa::with(['siswa.kelas', 'masterPelanggaran'])->findOrFail($id);
+        $data = PelanggaranSiswa::whereHas('siswa')->with(['siswa.kelas', 'masterPelanggaran'])->findOrFail($id);
         $pdf = Pdf::loadView('admin.pelanggaran.pdf-siswa', compact('data'));
         return $pdf->stream('laporan-pelanggaran-siswa.pdf');
     }
 
     public function pdfPegawai($id)
     {
-        $data = PelanggaranPegawai::with(['fungsionaris', 'masterPelanggaran'])->findOrFail($id);
+        $data = PelanggaranPegawai::whereHas('fungsionaris')->with(['fungsionaris', 'masterPelanggaran'])->findOrFail($id);
         $pdf = Pdf::loadView('admin.pelanggaran.pdf-pegawai', compact('data'));
         return $pdf->stream('laporan-pelanggaran-pegawai.pdf');
     }
