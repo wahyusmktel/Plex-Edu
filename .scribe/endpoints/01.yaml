@@ -1,0 +1,220 @@
+name: 'School Management'
+description: |-
+
+  APIs for school registration
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/register-school
+    metadata:
+      custom: []
+      groupName: 'School Management'
+      groupDescription: |-
+
+        APIs for school registration
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Register New School'
+      description: "Submit a registration request for a new school. This will create a school with 'pending' status and an admin user."
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      nama_sekolah:
+        custom: []
+        name: nama_sekolah
+        description: 'The name of the school.'
+        required: true
+        example: 'SMA Negeri 1 Jakarta'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      npsn:
+        custom: []
+        name: npsn
+        description: 'The NPSN of the school.'
+        required: true
+        example: '12345678'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      alamat:
+        custom: []
+        name: alamat
+        description: 'The address of the school.'
+        required: true
+        example: 'Jl. Merdeka No. 1'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      provinsi:
+        custom: []
+        name: provinsi
+        description: 'The province of the school.'
+        required: true
+        example: 'DKI Jakarta'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      kabupaten_kota:
+        custom: []
+        name: kabupaten_kota
+        description: 'The city/district.'
+        required: true
+        example: 'Jakarta Pusat'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      kecamatan:
+        custom: []
+        name: kecamatan
+        description: 'The sub-district.'
+        required: true
+        example: Gambir
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      desa_kelurahan:
+        custom: []
+        name: desa_kelurahan
+        description: 'The village/ward.'
+        required: true
+        example: Gambir
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      status_sekolah:
+        custom: []
+        name: status_sekolah
+        description: 'The school status (Negeri/Swasta).'
+        required: true
+        example: Negeri
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      admin_name:
+        custom: []
+        name: admin_name
+        description: 'The full name of the school admin.'
+        required: true
+        example: 'Budi Santoso'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      email:
+        custom: []
+        name: email
+        description: 'The email for the admin login.'
+        required: true
+        example: budi@sekolah.com
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      username:
+        custom: []
+        name: username
+        description: 'The username for the admin login.'
+        required: true
+        example: budiadmin
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      password:
+        custom: []
+        name: password
+        description: 'The password for the admin login (min 8 chars).'
+        required: true
+        example: password123
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      password_confirmation:
+        custom: []
+        name: password_confirmation
+        description: 'The password confirmation.'
+        required: true
+        example: password123
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      nama_sekolah: 'SMA Negeri 1 Jakarta'
+      npsn: '12345678'
+      alamat: 'Jl. Merdeka No. 1'
+      provinsi: 'DKI Jakarta'
+      kabupaten_kota: 'Jakarta Pusat'
+      kecamatan: Gambir
+      desa_kelurahan: Gambir
+      status_sekolah: Negeri
+      admin_name: 'Budi Santoso'
+      email: budi@sekolah.com
+      username: budiadmin
+      password: password123
+      password_confirmation: password123
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+           "status": "success",
+           "message": "Registration successful! Your account is waiting for approval from the Education Office.",
+           "data": {
+             "school_id": "...",
+             "admin_id": "..."
+           }
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+           "message": "The given data was invalid.",
+           "errors": {
+             "email": ["The email has already been taken."]
+           }
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null

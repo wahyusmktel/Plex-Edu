@@ -1,0 +1,84 @@
+name: Endpoints
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/user
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/calendar/events
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"message":"Unauthenticated."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+          set-cookie: 'XSRF-TOKEN=eyJpdiI6IllscGl3aUMwV1QyWERFc1BSM293MlE9PSIsInZhbHVlIjoiSS83Vjh1TkJ2K2I0cUZKbWlQeHo2akloOHVKMStwaDIrbmRJYkFrUkpmOGhKWUZoVXVlY2hGN3JUODlyOENFSzU3eU1wc2Y5OUV0c0hub0NVeUN3NEJtbS82QUdERVJ0dWVGOWw0bWZKQzNTbzZSWVQ3UnRZOWRKMXFjZFFZb1oiLCJtYWMiOiJmMGI2MDA1ZTc3ZTE3OTM1YjdhMjliZTY4YmQ1NDVmOTJjN2FhZjg1ZTUyMDZjMmM3ODEzZDYyOTNiMTE3NDk4IiwidGFnIjoiIn0%3D; expires=Thu, 15 Jan 2026 17:23:54 GMT; Max-Age=7200; path=/; samesite=lax; laravel-session=eyJpdiI6Ikpqdm1HVmpxQnBGbExkTkxFNkw5Unc9PSIsInZhbHVlIjoiSnZFdTd0ZXZzbkRLenNpaXhxL3EvVThMWFI2b3JzS0g2OFdwRDJsaGVsRndZVjFZTzVqNE94dHNQS3haL0o3YUd1aUN1dEhJaExIK1o5dDR2MlNrZTJIMlU0bCtUdkV2TjdtOTg0UDBPczRic3lBNHVjbWcrMXlOY3AydVlsMSsiLCJtYWMiOiIwYTFlODVjNDVjODk3NWU5Njg5N2Y3NDljZDljNjI0ZmQ3ZmRlMGI4ZDY5NjhlN2Q2MzgwNjkyZThlZjI3ZWY2IiwidGFnIjoiIn0%3D; expires=Thu, 15 Jan 2026 17:23:54 GMT; Max-Age=7200; path=/; httponly; samesite=lax'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
