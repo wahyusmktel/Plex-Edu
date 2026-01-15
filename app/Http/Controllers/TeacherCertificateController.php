@@ -15,11 +15,11 @@ class TeacherCertificateController extends Controller
         $user = Auth::user();
         $fungsionaris = $user->fungsionaris;
 
-        if (!$fungsionaris && $user->role !== 'admin') {
+        if (!$fungsionaris && !in_array($user->role, ['admin'])) {
             return redirect()->route('dashboard')->with('error', 'Profil fungsionaris tidak ditemukan.');
         }
 
-        $certificates = TeacherCertificate::when($user->role === 'guru', function ($query) use ($fungsionaris) {
+        $certificates = TeacherCertificate::when(in_array($user->role, ['guru', 'pegawai']) && $fungsionaris, function ($query) use ($fungsionaris) {
             return $query->where('teacher_id', $fungsionaris->id);
         })
         ->latest()
@@ -43,8 +43,8 @@ class TeacherCertificateController extends Controller
         $user = Auth::user();
         $fungsionaris = $user->fungsionaris;
 
-        if (!$fungsionaris && $user->role !== 'admin') {
-            return back()->with('error', 'Profil fungsionaris tidak ditemukan.');
+        if (!$fungsionaris) {
+            return back()->with('error', 'Anda harus memiliki profil fungsionaris untuk mengunggah sertifikat.');
         }
 
         $filePath = $request->file('file')->store('certificates', 'public');

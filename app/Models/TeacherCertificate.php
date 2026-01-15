@@ -8,12 +8,13 @@ use Illuminate\Support\Str;
 
 class TeacherCertificate extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
+        'school_id',
         'teacher_id',
         'name',
         'description',
