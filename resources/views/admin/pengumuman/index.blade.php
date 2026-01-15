@@ -98,7 +98,7 @@
                                 </div>
                                 <div>
                                     <p class="font-bold text-slate-800 leading-none">{{ $item->judul }}</p>
-                                    <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Oleh: {{ $item->user->name }}</p>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Oleh: {{ $item->user->name ?? 'Administrator' }}</p>
                                 </div>
                             </div>
                         </td>

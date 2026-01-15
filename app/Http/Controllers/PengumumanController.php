@@ -11,7 +11,8 @@ class PengumumanController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $pengumumans = Pengumuman::with('user')
+        $pengumumans = Pengumuman::whereHas('user')
+            ->with('user')
             ->when($search, function ($query, $search) {
                 return $query->where('judul', 'like', "%{$search}%")
                              ->orWhere('pesan', 'like', "%{$search}%");

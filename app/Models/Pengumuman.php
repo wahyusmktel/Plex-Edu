@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Pengumuman extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $table = 'pengumumans';
 
     protected $fillable = [
+        'school_id',
         'user_id',
         'judul',
         'pesan',
