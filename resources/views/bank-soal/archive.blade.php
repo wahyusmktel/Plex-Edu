@@ -60,10 +60,14 @@
                 <h3 class="text-xl font-black text-slate-800 leading-tight mb-4 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]">{{ $bank->title }}</h3>
                 
                 <div class="space-y-4">
-                    <div class="p-4 bg-slate-50 rounded-2xl flex items-center justify-between">
+                    <div class="p-4 bg-slate-50 rounded-2xl space-y-3">
                         <div>
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">GURU PENYUSUN</p>
-                            <p class="text-xs font-black text-slate-700">{{ $bank->teacher->nama_lengkap ?? 'Administrator' }}</p>
+                            <p class="text-xs font-black text-slate-700">{{ $bank->teacher->nama ?? 'Administrator' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">ASAL SEKOLAH</p>
+                            <p class="text-xs font-black text-indigo-600">{{ $bank->school->nama_sekolah ?? '-' }}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-4 py-4 border-t border-slate-50">

@@ -49,7 +49,17 @@ class BankSoalController extends Controller
         $user = Auth::user();
         $fungsionaris = $user->fungsionaris;
 
-        $query = BankSoal::with(['subject', 'teacher', 'questions'])
+        $query = BankSoal::withoutGlobalScope('school')
+            ->with([
+                'subject' => function($q) {
+                    $q->withoutGlobalScope('school');
+                }, 
+                'teacher' => function($q) {
+                    $q->withoutGlobalScope('school');
+                }, 
+                'school',
+                'questions'
+            ])
             ->where('status', 'public');
 
         if ($user->role === 'guru' && $fungsionaris) {
@@ -99,7 +109,24 @@ class BankSoalController extends Controller
 
     public function show($id)
     {
-        $bankSoal = BankSoal::with(['subject', 'questions.options'])->findOrFail($id);
+        $bankSoal = BankSoal::withoutGlobalScope('school')
+            ->with([
+                'subject' => function($q) {
+                    $q->withoutGlobalScope('school');
+                }, 
+                'teacher' => function($q) {
+                    $q->withoutGlobalScope('school');
+                },
+                'school',
+                'questions.options'
+            ])
+            ->findOrFail($id);
+
+        // Check if the bank soal belongs to the user's school OR is public
+        if ($bankSoal->school_id !== Auth::user()->school_id && $bankSoal->status !== 'public') {
+            abort(403, 'Anda tidak memiliki akses ke Bank Soal ini.');
+        }
+
         return view('bank-soal.show', compact('bankSoal'));
     }
 

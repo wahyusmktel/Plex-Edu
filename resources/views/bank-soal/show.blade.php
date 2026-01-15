@@ -12,17 +12,28 @@
             <span class="text-slate-300">{{ $bankSoal->title }}</span>
         </nav>
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
+            <div class="flex-grow">
                 <h1 class="text-3xl font-black text-slate-800 tracking-tight leading-tight uppercase">{{ $bankSoal->title }}</h1>
-                <div class="flex items-center gap-4 mt-2">
+                <div class="flex flex-wrap items-center gap-4 mt-3">
                     <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[9px] font-black uppercase tracking-widest">{{ $bankSoal->subject->nama_pelajaran }}</span>
-                    <span class="px-3 py-1 bg-indigo-50 text-indigo-500 rounded-full text-[9px] font-black uppercase tracking-widest text-xs">KELAS {{ $bankSoal->level }}</span>
+                    <span class="px-3 py-1 bg-indigo-50 text-indigo-500 rounded-full text-[9px] font-black uppercase tracking-widest">KELAS {{ $bankSoal->level }}</span>
+                    <div class="h-4 w-px bg-slate-200 mx-1"></div>
+                    <div class="flex items-center gap-2">
+                        <i class="material-icons text-slate-400 text-sm">person</i>
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{{ $bankSoal->teacher->nama ?? 'Administrator' }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="material-icons text-indigo-400 text-sm">school</i>
+                        <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{{ $bankSoal->school->nama_sekolah ?? '-' }}</span>
+                    </div>
                 </div>
             </div>
+            @if($bankSoal->school_id === Auth::user()->school_id)
             <button x-data @click="$dispatch('open-modal', 'add-question')" class="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-lg hover:bg-slate-800 active:scale-95 transition-all text-xs uppercase tracking-widest cursor-pointer">
                 <i class="material-icons text-lg">add_circle</i>
                 TAMBAH SOAL
             </button>
+            @endif
         </div>
     </div>
 
@@ -75,6 +86,7 @@
                         </div>
                     </div>
                     
+                    @if($bankSoal->school_id === Auth::user()->school_id)
                     <div class="flex flex-col gap-2">
                         <button x-data @click="$dispatch('open-modal', 'edit-question-{{ $question->id }}')" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all">
                             <i class="material-icons text-base">edit</i>
@@ -87,6 +99,7 @@
                             </button>
                         </form>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
