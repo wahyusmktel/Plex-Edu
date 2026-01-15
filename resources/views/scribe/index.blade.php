@@ -26,7 +26,7 @@
             </style>
 
     <script>
-        var tryItOutBaseUrl = "http://localhost";
+        var tryItOutBaseUrl = "http://localhost:8000";
         var useCsrf = Boolean();
         var csrfUrl = "/sanctum/csrf-cookie";
     </script>
@@ -120,7 +120,7 @@
     <div class="content">
         <h1 id="introduction">Introduction</h1>
 <aside>
-    <strong>Base URL</strong>: <code>http://localhost</code>
+    <strong>Base URL</strong>: <code>http://localhost:8000</code>
 </aside>
 <pre><code>This documentation aims to provide all the information you need to work with our API.
 
@@ -147,7 +147,7 @@ You can switch the language used with the tabs at the top right (or from the nav
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "http://localhost/api/login" \
+    "http://localhost:8000/api/login" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -160,7 +160,7 @@ You can switch the language used with the tabs at the top right (or from the nav
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/login"
+    "http://localhost:8000/api/login"
 );
 
 const headers = {
@@ -341,14 +341,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "http://localhost/api/logout" \
+    "http://localhost:8000/api/logout" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/logout"
+    "http://localhost:8000/api/logout"
 );
 
 const headers = {
@@ -465,14 +465,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost/api/user" \
+    --get "http://localhost:8000/api/user" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/user"
+    "http://localhost:8000/api/user"
 );
 
 const headers = {
@@ -591,14 +591,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost/api/calendar/events" \
+    --get "http://localhost:8000/api/calendar/events" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/calendar/events"
+    "http://localhost:8000/api/calendar/events"
 );
 
 const headers = {
@@ -624,7 +624,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: no-cache, private
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6IllscGl3aUMwV1QyWERFc1BSM293MlE9PSIsInZhbHVlIjoiSS83Vjh1TkJ2K2I0cUZKbWlQeHo2akloOHVKMStwaDIrbmRJYkFrUkpmOGhKWUZoVXVlY2hGN3JUODlyOENFSzU3eU1wc2Y5OUV0c0hub0NVeUN3NEJtbS82QUdERVJ0dWVGOWw0bWZKQzNTbzZSWVQ3UnRZOWRKMXFjZFFZb1oiLCJtYWMiOiJmMGI2MDA1ZTc3ZTE3OTM1YjdhMjliZTY4YmQ1NDVmOTJjN2FhZjg1ZTUyMDZjMmM3ODEzZDYyOTNiMTE3NDk4IiwidGFnIjoiIn0%3D; expires=Thu, 15 Jan 2026 17:23:54 GMT; Max-Age=7200; path=/; samesite=lax; laravel-session=eyJpdiI6Ikpqdm1HVmpxQnBGbExkTkxFNkw5Unc9PSIsInZhbHVlIjoiSnZFdTd0ZXZzbkRLenNpaXhxL3EvVThMWFI2b3JzS0g2OFdwRDJsaGVsRndZVjFZTzVqNE94dHNQS3haL0o3YUd1aUN1dEhJaExIK1o5dDR2MlNrZTJIMlU0bCtUdkV2TjdtOTg0UDBPczRic3lBNHVjbWcrMXlOY3AydVlsMSsiLCJtYWMiOiIwYTFlODVjNDVjODk3NWU5Njg5N2Y3NDljZDljNjI0ZmQ3ZmRlMGI4ZDY5NjhlN2Q2MzgwNjkyZThlZjI3ZWY2IiwidGFnIjoiIn0%3D; expires=Thu, 15 Jan 2026 17:23:54 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6Imt6ZmZtcG1XamZjUzdoR1hpejEySHc9PSIsInZhbHVlIjoicExYYklTTUhQSUI4ejZhUXZUL3FFVndtUkVjeG93ODQ4dy96V09GSGcwVGk0eFRDbENJVGFEc1VRbElibTYvelZzNHdSTG92M3NOa1Z1aUNxRklyVnA5MG9hWFdvNjBjdGdqSGZDT3FFTmZkdGhzNWI3cmc4dkliT2tiYk83M3kiLCJtYWMiOiJkMGU3MjVkOWRkODFkY2M2YmU1OThmNmI4MWIyMWExM2M2MTkyYjY3NTc1ZTEwOWFmODUxNmU0ZmYyZmIzMzZhIiwidGFnIjoiIn0%3D; expires=Thu, 15 Jan 2026 17:27:58 GMT; Max-Age=7200; path=/; samesite=lax; laravel-session=eyJpdiI6IjAvTmlidmkvdGJKSUNVV2JYc1BRVWc9PSIsInZhbHVlIjoiRTdabjFzZk1XQThSRnV2TWQzOTdjQURVeDJGeUZTaG95cHpuVSszMmJ4RFMxR3RVR09BZEFVaEk1ZS9BTXZKVzZ1ODlFQUMwZ1B6bk9tZEZhME9uSEFsSFJqZDNUMWFtS25BQ1VNRFBUb2lSZjg0U1ZIMGRoWDhSa09pUFhNTmQiLCJtYWMiOiJhOTFiMjYxOWFkMmU2N2VlMThmNjMxOGNhMWQ1ZjhlZTg1NmFhMjc0YzVjZGQyZWU4Zjc3ZTAxNDVjODExM2JiIiwidGFnIjoiIn0%3D; expires=Thu, 15 Jan 2026 17:27:58 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">{
@@ -722,7 +722,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "http://localhost/api/register-school" \
+    "http://localhost:8000/api/register-school" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -745,7 +745,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost/api/register-school"
+    "http://localhost:8000/api/register-school"
 );
 
 const headers = {
