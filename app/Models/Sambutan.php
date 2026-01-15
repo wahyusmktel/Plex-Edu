@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Sambutan extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
+        'school_id',
         'judul',
         'thumbnail',
         'konten',
