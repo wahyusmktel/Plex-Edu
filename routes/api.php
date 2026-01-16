@@ -3,12 +3,16 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\SchoolRegistrationController;
 use App\Http\Controllers\Api\SchoolManagementController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\SliderController;
+use App\Http\Controllers\Api\StudentAttendanceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register-school', [SchoolRegistrationController::class, 'register']);
+Route::get('/sliders/image/{filename}', [SliderController::class, 'showImage']);
 
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -16,6 +20,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    Route::get('/dashboard-stats', [DashboardController::class, 'index']);
+    Route::get('/sliders', [SliderController::class, 'index']);
+    
+    // Student Attendance
+    Route::get('/student/schedule-today', [StudentAttendanceController::class, 'getTodaySchedule']);
+    Route::post('/student/attendance', [StudentAttendanceController::class, 'submitAttendance']);
 
     // School Management
     Route::prefix('school')->group(function () {

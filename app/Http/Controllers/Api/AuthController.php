@@ -65,6 +65,10 @@ class AuthController extends Controller
 
         $token = $user->createToken($request->device_name)->plainTextToken;
 
+        if ($user->school_id) {
+            $user->load('school');
+        }
+
         return response()->json([
             'status' => 'success',
             'message' => 'Login berhasil',
@@ -75,7 +79,8 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'username' => $user->username,
                     'role' => $user->role,
-                    'school_id' => $user->school_id
+                    'school_id' => $user->school_id,
+                    'school_name' => $user->school?->nama_sekolah
                 ]
             ]
         ]);
