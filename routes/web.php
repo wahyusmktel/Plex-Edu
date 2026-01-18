@@ -242,6 +242,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/export-excel', [App\Http\Controllers\CbtController::class, 'exportExcel'])->name('exportExcel');
         Route::get('/{id}/export-pdf', [App\Http\Controllers\CbtController::class, 'exportPdf'])->name('exportPdf');
         Route::get('/{id}/analysis', [App\Http\Controllers\CbtController::class, 'analysis'])->name('analysis');
+        Route::get('/session/{id}', [App\Http\Controllers\CbtController::class, 'sessionDetail'])->name('session-detail');
         Route::get('/grade-essay/{question_id}', [App\Http\Controllers\CbtController::class, 'gradeEssay'])->name('gradeEssay');
         Route::post('/grade-essay/store', [App\Http\Controllers\CbtController::class, 'storeGrade'])->name('gradeEssay.store');
     });

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\SliderController;
 use App\Http\Controllers\Api\StudentAttendanceController;
 use App\Http\Controllers\Api\ELearningApiController;
+use App\Http\Controllers\Api\BankSoalApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/cbt/session/{session_id}/questions', [ELearningApiController::class, 'getCbtQuestions']);
     Route::post('/student/cbt/session/{session_id}/answer', [ELearningApiController::class, 'submitCbtAnswer']);
     Route::post('/student/cbt/session/{session_id}/finish', [ELearningApiController::class, 'finishCbtSession']);
+
+    // Bank Soal
+    Route::get('/student/bank-soal', [BankSoalApiController::class, 'index']);
+    Route::get('/student/bank-soal/{id}', [BankSoalApiController::class, 'show']);
 
     // School Management
     Route::prefix('school')->group(function () {

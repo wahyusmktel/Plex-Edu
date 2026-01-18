@@ -263,6 +263,18 @@ class CbtController extends Controller
         return view('admin.cbt.analysis', compact('cbt'));
     }
 
+    public function sessionDetail($id)
+    {
+        $session = \App\Models\CbtSession::with([
+            'cbt.subject', 
+            'siswa.kelas', 
+            'answers.question.options', 
+            'answers.option'
+        ])->findOrFail($id);
+        
+        return view('admin.cbt.session-detail', compact('session'));
+    }
+
     public function gradeEssay($question_id)
     {
         $question = CbtQuestion::with(['cbt.subject', 'answers.session.siswa', 'answers.session.cbt'])->findOrFail($question_id);

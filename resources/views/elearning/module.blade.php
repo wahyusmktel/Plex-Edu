@@ -307,6 +307,66 @@
                     </script>
                     @endif
 
+                    <!-- Teacher CBT Results View (FOR GURU/ADMIN) -->
+                    @if(auth()->user()->role !== 'siswa' && ($module->type === 'exam' || $module->type === 'exercise') && $module->cbt)
+                    <div class="mt-12 border-t border-slate-50 pt-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Daftar Hasil CBT</h3>
+                            <a href="{{ route('cbt.results', $module->cbt_id) }}" class="text-xs font-black text-[#d90d8b] uppercase tracking-widest hover:underline flex items-center gap-1">
+                                LIHAT ANALISIS LENGKAP <i class="material-icons text-sm">arrow_forward</i>
+                            </a>
+                        </div>
+                        <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden overflow-x-auto">
+                            <table class="w-full text-left min-w-[600px]">
+                                <thead class="bg-slate-50 border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    <tr>
+                                        <th class="px-8 py-4">Siswa</th>
+                                        <th class="px-8 py-4">Kelas</th>
+                                        <th class="px-8 py-4 text-center">Skor</th>
+                                        <th class="px-8 py-4 text-center">Status</th>
+                                        <th class="px-8 py-4 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    @forelse($module->cbt->sessions as $session)
+                                    <tr class="group hover:bg-slate-50/50 transition-colors">
+                                        <td class="px-8 py-6">
+                                            <p class="text-sm font-black text-slate-700">{{ $session->siswa->nama_lengkap ?? 'N/A' }}</p>
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ $session->siswa->nisn ?? '-' }}</p>
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <span class="px-3 py-1 bg-slate-100 rounded-full text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                                                {{ $session->siswa->kelas->nama_kelas ?? '-' }}
+                                            </span>
+                                        </td>
+                                        <td class="px-8 py-6 text-center">
+                                            <span class="text-lg font-black text-slate-700">{{ $session->skor }}</span>
+                                            <span class="text-[10px] font-bold text-slate-400">/ 100</span>
+                                        </td>
+                                        <td class="px-8 py-6 text-center">
+                                            @if($session->status == 'completed')
+                                                <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black uppercase whitespace-nowrap">SELESAI</span>
+                                            @else
+                                                <span class="px-3 py-1 bg-amber-50 text-amber-500 rounded-lg text-[9px] font-black uppercase whitespace-nowrap">BERLANGSUNG</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-8 py-6 text-center">
+                                            <a href="{{ route('cbt.session-detail', $session->id) }}" class="p-2 bg-white rounded-xl border border-slate-100 shadow-sm text-slate-400 hover:text-[#d90d8b] transition-all inline-flex items-center justify-center">
+                                                <i class="material-icons">visibility</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="px-8 py-12 text-center text-slate-400 italic text-sm font-medium">Belum ada siswa yang mengerjakan ujian ini.</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+
                     @if(auth()->user()->role === 'siswa')
                     <div class="mt-12 flex justify-center border-t border-slate-50 pt-10">
                         @if(!($module->is_completed ?? false))

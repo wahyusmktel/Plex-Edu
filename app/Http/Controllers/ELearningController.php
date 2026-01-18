@@ -287,6 +287,8 @@ class ELearningController extends Controller
         } else {
              if ($module->type === 'assignment') {
                 $module->load('submissions.siswa.kelas');
+             } elseif (($module->type === 'exam' || $module->type === 'exercise') && $module->cbt_id) {
+                $module->cbt->load('sessions.siswa.kelas');
              }
         }
 
