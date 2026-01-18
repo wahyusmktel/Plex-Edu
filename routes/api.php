@@ -109,6 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileApiController::class, 'index']);
     Route::post('/profile/update', [ProfileApiController::class, 'update']);
     Route::post('/profile/avatar', [ProfileApiController::class, 'updateAvatar']);
+    Route::post('/profile/change-password', [ProfileApiController::class, 'changePassword']);
 
     // School Management
     Route::prefix('school')->group(function () {

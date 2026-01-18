@@ -27,6 +27,23 @@ class ProfileApiController extends Controller
         if ($user->role === 'siswa') {
             $siswa = $user->siswa()->with(['kelas.jurusan'])->first();
             if ($siswa) {
+                // Calculate Stats
+                $subjectIds = \App\Models\Schedule::where('kelas_id', $siswa->kelas_id)
+                    ->pluck('subject_id')
+                    ->unique();
+
+                $totalModules = \App\Models\ELearningModule::whereHas('chapter.course', function($q) use ($subjectIds) {
+                    $q->whereIn('subject_id', $subjectIds);
+                })->count();
+                $completedModules = \App\Models\ELearningProgress::where('siswa_id', $siswa->id)->count();
+                $activityPercent = $totalModules > 0 ? round(($completedModules / $totalModules) * 100) : 0;
+
+                $booksBorrowed = \App\Models\LibraryLoan::where('student_id', $siswa->id)->count();
+                
+                $violationPoints = \App\Models\PelanggaranSiswa::where('siswa_id', $siswa->id)
+                    ->join('master_pelanggarans', 'pelanggaran_siswas.master_pelanggaran_id', '=', 'master_pelanggarans.id')
+                    ->sum('master_pelanggarans.poin');
+
                 $data['detail'] = [
                     'nis' => $siswa->nis ?? '-',
                     'nisn' => $siswa->nisn ?? '-',
@@ -38,11 +55,22 @@ class ProfileApiController extends Controller
                     'kelas' => $siswa->kelas->nama ?? '-',
                     'jurusan' => $siswa->kelas->jurusan->nama ?? '-',
                 ];
+                
+                $data['stats'] = [
+                    'activity' => $activityPercent . '%',
+                    'books' => (string)$booksBorrowed,
+                    'points' => (string)$violationPoints,
+                ];
             } else {
                 $data['detail'] = [
                     'nis' => '-', 'nisn' => '-', 'jenis_kelamin' => '-',
                     'tempat_lahir' => '-', 'tanggal_lahir' => '-',
                     'alamat' => '-', 'no_hp' => '-', 'kelas' => '-', 'jurusan' => '-',
+                ];
+                $data['stats'] = [
+                    'activity' => '0%',
+                    'books' => '0',
+                    'points' => '0',
                 ];
             }
         } else {
@@ -62,6 +90,11 @@ class ProfileApiController extends Controller
                     'alamat' => '-',
                 ];
             }
+            $data['stats'] = [
+                'activity' => '-',
+                'books' => '-',
+                'points' => '-',
+            ];
         }
 
         return response()->json([
@@ -164,5 +197,39 @@ class ProfileApiController extends Controller
             'success' => false,
             'message' => 'Gagal mengunggah foto profil.'
         ], 400);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kata sandi saat ini tidak cocok.'
+            ], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kata sandi berhasil diperbarui.'
+        ]);
     }
 }
