@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\User;
+use App\Notifications\GeneralNotification;
 
 class BeritaController extends Controller
 {
@@ -45,7 +47,23 @@ class BeritaController extends Controller
             $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails', 'public');
         }
 
-        Berita::create($data);
+        $berita = Berita::create($data);
+
+        // Notify all students in this school
+        $schoolId = Auth::user()->school_id;
+        $students = User::where('role', 'siswa')
+            ->where('school_id', $schoolId)
+            ->get();
+
+        foreach ($students as $student) {
+            $student->notify(new GeneralNotification([
+                'type' => 'news',
+                'title' => 'Berita Terbaru',
+                'message' => $berita->judul,
+                'action_type' => 'news_detail',
+                'action_id' => $berita->id
+            ]));
+        }
 
         return response()->json(['success' => 'Berita berhasil ditambahkan']);
     }

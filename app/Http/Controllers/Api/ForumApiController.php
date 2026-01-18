@@ -8,6 +8,7 @@ use App\Models\ForumTopic;
 use App\Models\ForumPost;
 use App\Models\ForumBookmark;
 use App\Models\ForumMute;
+use App\Notifications\GeneralNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -192,12 +193,40 @@ class ForumApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
         }
 
-        ForumPost::create([
+        $post = ForumPost::create([
             'topic_id' => $topic_id,
             'user_id' => $user->id,
             'parent_id' => $request->parent_id,
             'content' => $request->content,
         ]);
+
+        // Send notification
+        $recipient = null;
+        $title = "";
+        $message = "";
+
+        if ($post->parent_id) {
+            $parentPost = ForumPost::find($post->parent_id);
+            if ($parentPost && $parentPost->user_id !== $user->id) {
+                $recipient = $parentPost->user;
+                $title = "Komentar Anda dibalas";
+                $message = "{$user->name} membalas komentar Anda di topik: {$topic->title}";
+            }
+        } elseif ($topic->user_id !== $user->id) {
+            $recipient = $topic->user;
+            $title = "Ada tanggapan di topik Anda";
+            $message = "{$user->name} menanggapi topik: {$topic->title}";
+        }
+
+        if ($recipient) {
+            $recipient->notify(new GeneralNotification([
+                'type' => 'forum',
+                'title' => $title,
+                'message' => $message,
+                'action_type' => 'forum_topic',
+                'action_id' => $topic->id
+            ]));
+        }
 
         return response()->json([
             'success' => true,

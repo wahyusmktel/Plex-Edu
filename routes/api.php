@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PelanggaranApiController;
 use App\Http\Controllers\Api\PengumumanApiController;
 use App\Http\Controllers\Api\ELibraryApiController;
 use App\Http\Controllers\Api\KalenderApiController;
+use App\Http\Controllers\Api\NotificationApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -94,6 +95,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Kalender
     Route::get('/student/kalender', [KalenderApiController::class, 'index']);
+
+    // Notifications
+    Route::get('/student/notifications', [NotificationApiController::class, 'index']);
+    Route::get('/student/notifications/unread-count', [NotificationApiController::class, 'unreadCount']);
+    Route::post('/student/notifications/{id}/mark-as-read', [NotificationApiController::class, 'markAsRead']);
+    Route::post('/student/notifications/{id}/mark-as-unread', [NotificationApiController::class, 'markAsUnread']);
+    Route::post('/student/notifications/mark-all-as-read', [NotificationApiController::class, 'markAllAsRead']);
 
     // School Management
     Route::prefix('school')->group(function () {

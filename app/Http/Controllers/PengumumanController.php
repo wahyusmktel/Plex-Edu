@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Pengumuman;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Notifications\GeneralNotification;
 
 class PengumumanController extends Controller
 {
@@ -33,7 +35,7 @@ class PengumumanController extends Controller
             'is_permanen' => 'required|boolean',
         ]);
 
-        Pengumuman::create([
+        $pengumuman = Pengumuman::create([
             'user_id' => Auth::id(),
             'judul' => $request->judul,
             'pesan' => $request->pesan,
@@ -41,6 +43,21 @@ class PengumumanController extends Controller
             'tanggal_berakhir' => $request->is_permanen ? null : $request->tanggal_berakhir,
             'is_permanen' => $request->is_permanen,
         ]);
+
+        // Notify all students in this school
+        $schoolId = Auth::user()->school_id;
+        $students = User::where('role', 'siswa')
+            ->where('school_id', $schoolId)
+            ->get();
+
+        foreach ($students as $student) {
+            $student->notify(new GeneralNotification([
+                'type' => 'announcement',
+                'title' => 'Pengumuman Baru',
+                'message' => $pengumuman->judul,
+                'action_type' => 'announcement_list'
+            ]));
+        }
 
         return response()->json(['success' => 'Pengumuman berhasil diterbitkan!']);
     }

@@ -11,15 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('kalender_events', function (Blueprint $table) {
-            $table->foreignUuid('school_id')->nullable()->after('id')->constrained('schools')->onDelete('cascade');
-        });
-        Schema::table('sambutans', function (Blueprint $table) {
-            $table->foreignUuid('school_id')->nullable()->after('id')->constrained('schools')->onDelete('cascade');
-        });
-        Schema::table('elections', function (Blueprint $table) {
-            $table->foreignUuid('school_id')->nullable()->after('id')->constrained('schools')->onDelete('cascade');
-        });
+        if (!Schema::hasColumn('kalender_events', 'school_id')) {
+            Schema::table('kalender_events', function (Blueprint $table) {
+                $table->foreignUuid('school_id')->nullable()->after('id')->constrained('schools')->onDelete('cascade');
+            });
+        }
+        if (!Schema::hasColumn('sambutans', 'school_id')) {
+            Schema::table('sambutans', function (Blueprint $table) {
+                $table->foreignUuid('school_id')->nullable()->after('id')->constrained('schools')->onDelete('cascade');
+            });
+        }
+        if (!Schema::hasColumn('elections', 'school_id')) {
+            Schema::table('elections', function (Blueprint $table) {
+                $table->foreignUuid('school_id')->nullable()->after('id')->constrained('schools')->onDelete('cascade');
+            });
+        }
     }
 
     /**

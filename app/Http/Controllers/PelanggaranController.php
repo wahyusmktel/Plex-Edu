@@ -12,6 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PelanggaranSiswaExport;
 use App\Exports\PelanggaranPegawaiExport;
+use App\Notifications\GeneralNotification;
 
 class PelanggaranController extends Controller
 {
@@ -106,6 +107,18 @@ class PelanggaranController extends Controller
         ]);
 
         $pelanggaran = PelanggaranSiswa::create($request->all());
+
+        // Notify Student
+        $siswa = Siswa::find($request->siswa_id);
+        if ($siswa && $siswa->user) {
+            $siswa->user->notify(new GeneralNotification([
+                'type' => 'violation',
+                'title' => 'Catatan Pelanggaran Baru',
+                'message' => 'Anda mendapatkan catatan pelanggaran baru: ' . $pelanggaran->masterPelanggaran?->nama,
+                'action_type' => 'violation_list'
+            ]));
+        }
+
         return response()->json([
             'success' => 'Pelanggaran siswa berhasil dicatat',
             'pdf_url' => route('pelanggaran.pdf-siswa', $pelanggaran->id)
