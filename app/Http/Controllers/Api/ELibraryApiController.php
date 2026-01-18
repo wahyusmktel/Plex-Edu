@@ -304,7 +304,9 @@ class ELibraryApiController extends Controller
             'data' => [
                 'id' => $item->id,
                 'judul' => $item->title,
+                'penulis' => $item->author,
                 'tipe' => $this->mapCategoryToType($item->category),
+                'cover_url' => $item->cover_image ? asset('storage/' . $item->cover_image) : null,
                 'file_url' => $item->file_path ? asset('storage/' . $item->file_path) : null,
                 'durasi' => $item->durasi,
                 'remaining_days' => $remainingDays,
