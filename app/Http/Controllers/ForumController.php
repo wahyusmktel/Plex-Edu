@@ -24,17 +24,27 @@ class ForumController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'visibility' => 'required|in:all,school,class,specific_schools',
+            'class_id' => 'nullable|required_if:visibility,class|exists:kelas,id',
+            'allowed_schools' => 'nullable|required_if:visibility,specific_schools|array',
+            'allowed_schools.*' => 'exists:schools,id',
         ]);
 
         if (!in_array(Auth::user()->role, ['guru', 'admin', 'dinas'])) {
             return back()->with('error', 'Hanya guru, admin, atau dinas yang dapat membuat forum.');
         }
 
-        Forum::create([
+        $forum = Forum::create([
             'created_by' => Auth::id(),
             'title' => $request->title,
             'description' => $request->description,
+            'visibility' => $request->visibility,
+            'class_id' => $request->visibility === 'class' ? $request->class_id : null,
         ]);
+
+        if ($request->visibility === 'specific_schools' && $request->allowed_schools) {
+            $forum->allowedSchools()->attach($request->allowed_schools);
+        }
 
         return back()->with('success', 'Forum berhasil dibuat.');
     }

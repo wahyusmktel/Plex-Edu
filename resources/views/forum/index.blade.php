@@ -103,7 +103,7 @@
                 <p class="text-slate-400 font-medium">Tentukan nama dan tujuan diskusi komunitas Anda.</p>
             </div>
 
-            <form action="{{ route('forum.store') }}" method="POST">
+            <form action="{{ route('forum.store') }}" method="POST" x-data="{ visibility: 'school' }">
                 @csrf
                 <div class="space-y-6">
                     <div>
@@ -120,10 +120,54 @@
                         <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ms-1">DESKRIPSI</label>
                         <textarea 
                             name="description" 
-                            rows="4" 
+                            rows="3" 
                             placeholder="Jelaskan apa yang akan dibahas di forum ini..."
                             class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-800 font-bold placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-pink-50 focus:bg-white transition-all resize-none"
                         ></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ms-1">VISIBILITAS</label>
+                        <select 
+                            name="visibility" 
+                            x-model="visibility"
+                            class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-800 font-bold focus:outline-none focus:ring-4 focus:ring-pink-50 focus:bg-white transition-all"
+                        >
+                            <option value="all">Publik (Semua Orang)</option>
+                            <option value="school">Sekolah Ini Saja</option>
+                            <option value="class">Kelas Tertentu</option>
+                            @if(auth()->user()->role === 'dinas')
+                            <option value="specific_schools">Sekolah Tertentu</option>
+                            @endif
+                        </select>
+                    </div>
+
+                    {{-- Class Selector (shown when visibility=class) --}}
+                    <div x-show="visibility === 'class'" x-transition class="pt-2">
+                        <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ms-1">PILIH KELAS</label>
+                        <select 
+                            name="class_id"
+                            class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-800 font-bold focus:outline-none focus:ring-4 focus:ring-pink-50 focus:bg-white transition-all"
+                        >
+                            <option value="">-- Pilih Kelas --</option>
+                            @php $kelas = \App\Models\Kelas::where('school_id', auth()->user()->school_id)->get(); @endphp
+                            @foreach($kelas as $k)
+                            <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Schools Selector (shown when visibility=specific_schools) --}}
+                    <div x-show="visibility === 'specific_schools'" x-transition class="pt-2">
+                        <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ms-1">PILIH SEKOLAH</label>
+                        <div class="max-h-40 overflow-y-auto bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-2">
+                            @php $schools = \App\Models\School::where('status', 'approved')->orderBy('nama_sekolah')->get(); @endphp
+                            @foreach($schools as $school)
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="allowed_schools[]" value="{{ $school->id }}" class="rounded text-pink-500 focus:ring-pink-300">
+                                <span class="text-sm font-bold text-slate-600">{{ $school->nama_sekolah }}</span>
+                            </label>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 

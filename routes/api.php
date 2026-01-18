@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\SliderController;
 use App\Http\Controllers\Api\StudentAttendanceController;
 use App\Http\Controllers\Api\ELearningApiController;
 use App\Http\Controllers\Api\BankSoalApiController;
+use App\Http\Controllers\Api\ForumApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Bank Soal
     Route::get('/student/bank-soal', [BankSoalApiController::class, 'index']);
     Route::get('/student/bank-soal/{id}', [BankSoalApiController::class, 'show']);
+
+    // Forum
+    Route::get('/student/forums', [ForumApiController::class, 'index']);
+    Route::get('/student/forums/{id}', [ForumApiController::class, 'show']);
+    Route::get('/student/forums/topic/{id}', [ForumApiController::class, 'showTopic']);
+    Route::post('/student/forums/topic/{id}/post', [ForumApiController::class, 'storePost']);
 
     // School Management
     Route::prefix('school')->group(function () {

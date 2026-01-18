@@ -16,6 +16,8 @@ class Forum extends Model
         'title',
         'description',
         'is_active',
+        'visibility',
+        'class_id',
     ];
 
     public function creator()
@@ -26,5 +28,15 @@ class Forum extends Model
     public function topics()
     {
         return $this->hasMany(ForumTopic::class);
+    }
+
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class, 'class_id');
+    }
+
+    public function allowedSchools()
+    {
+        return $this->belongsToMany(School::class, 'forum_allowed_schools', 'forum_id', 'school_id');
     }
 }
