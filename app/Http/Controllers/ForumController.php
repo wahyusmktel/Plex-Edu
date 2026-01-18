@@ -35,6 +35,7 @@ class ForumController extends Controller
         }
 
         $forum = Forum::create([
+            'school_id' => Auth::user()->school_id,
             'created_by' => Auth::id(),
             'title' => $request->title,
             'description' => $request->description,

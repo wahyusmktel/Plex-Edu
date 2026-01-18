@@ -149,9 +149,9 @@
                             class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-800 font-bold focus:outline-none focus:ring-4 focus:ring-pink-50 focus:bg-white transition-all"
                         >
                             <option value="">-- Pilih Kelas --</option>
-                            @php $kelas = \App\Models\Kelas::where('school_id', auth()->user()->school_id)->get(); @endphp
-                            @foreach($kelas as $k)
-                            <option value="{{ $k->id }}">{{ $k->nama_kelas }}</option>
+                            @php $kelasList = \App\Models\Kelas::withoutGlobalScope('school')->where('school_id', auth()->user()->school_id)->orderBy('nama')->get(); @endphp
+                            @foreach($kelasList as $k)
+                            <option value="{{ $k->id }}">{{ $k->nama }}</option>
                             @endforeach
                         </select>
                     </div>
