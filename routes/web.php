@@ -171,6 +171,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/module/{id}', [ELearningController::class, 'destroyModule'])->name('module.destroy');
         Route::get('/module/{id}', [ELearningController::class, 'viewModule'])->name('module.view');
         Route::post('/module/{id}/complete', [ELearningController::class, 'completeModule'])->name('module.complete');
+        Route::post('/module/{id}/submit', [ELearningController::class, 'submitAssignment'])->name('module.submit');
+        Route::post('/submission/{id}/grade', [ELearningController::class, 'gradeSubmission'])->name('module.grade');
     });
 
     // Bank Soal Routes

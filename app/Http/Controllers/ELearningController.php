@@ -250,6 +250,7 @@ class ELearningController extends Controller
     {
         $user = Auth::user();
         $module = ELearningModule::with(['chapter.course.subject', 'cbt'])->findOrFail($id);
+        $submission = null;
 
         if ($user->role === 'siswa') {
             $siswa = $user->siswa;
@@ -277,9 +278,19 @@ class ELearningController extends Controller
             }
 
             $module->is_completed = $isCompleted;
+
+            if ($module->type === 'assignment') {
+                $submission = \App\Models\ELearningSubmission::where('module_id', $id)
+                    ->where('siswa_id', $siswa->id)
+                    ->first();
+            }
+        } else {
+             if ($module->type === 'assignment') {
+                $module->load('submissions.siswa.kelas');
+             }
         }
 
-        return view('elearning.module', compact('module'));
+        return view('elearning.module', compact('module', 'submission'));
     }
 
     public function completeModule($id)
@@ -300,5 +311,64 @@ class ELearningController extends Controller
         ]);
 
         return back()->with('success', 'Modul berhasil ditandai selesai.');
+    }
+
+    public function submitAssignment(Request $request, $id)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'siswa') {
+            return back()->with('error', 'Hanya siswa yang dapat mengirim tugas.');
+        }
+
+        $siswa = $user->siswa;
+        $module = ELearningModule::findOrFail($id);
+
+        if ($module->type !== 'assignment') {
+            return back()->with('error', 'Modul ini bukan penugasan.');
+        }
+
+        $request->validate([
+            'content' => 'nullable|string',
+            'file' => 'nullable|file|max:10240',
+        ]);
+
+        $filePath = null;
+        if ($request->hasFile('file')) {
+            $filePath = $request->file('file')->store('elearning/submissions', 'public');
+        }
+
+        $submission = \App\Models\ELearningSubmission::updateOrCreate([
+            'module_id' => $id,
+            'siswa_id' => $siswa->id,
+        ], [
+            'content' => $request->content,
+            'file_path' => $filePath ?? \App\Models\ELearningSubmission::where('module_id', $id)->where('siswa_id', $siswa->id)->value('file_path'),
+        ]);
+
+        // Also mark as completed
+        ELearningProgress::updateOrCreate([
+            'siswa_id' => $siswa->id,
+            'module_id' => $id,
+        ], [
+            'completed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Tugas berhasil dikirim.');
+    }
+
+    public function gradeSubmission(Request $request, $submission_id)
+    {
+        $request->validate([
+            'score' => 'required|integer|min:0|max:100',
+            'feedback' => 'nullable|string',
+        ]);
+
+        $submission = \App\Models\ELearningSubmission::findOrFail($submission_id);
+        $submission->update([
+            'score' => $request->score,
+            'feedback' => $request->feedback,
+        ]);
+
+        return back()->with('success', 'Nilai berhasil disimpan.');
     }
 }
