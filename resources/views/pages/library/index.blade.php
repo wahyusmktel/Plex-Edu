@@ -67,6 +67,21 @@
             </button>
         </div>
 
+        <!-- Filter Bar -->
+        @if($categories->count() > 0)
+        <div class="px-6 py-4 bg-slate-50/50 flex flex-wrap gap-2 items-center">
+            <span class="text-xs font-bold text-slate-400 mr-2">FILTER KATEGORI:</span>
+            <a href="{{ route('library.index') }}" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all {{ !request('kategori') ? 'bg-[#d90d8b] text-white shadow-md shadow-pink-100' : 'bg-white text-slate-500 border border-slate-200 hover:border-[#d90d8b]/50' }}">
+                SEMUA
+            </a>
+            @foreach($categories as $cat)
+            <a href="{{ route('library.index', ['kategori' => $cat]) }}" class="px-4 py-1.5 rounded-full text-xs font-bold transition-all {{ request('kategori') == $cat ? 'bg-[#d90d8b] text-white shadow-md shadow-pink-100' : 'bg-white text-slate-500 border border-slate-200 hover:border-[#d90d8b]/50' }}">
+                {{ strtoupper($cat) }}
+            </a>
+            @endforeach
+        </div>
+        @endif
+
         <div class="p-6">
             <!-- Books Tab -->
             <div x-show="tab === 'books'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -99,6 +114,11 @@
                         <div class="p-4">
                             <h4 class="font-bold text-slate-800 line-clamp-1">{{ $book->title }}</h4>
                             <p class="text-xs text-slate-500 mt-1">{{ $book->author }}</p>
+                            @if($book->kategori)
+                                <div class="mt-2 text-[10px] font-bold text-[#d90d8b] bg-pink-50 px-2 py-0.5 rounded-md inline-block uppercase">
+                                    {{ $book->kategori }}
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -119,7 +139,14 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-slate-800">{{ $audio->title }}</h4>
-                                <p class="text-xs text-slate-500">{{ $audio->author }}</p>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <p class="text-xs text-slate-500">{{ $audio->author }}</p>
+                                    @if($audio->kategori)
+                                        <span class="text-[9px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded uppercase">
+                                            {{ $audio->kategori }}
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
@@ -156,7 +183,14 @@
                         <div class="p-4 flex items-center justify-between">
                             <div>
                                 <h4 class="font-bold text-slate-800 line-clamp-1">{{ $video->title }}</h4>
-                                <p class="text-xs text-slate-500 mt-1">{{ $video->author }}</p>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <p class="text-xs text-slate-500">{{ $video->author }}</p>
+                                    @if($video->kategori)
+                                        <span class="text-[9px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded uppercase">
+                                            {{ $video->kategori }}
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                             @if(auth()->user()->role !== 'guru')
                             <button type="button" @click="deleteItem('{{ $video->id }}', '{{ addslashes($video->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">

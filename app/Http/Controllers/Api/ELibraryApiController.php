@@ -16,6 +16,7 @@ class ELibraryApiController extends Controller
         $user = Auth::user();
         $type = $request->query('type', 'ebook');
         $search = $request->query('search');
+        $kategori = $request->query('kategori');
 
         // Map Flutter types to database category values
         $categoryMap = [
@@ -41,6 +42,9 @@ class ELibraryApiController extends Controller
                           ->orWhere('author', 'like', "%{$search}%");
                 });
             })
+            ->when($kategori, function ($q, $kategori) {
+                $q->where('kategori', $kategori);
+            })
             ->orderBy('title', 'asc')
             ->get()
             ->map(function ($item) use ($siswa) {
@@ -65,17 +69,28 @@ class ELibraryApiController extends Controller
                     'cover_url' => $item->cover_image ? asset('storage/' . $item->cover_image) : null,
                     'durasi' => $item->durasi,
                     'jumlah_halaman' => $item->jumlah_halaman,
-                    'kategori' => $item->category,
+                    'kategori' => $item->kategori,
                     'is_borrowed' => $activeLoan !== null,
                     'remaining_days' => $remainingDays,
                 ];
             });
 
+        // Get unique categories for filter
+        $categories = LibraryItem::withoutGlobalScope('school')
+            ->where(function ($q) use ($user) {
+                $q->where('school_id', $user->school_id)
+                  ->orWhereNull('school_id');
+            })
+            ->where('category', $category)
+            ->whereNotNull('kategori')
+            ->distinct()
+            ->pluck('kategori');
+
         return response()->json([
             'success' => true,
             'data' => [
                 'items' => $items,
-                'categories' => [],
+                'categories' => $categories,
             ]
         ]);
     }

@@ -46,6 +46,12 @@
                     </div>
 
                     <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Kategori / Label (Opsional)</label>
+                        <input type="text" name="kategori" placeholder="Contoh: Fiksi, Sains, Pelajaran" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#d90d8b] focus:ring-0 transition-all outline-none">
+                        @error('kategori') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="space-y-2">
                         <label class="text-sm font-bold text-slate-700 ml-1">Deskripsi Ringkas</label>
                         <textarea name="description" rows="4" placeholder="Berikan informasi singkat tentang koleksi ini..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#d90d8b] focus:ring-0 transition-all outline-none"></textarea>
                     </div>

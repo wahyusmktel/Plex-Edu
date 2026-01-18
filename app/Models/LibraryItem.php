@@ -23,6 +23,7 @@ class LibraryItem extends Model
         'file_path',
         'durasi',
         'jumlah_halaman',
+        'kategori',
         'is_active',
     ];
 
@@ -65,7 +66,7 @@ class LibraryItem extends Model
 
     public function getKategoriAttribute()
     {
-        return $this->category;
+        return $this->attributes['kategori'] ?? null;
     }
 
     public function getCoverUrlAttribute()

@@ -11,16 +11,30 @@ use Illuminate\Support\Str;
 
 class LibraryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (auth()->user()->role === 'guru') {
             abort(403, 'Guru tidak memiliki akses ke fitur E-Library.');
         }
-        $books = LibraryItem::where('category', 'book')->latest()->get();
-        $audios = LibraryItem::where('category', 'audio')->latest()->get();
-        $videos = LibraryItem::where('category', 'video')->latest()->get();
+
+        $kategori = $request->query('kategori');
+
+        $books = LibraryItem::where('category', 'book')
+            ->when($kategori, fn($q) => $q->where('kategori', $kategori))
+            ->latest()
+            ->get();
+        $audios = LibraryItem::where('category', 'audio')
+            ->when($kategori, fn($q) => $q->where('kategori', $kategori))
+            ->latest()
+            ->get();
+        $videos = LibraryItem::where('category', 'video')
+            ->when($kategori, fn($q) => $q->where('kategori', $kategori))
+            ->latest()
+            ->get();
         
-        return view('pages.library.index', compact('books', 'audios', 'videos'));
+        $categories = LibraryItem::whereNotNull('kategori')->distinct()->pluck('kategori');
+        
+        return view('pages.library.index', compact('books', 'audios', 'videos', 'categories'));
     }
 
     public function create()
@@ -40,6 +54,7 @@ class LibraryController extends Controller
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'category' => 'required|in:book,audio,video',
+            'kategori' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'file' => 'required|file',
             'cover_image' => 'nullable|image|max:2048',
@@ -55,6 +70,7 @@ class LibraryController extends Controller
             'title' => $request->title,
             'author' => $request->author,
             'category' => $request->category,
+            'kategori' => $request->kategori,
             'description' => $request->description,
             'file_path' => $file_path,
             'cover_image' => $cover_image,
