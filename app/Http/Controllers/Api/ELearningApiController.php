@@ -250,6 +250,56 @@ class ELearningApiController extends Controller
         ]);
     }
 
+    public function getCbtList(Request $request)
+    {
+        $user = $request->user();
+        if ($user->role !== 'siswa') {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        $siswa = Siswa::where('user_id', $user->id)->first();
+        if (!$siswa) {
+            return response()->json(['status' => 'error', 'message' => 'Siswa tidak ditemukan'], 404);
+        }
+
+        $cbts = Cbt::withoutGlobalScope('school')
+            ->with(['subject' => function($q) {
+                $q->withoutGlobalScope('school');
+            }])
+            ->where('school_id', $user->school_id)
+            ->orderBy('tanggal', 'desc')
+            ->get()
+            ->filter(function ($cbt) use ($siswa) {
+                return $cbt->canParticipate($siswa);
+            })
+            ->map(function ($cbt) use ($siswa) {
+                // Check if student already has a session
+                $session = CbtSession::where('cbt_id', $cbt->id)
+                    ->where('siswa_id', $siswa->id)
+                    ->first();
+
+                return [
+                    'id' => $cbt->id,
+                    'nama_cbt' => $cbt->nama_cbt,
+                    'subject' => $cbt->subject?->nama_pelajaran ?? 'N/A',
+                    'tanggal' => $cbt->tanggal->format('d M Y'),
+                    'jam_mulai' => $cbt->jam_mulai,
+                    'jam_selesai' => $cbt->jam_selesai,
+                    'status' => $cbt->status,
+                    'show_result' => $cbt->show_result,
+                    'questions_count' => $cbt->questions()->count(),
+                    'session_status' => $session?->status,
+                    'session_score' => $session?->score,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => $cbts
+        ]);
+    }
+
     public function startCbtSession(Request $request, $cbt_id)
     {
         $user = $request->user();

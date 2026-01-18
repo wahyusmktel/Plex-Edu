@@ -43,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/elearning/module/{id}/submission', [ELearningApiController::class, 'getSubmission']);
 
     // CBT
+    Route::get('/student/cbt/list', [ELearningApiController::class, 'getCbtList']);
     Route::post('/student/cbt/{cbt_id}/start', [ELearningApiController::class, 'startCbtSession']);
     Route::get('/student/cbt/session/{session_id}/questions', [ELearningApiController::class, 'getCbtQuestions']);
     Route::post('/student/cbt/session/{session_id}/answer', [ELearningApiController::class, 'submitCbtAnswer']);
