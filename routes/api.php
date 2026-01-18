@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\PengumumanApiController;
 use App\Http\Controllers\Api\ELibraryApiController;
 use App\Http\Controllers\Api\KalenderApiController;
 use App\Http\Controllers\Api\NotificationApiController;
+use App\Http\Controllers\Api\ProfileApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -103,6 +104,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/student/notifications/{id}/mark-as-read', [NotificationApiController::class, 'markAsRead']);
     Route::post('/student/notifications/{id}/mark-as-unread', [NotificationApiController::class, 'markAsUnread']);
     Route::post('/student/notifications/mark-all-as-read', [NotificationApiController::class, 'markAllAsRead']);
+
+    // Profile
+    Route::get('/profile', [ProfileApiController::class, 'index']);
+    Route::post('/profile/update', [ProfileApiController::class, 'update']);
+    Route::post('/profile/avatar', [ProfileApiController::class, 'updateAvatar']);
 
     // School Management
     Route::prefix('school')->group(function () {

@@ -26,6 +26,7 @@ class User extends Authenticatable
         'username',
         'password',
         'role',
+        'avatar',
         'is_suspended_from_forum',
     ];
 
@@ -65,5 +66,12 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        return $this->avatar 
+            ? asset('storage/' . $this->avatar) 
+            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random&size=256';
     }
 }
