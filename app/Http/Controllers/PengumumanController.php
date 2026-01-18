@@ -55,7 +55,8 @@ class PengumumanController extends Controller
                 'type' => 'announcement',
                 'title' => 'Pengumuman Baru',
                 'message' => $pengumuman->judul,
-                'action_type' => 'announcement_list'
+                'action_type' => 'announcement_detail',
+                'action_id' => $pengumuman->id
             ]));
         }
 

@@ -55,4 +55,31 @@ class PengumumanApiController extends Controller
             'data' => $pengumumans
         ]);
     }
+
+    public function show($id)
+    {
+        $user = Auth::user();
+        $p = Pengumuman::withoutGlobalScope('school')
+            ->where('id', $id)
+            ->where(function ($query) use ($user) {
+                $query->where('school_id', $user->school_id)
+                    ->orWhereHas('user', function ($q) {
+                        $q->where('role', 'dinas');
+                    });
+            })
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $p->id,
+                'judul' => $p->judul,
+                'pesan' => $p->pesan,
+                'tanggal_terbit' => \Carbon\Carbon::parse($p->tanggal_terbit)->format('d M Y'),
+                'is_permanen' => $p->is_permanen,
+                'penulis' => $p->user?->name ?? 'Admin',
+                'source' => $p->user?->role === 'dinas' ? 'dinas' : 'sekolah',
+            ]
+        ]);
+    }
 }

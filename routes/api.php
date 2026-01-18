@@ -85,6 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Pengumuman
     Route::get('/student/pengumuman', [PengumumanApiController::class, 'index']);
+    Route::get('/student/pengumuman/{id}', [PengumumanApiController::class, 'show']);
 
     // E-Library
     Route::get('/student/elibrary/catalog', [ELibraryApiController::class, 'catalog']);
