@@ -9,6 +9,13 @@ use App\Http\Controllers\Api\StudentAttendanceController;
 use App\Http\Controllers\Api\ELearningApiController;
 use App\Http\Controllers\Api\BankSoalApiController;
 use App\Http\Controllers\Api\ForumApiController;
+use App\Http\Controllers\Api\EVotingApiController;
+use App\Http\Controllers\Api\BeritaApiController;
+use App\Http\Controllers\Api\ERaportApiController;
+use App\Http\Controllers\Api\PelanggaranApiController;
+use App\Http\Controllers\Api\PengumumanApiController;
+use App\Http\Controllers\Api\ELibraryApiController;
+use App\Http\Controllers\Api\KalenderApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +65,35 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/forums/{id}', [ForumApiController::class, 'show']);
     Route::get('/student/forums/topic/{id}', [ForumApiController::class, 'showTopic']);
     Route::post('/student/forums/topic/{id}/post', [ForumApiController::class, 'storePost']);
+
+    // E-Voting
+    Route::get('/student/evoting', [EVotingApiController::class, 'index']);
+    Route::get('/student/evoting/{id}', [EVotingApiController::class, 'show']);
+    Route::post('/student/evoting/{id}/vote', [EVotingApiController::class, 'vote']);
+
+    // Berita
+    Route::get('/student/berita', [BeritaApiController::class, 'index']);
+    Route::get('/student/berita/{id}', [BeritaApiController::class, 'show']);
+
+    // E-Raport
+    Route::get('/student/eraport', [ERaportApiController::class, 'index']);
+    Route::get('/student/eraport/{id}', [ERaportApiController::class, 'show']);
+
+    // Pelanggaran
+    Route::get('/student/pelanggaran', [PelanggaranApiController::class, 'index']);
+
+    // Pengumuman
+    Route::get('/student/pengumuman', [PengumumanApiController::class, 'index']);
+
+    // E-Library
+    Route::get('/student/elibrary/catalog', [ELibraryApiController::class, 'catalog']);
+    Route::get('/student/elibrary/item/{id}', [ELibraryApiController::class, 'show']);
+    Route::post('/student/elibrary/borrow/{id}', [ELibraryApiController::class, 'borrow']);
+    Route::get('/student/elibrary/my-borrowings', [ELibraryApiController::class, 'myBorrowings']);
+    Route::get('/student/elibrary/read/{id}', [ELibraryApiController::class, 'read']);
+
+    // Kalender
+    Route::get('/student/kalender', [KalenderApiController::class, 'index']);
 
     // School Management
     Route::prefix('school')->group(function () {
