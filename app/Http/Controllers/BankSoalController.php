@@ -6,9 +6,13 @@ use App\Models\BankSoal;
 use App\Models\BankSoalQuestion;
 use App\Models\BankSoalOption;
 use App\Models\Subject;
+use App\Imports\BankSoalQuestionImport;
+use App\Exports\BankSoalTemplateExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class BankSoalController extends Controller
 {
@@ -224,5 +228,35 @@ class BankSoalController extends Controller
         if ($question->gambar) Storage::disk('public')->delete($question->gambar);
         $question->delete();
         return back()->with('success', 'Soal berhasil dihapus.');
+    }
+
+    public function importQuestions(Request $request, $id)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        $bankSoal = BankSoal::withoutGlobalScope('school')->findOrFail($id);
+        if ($bankSoal->school_id !== Auth::user()->school_id) {
+            abort(403, 'Anda tidak memiliki akses ke Bank Soal ini.');
+        }
+
+        try {
+            Excel::import(new BankSoalQuestionImport($bankSoal->id), $request->file('file'));
+            return back()->with('success', 'Soal berhasil diimport ke bank soal.');
+        } catch (ValidationException $e) {
+            $errors = collect($e->failures())->map(function ($failure) {
+                return 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            })->implode(' | ');
+
+            return back()->with('error', $errors ?: 'Gagal import soal.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal import soal.');
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new BankSoalTemplateExport, 'template_import_bank_soal.xlsx');
     }
 }

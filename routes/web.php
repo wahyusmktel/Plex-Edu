@@ -179,7 +179,9 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('bank-soal')->name('bank-soal.')->group(function () {
         Route::get('/', [BankSoalController::class, 'index'])->name('index');
         Route::get('/archive', [BankSoalController::class, 'archive'])->name('archive');
+        Route::get('/download-template', [BankSoalController::class, 'downloadTemplate'])->name('download-template');
         Route::post('/store', [BankSoalController::class, 'store'])->name('store');
+        Route::post('/{id}/import', [BankSoalController::class, 'importQuestions'])->name('import');
         Route::get('/{id}', [BankSoalController::class, 'show'])->name('show');
         Route::post('/{id}/update', [BankSoalController::class, 'update'])->name('update');
         Route::delete('/{id}', [BankSoalController::class, 'destroy'])->name('destroy');

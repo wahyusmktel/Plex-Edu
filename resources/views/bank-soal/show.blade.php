@@ -29,10 +29,20 @@
                 </div>
             </div>
             @if($bankSoal->school_id === Auth::user()->school_id)
-            <button x-data @click="$dispatch('open-modal', 'add-question')" class="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-lg hover:bg-slate-800 active:scale-95 transition-all text-xs uppercase tracking-widest cursor-pointer">
-                <i class="material-icons text-lg">add_circle</i>
-                TAMBAH SOAL
-            </button>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('bank-soal.download-template') }}" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-50 transition-all text-xs uppercase tracking-widest">
+                    <i class="material-icons text-lg">file_download</i>
+                    TEMPLATE
+                </a>
+                <button x-data @click="$dispatch('open-modal', 'import-questions')" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-50 transition-all text-xs uppercase tracking-widest cursor-pointer">
+                    <i class="material-icons text-lg">file_upload</i>
+                    IMPORT
+                </button>
+                <button x-data @click="$dispatch('open-modal', 'add-question')" class="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-lg hover:bg-slate-800 active:scale-95 transition-all text-xs uppercase tracking-widest cursor-pointer">
+                    <i class="material-icons text-lg">add_circle</i>
+                    TAMBAH SOAL
+                </button>
+            </div>
             @endif
         </div>
     </div>
@@ -225,6 +235,33 @@
             </div>
         </form>
     </div>
+</x-modal>
+
+<!-- Import Questions Modal -->
+<x-modal name="import-questions" title="Import Bank Soal">
+    <form action="{{ route('bank-soal.import', $bankSoal->id) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+        @csrf
+        <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-6 text-center">
+            <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm mx-auto mb-4">
+                <i class="material-icons text-2xl">cloud_upload</i>
+            </div>
+            <p class="text-sm font-bold text-slate-600 mb-1">Unggah file Excel</p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Format .xlsx atau .xls</p>
+            <input type="file" name="file" accept=".xlsx,.xls" required class="mt-4 w-full text-xs font-bold text-slate-500">
+        </div>
+        <div class="flex items-center justify-between gap-4">
+            <a href="{{ route('bank-soal.download-template') }}" class="flex items-center gap-2 px-4 py-3 bg-white border border-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-50 transition-all text-xs uppercase tracking-widest">
+                <i class="material-icons text-base">file_download</i>
+                UNDUH TEMPLATE
+            </a>
+            <button type="submit" class="flex-1 py-4 bg-slate-900 text-white text-[10px] font-black rounded-2xl uppercase tracking-widest hover:bg-slate-800 transition-all">
+                IMPORT SOAL
+            </button>
+        </div>
+        <div class="text-[10px] font-bold text-slate-400 leading-relaxed">
+            Gunakan kolom: JENIS SOAL, PERTANYAAN, POIN, OPSI A-E, JAWABAN (A-E). Essay tidak perlu opsi.
+        </div>
+    </form>
 </x-modal>
 
 <style>
