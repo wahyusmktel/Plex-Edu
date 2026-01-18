@@ -3,72 +3,194 @@
 @section('title', 'Data Sekolah - Literasia')
 
 @section('content')
-<div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-    <div class="flex items-center gap-5">
-        <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-100 flex items-center justify-center text-white">
-            <i class="material-icons text-3xl">domain</i>
+<div x-data="dinasSchoolPage()" class="space-y-8">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-5">
+            <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-100 flex items-center justify-center text-white">
+                <i class="material-icons text-3xl">domain</i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Analisis Data</p>
+                <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Data Sekolah Terdaftar</h1>
+            </div>
         </div>
-        <div>
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Analisis Data</p>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Data Sekolah Terdaftar</h1>
+        
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ route('dinas.schools', ['status' => 'Negeri']) }}" class="px-6 py-2.5 bg-white text-slate-600 text-sm font-bold rounded-xl border border-slate-100 hover:bg-slate-50 transition-all">Negeri</a>
+                <a href="{{ route('dinas.schools', ['status' => 'Swasta']) }}" class="px-6 py-2.5 bg-white text-slate-600 text-sm font-bold rounded-xl border border-slate-100 hover:bg-slate-50 transition-all">Swasta</a>
+                <a href="{{ route('dinas.schools') }}" class="px-6 py-2.5 bg-indigo-500 text-white text-sm font-bold rounded-xl shadow-md hover:bg-indigo-600 transition-all">Semua</a>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ route('dinas.schools.download-template') }}" class="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i class="material-icons text-[20px]">file_download</i> Template
+                </a>
+                <button @click="openImportModal = true" class="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i class="material-icons text-[20px]">file_upload</i> Import
+                </button>
+                <button @click="openCreateModal = true" class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    <i class="material-icons text-[20px]">add_circle</i> Tambah Sekolah
+                </button>
+            </div>
         </div>
     </div>
-    
-    <div class="flex gap-4">
-        <a href="{{ route('dinas.schools', ['status' => 'Negeri']) }}" class="px-6 py-2.5 bg-white text-slate-600 text-sm font-bold rounded-xl border border-slate-100 hover:bg-slate-50 transition-all">Negeri</a>
-        <a href="{{ route('dinas.schools', ['status' => 'Swasta']) }}" class="px-6 py-2.5 bg-white text-slate-600 text-sm font-bold rounded-xl border border-slate-100 hover:bg-slate-50 transition-all">Swasta</a>
-        <a href="{{ route('dinas.schools') }}" class="px-6 py-2.5 bg-indigo-500 text-white text-sm font-bold rounded-xl shadow-md hover:bg-indigo-600 transition-all">Semua</a>
-    </div>
-</div>
 
-<div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead>
-                <tr class="text-left text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
-                    <th class="py-6 px-8 border-b border-slate-50">Nama Sekolah</th>
-                    <th class="py-6 px-8 border-b border-slate-50">NPSN</th>
-                    <th class="py-6 px-8 border-b border-slate-50">Status</th>
-                    <th class="py-6 px-8 border-b border-slate-50">Wilayah</th>
-                    <th class="py-6 px-8 border-b border-slate-50">Koneksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-50">
-                @foreach($schools as $school)
-                <tr class="group hover:bg-slate-50/50 transition-all">
-                    <td class="py-6 px-8">
-                        <p class="font-bold text-slate-700">{{ $school->nama_sekolah }}</p>
-                        <p class="text-xs text-slate-400">{{ $school->jenjang }}</p>
-                    </td>
-                    <td class="py-6 px-8 font-mono text-xs font-bold text-slate-500">{{ $school->npsn }}</td>
-                    <td class="py-6 px-8 text-xs font-bold text-slate-600">
-                        @if($school->status_sekolah == 'Negeri')
-                            <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full border border-blue-100 uppercase text-[10px]">Negeri</span>
-                        @else
-                            <span class="px-3 py-1 bg-purple-50 text-purple-600 rounded-full border border-purple-100 uppercase text-[10px]">Swasta</span>
-                        @endif
-                    </td>
-                    <td class="py-6 px-8 text-xs font-bold text-slate-600">{{ $school->kabupaten_kota }}, {{ $school->provinsi }}</td>
-                    <td class="py-6 px-8">
-                        @if($school->is_active)
-                            <span class="flex items-center gap-1.5 text-emerald-600 text-[10px] font-black uppercase">
-                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Terhubung
-                            </span>
-                        @else
-                            <span class="flex items-center gap-1.5 text-slate-400 text-[10px] font-black uppercase">
-                                <span class="w-1.5 h-1.5 bg-slate-300 rounded-full"></span> Terputus
-                            </span>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="text-left text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
+                        <th class="py-6 px-8 border-b border-slate-50">Nama Sekolah</th>
+                        <th class="py-6 px-8 border-b border-slate-50">NPSN</th>
+                        <th class="py-6 px-8 border-b border-slate-50">Status</th>
+                        <th class="py-6 px-8 border-b border-slate-50">Wilayah</th>
+                        <th class="py-6 px-8 border-b border-slate-50">Koneksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    @foreach($schools as $school)
+                    <tr class="group hover:bg-slate-50/50 transition-all">
+                        <td class="py-6 px-8">
+                            <p class="font-bold text-slate-700">{{ $school->nama_sekolah }}</p>
+                            <p class="text-xs text-slate-400">{{ $school->jenjang }}</p>
+                        </td>
+                        <td class="py-6 px-8 font-mono text-xs font-bold text-slate-500">{{ $school->npsn }}</td>
+                        <td class="py-6 px-8 text-xs font-bold text-slate-600">
+                            @if($school->status_sekolah == 'Negeri')
+                                <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full border border-blue-100 uppercase text-[10px]">Negeri</span>
+                            @else
+                                <span class="px-3 py-1 bg-purple-50 text-purple-600 rounded-full border border-purple-100 uppercase text-[10px]">Swasta</span>
+                            @endif
+                        </td>
+                        <td class="py-6 px-8 text-xs font-bold text-slate-600">{{ $school->kabupaten_kota }}, {{ $school->provinsi }}</td>
+                        <td class="py-6 px-8">
+                            @if($school->is_active)
+                                <span class="flex items-center gap-1.5 text-emerald-600 text-[10px] font-black uppercase">
+                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Terhubung
+                                </span>
+                            @else
+                                <span class="flex items-center gap-1.5 text-slate-400 text-[10px] font-black uppercase">
+                                    <span class="w-1.5 h-1.5 bg-slate-300 rounded-full"></span> Terputus
+                                </span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @if($schools->hasPages())
+        <div class="px-8 py-6 border-t border-slate-50 bg-slate-50/30">
+            {{ $schools->links() }}
+        </div>
+        @endif
     </div>
-    @if($schools->hasPages())
-    <div class="px-8 py-6 border-t border-slate-50 bg-slate-50/30">
-        {{ $schools->links() }}
+
+    <!-- Tambah Sekolah Modal -->
+    <div x-show="openCreateModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="openCreateModal = false"></div>
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl relative z-10 overflow-hidden">
+            <div class="px-10 py-8 flex items-center justify-between border-b border-slate-50">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight">Tambah Sekolah</h2>
+                    <p class="text-slate-400 font-medium text-sm mt-1">Lengkapi data sekolah yang akan ditambahkan.</p>
+                </div>
+                <button @click="openCreateModal = false" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+
+            <form action="{{ route('dinas.schools.store') }}" method="POST" class="px-10 py-8 space-y-6">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Nama Sekolah</label>
+                        <input name="nama_sekolah" type="text" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="SMA Negeri 1 Jakarta" required>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">NPSN</label>
+                        <input name="npsn" type="text" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="12345678" required>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Status Sekolah</label>
+                        <select name="status_sekolah" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all">
+                            <option value="Negeri">Negeri</option>
+                            <option value="Swasta">Swasta</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Provinsi</label>
+                        <input name="provinsi" type="text" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="DKI Jakarta" required>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Kabupaten/Kota</label>
+                        <input name="kabupaten_kota" type="text" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="Jakarta Pusat" required>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Kecamatan</label>
+                        <input name="kecamatan" type="text" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="Gambir" required>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Desa/Kelurahan</label>
+                        <input name="desa_kelurahan" type="text" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="Gambir" required>
+                    </div>
+                    <div class="md:col-span-2 space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
+                        <textarea name="alamat" rows="3" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="Jl. Merdeka No. 10" required></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" @click="openCreateModal = false" class="px-8 py-3.5 rounded-2xl text-sm font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-all">Batal</button>
+                    <button type="submit" class="px-10 py-3.5 rounded-2xl bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                        Simpan Data
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-    @endif
+
+    <!-- Import Sekolah Modal -->
+    <div x-show="openImportModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="openImportModal = false"></div>
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-10 relative z-10">
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Import Data Sekolah</h3>
+            <p class="text-slate-400 font-medium text-sm mb-6">Gunakan template Excel agar format data konsisten.</p>
+            <a href="{{ route('dinas.schools.download-template') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
+                <i class="material-icons text-[18px]">file_download</i> Unduh Template
+            </a>
+
+            <form action="{{ route('dinas.schools.import') }}" method="POST" enctype="multipart/form-data" class="mt-6">
+                @csrf
+                <div class="relative group">
+                    <input type="file" name="file" class="hidden" id="excelFile" @change="fileName = $event.target.files[0].name">
+                    <label for="excelFile" class="flex flex-col items-center justify-center w-full h-48 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer group-hover:bg-pink-50 group-hover:border-[#d90d8b]/30 transition-all">
+                        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm mb-4 group-hover:text-[#d90d8b]">
+                            <i class="material-icons text-3xl">cloud_upload</i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500" x-text="fileName || 'Klik untuk pilih file'"></p>
+                        <p class="text-[11px] text-slate-400 font-semibold mt-2">Format .xlsx atau .xls</p>
+                    </label>
+                </div>
+
+                <div class="flex gap-3 mt-8">
+                    <button type="button" @click="openImportModal = false" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
+                    <button type="submit" class="flex-1 py-4 bg-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:bg-[#ba80e8] transition-all">Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    function dinasSchoolPage() {
+        return {
+            openCreateModal: false,
+            openImportModal: false,
+            fileName: '',
+        }
+    }
+</script>
 @endsection

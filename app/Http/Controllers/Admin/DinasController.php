@@ -8,7 +8,13 @@ use App\Models\User;
 use App\Models\Siswa;
 use App\Models\Fungsionaris;
 use App\Models\PelanggaranSiswa;
+use App\Imports\SchoolImport;
+use App\Exports\SchoolTemplateExport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class DinasController extends Controller
 {
@@ -80,6 +86,76 @@ class DinasController extends Controller
 
         $schools = $query->latest()->paginate(20);
         return view('admin.dinas.school_data', compact('schools'));
+    }
+
+    public function storeSchool(Request $request)
+    {
+        $request->validate([
+            'nama_sekolah' => 'required|string|max:255',
+            'npsn' => 'required|max:20|unique:schools,npsn|unique:users,username',
+            'status_sekolah' => 'required|in:Negeri,Swasta',
+            'provinsi' => 'required|string|max:255',
+            'kabupaten_kota' => 'required|string|max:255',
+            'kecamatan' => 'required|string|max:255',
+            'desa_kelurahan' => 'required|string|max:255',
+            'alamat' => 'required|string',
+        ]);
+
+        $email = $request->npsn . '@admin.literasia.com';
+        if (User::where('email', $email)->exists()) {
+            return back()->with('error', 'Email admin sekolah sudah terdaftar.');
+        }
+
+        DB::transaction(function () use ($request, $email) {
+            $school = School::create([
+                'nama_sekolah' => $request->nama_sekolah,
+                'npsn' => $request->npsn,
+                'status_sekolah' => $request->status_sekolah,
+                'provinsi' => $request->provinsi,
+                'kabupaten_kota' => $request->kabupaten_kota,
+                'kecamatan' => $request->kecamatan,
+                'desa_kelurahan' => $request->desa_kelurahan,
+                'alamat' => $request->alamat,
+                'status' => 'approved',
+                'is_active' => false,
+            ]);
+
+            User::create([
+                'school_id' => $school->id,
+                'name' => $school->nama_sekolah,
+                'email' => $email,
+                'username' => $request->npsn,
+                'password' => Hash::make($request->npsn),
+                'role' => 'admin',
+            ]);
+        });
+
+        return back()->with('success', 'Data sekolah berhasil ditambahkan beserta akun admin.');
+    }
+
+    public function importSchools(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        try {
+            Excel::import(new SchoolImport, $request->file('file'));
+            return back()->with('success', 'Data sekolah berhasil diimport.');
+        } catch (ValidationException $e) {
+            $errors = collect($e->failures())->map(function ($failure) {
+                return 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            })->implode(' | ');
+
+            return back()->with('error', $errors ?: 'Gagal import data sekolah.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal import data sekolah.');
+        }
+    }
+
+    public function downloadSchoolTemplate()
+    {
+        return Excel::download(new SchoolTemplateExport, 'template_import_sekolah.xlsx');
     }
 
     public function certificates()

@@ -262,6 +262,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\DinasController::class, 'index'])->name('index');
         Route::get('/stats', [App\Http\Controllers\Admin\DinasController::class, 'stats'])->name('stats');
         Route::get('/schools', [App\Http\Controllers\Admin\DinasController::class, 'schools'])->name('schools');
+        Route::post('/schools/store', [App\Http\Controllers\Admin\DinasController::class, 'storeSchool'])->name('schools.store');
+        Route::post('/schools/import', [App\Http\Controllers\Admin\DinasController::class, 'importSchools'])->name('schools.import');
+        Route::get('/schools/download-template', [App\Http\Controllers\Admin\DinasController::class, 'downloadSchoolTemplate'])->name('schools.download-template');
         Route::get('/certificates', [App\Http\Controllers\Admin\DinasController::class, 'certificates'])->name('certificates');
         Route::get('/violations', [App\Http\Controllers\Admin\DinasController::class, 'violations'])->name('violations');
         Route::get('/school/{school}', [App\Http\Controllers\Admin\DinasController::class, 'show'])->name('show');
