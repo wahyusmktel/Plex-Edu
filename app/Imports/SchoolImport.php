@@ -15,27 +15,14 @@ class SchoolImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpt
         return preg_replace('/[^a-z0-9]+/', '', strtolower($key));
     }
 
-    private function findKey(array $row, array $parts): ?string
-    {
-        foreach (array_keys($row) as $key) {
-            $normalized = $this->normalizeKey($key);
-            $matched = true;
-            foreach ($parts as $part) {
-                if (!str_contains($normalized, $part)) {
-                    $matched = false;
-                    break;
-                }
-            }
-            if ($matched) {
-                return $key;
-            }
-        }
-
-        return null;
-    }
-
     public function prepareForValidation($data, $index)
     {
+        // 1. Create a normalized version of the row for easier matching
+        $normalizedRow = [];
+        foreach ($data as $key => $value) {
+            $normalizedRow[$this->normalizeKey((string)$key)] = $value;
+        }
+
         $map = [
             'nama_sekolah' => ['nama', 'sekolah'],
             'npsn' => ['npsn'],
@@ -51,12 +38,35 @@ class SchoolImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpt
         ];
 
         foreach ($map as $target => $parts) {
-            if (!array_key_exists($target, $data) || $data[$target] === null) {
-                $found = $this->findKey($data, $parts);
-                if ($found !== null) {
-                    $data[$target] = $data[$found];
+            // Already set by heading row slug?
+            if (isset($data[$target]) && $data[$target] !== null && $data[$target] !== '') {
+                continue;
+            }
+
+            // Try exact match with normalized parts (e.g., 'lintang')
+            foreach ($parts as $part) {
+                if (array_key_exists($part, $normalizedRow)) {
+                    $data[$target] = $normalizedRow[$part];
+                    goto next_target;
                 }
             }
+
+            // Fallback: Multi-part match (e.g., 'nama' and 'sekolah' in 'nama_sekolah')
+            foreach ($normalizedRow as $normKey => $val) {
+                $allMatched = true;
+                foreach ($parts as $part) {
+                    if (!str_contains($normKey, $part)) {
+                        $allMatched = false;
+                        break;
+                    }
+                }
+                if ($allMatched) {
+                    $data[$target] = $val;
+                    goto next_target;
+                }
+            }
+
+            next_target:
         }
 
         if (isset($data['npsn'])) {
@@ -68,25 +78,27 @@ class SchoolImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpt
 
     public function model(array $row)
     {
-        $npsn = isset($row['npsn']) ? trim((string) $row['npsn']) : null;
-        $statusRaw = strtolower(trim((string) ($row['status_sekolah'] ?? 'swasta')));
+        // Re-run mapping logic so model has access to the same keys as rules()
+        $mapped = $this->prepareForValidation($row, 0);
+
+        $npsn = isset($mapped['npsn']) ? trim((string) $mapped['npsn']) : null;
+        $statusRaw = strtolower(trim((string) ($mapped['status_sekolah'] ?? 'swasta')));
         $status = str_contains($statusRaw, 'negeri') ? 'Negeri' : 'Swasta';
 
-        // Only create school data, user account will be generated separately
         return new School([
-            'nama_sekolah' => $row['nama_sekolah'] ?? null,
+            'nama_sekolah' => $mapped['nama_sekolah'] ?? null,
             'npsn' => $npsn,
             'status_sekolah' => $status,
-            'provinsi' => $row['provinsi'] ?? null,
-            'kabupaten_kota' => $row['kabupaten_kota'] ?? null,
-            'kecamatan' => $row['kecamatan'] ?? null,
-            'desa_kelurahan' => $row['desa_kelurahan'] ?? null,
-            'alamat' => $row['alamat'] ?? null,
-            'jenjang' => $row['jenjang'] ?? null,
-            'latitude' => $row['latitude'] ?? null,
-            'longitude' => $row['longitude'] ?? null,
+            'provinsi' => $mapped['provinsi'] ?? null,
+            'kabupaten_kota' => $mapped['kabupaten_kota'] ?? null,
+            'kecamatan' => $mapped['kecamatan'] ?? null,
+            'desa_kelurahan' => $mapped['desa_kelurahan'] ?? null,
+            'alamat' => $mapped['alamat'] ?? null,
+            'jenjang' => $mapped['jenjang'] ?? null,
+            'latitude' => $mapped['latitude'] ?? null,
+            'longitude' => $mapped['longitude'] ?? null,
             'status' => 'approved',
-            'is_active' => true, // Set is_active to true on import
+            'is_active' => true,
         ]);
     }
 
