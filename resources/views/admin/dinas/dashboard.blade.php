@@ -76,8 +76,9 @@
         </div>
     </div>
 
-    <!-- Quick Stats Summary -->
+    <!-- Quick Stats Summary & Map -->
     <div class="lg:col-span-4 space-y-6">
+
         <div class="bg-gradient-to-br from-[#ba80e8] to-[#d90d8b] rounded-[2rem] p-8 text-white shadow-lg shadow-pink-100">
             <div class="flex items-center gap-4 mb-6">
                 <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
@@ -117,4 +118,159 @@
         </div>
     </div>
 </div>
+<!-- School Distribution Map Full Width -->
+<div class="mt-8">
+    <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm" x-data="schoolMapWidget()">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h4 class="text-xl font-extrabold text-slate-800 uppercase tracking-tight">Peta Sebaran Sekolah Nasional</h4>
+                <p class="text-sm font-medium text-slate-400">Monitoring distribusi sekolah berdasarkan jenjang pendidikan</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-6 px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm shadow-red-100"></span> SD: <span x-text="counts.sd" class="text-slate-800 ml-1">0</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm shadow-blue-100"></span> SMP: <span x-text="counts.smp" class="text-slate-800 ml-1">0</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+                        <span class="w-2.5 h-2.5 rounded-full bg-slate-600 shadow-sm shadow-slate-100"></span> SMA/SMK: <span x-text="counts.sma_smk" class="text-slate-800 ml-1">0</span>
+                    </div>
+                </div>
+                
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button @click="open = !open" class="px-6 py-3 bg-white border border-slate-100 text-slate-600 text-sm font-bold rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
+                        <i class="material-icons text-lg">filter_list</i>
+                        Filter Jenjang
+                    </button>
+                    <div x-show="open" x-cloak class="absolute right-0 mt-2 w-56 bg-white rounded-[1.5rem] shadow-xl border border-slate-50 p-2 z-[1001]">
+                        <button @click="filterJenjang('all'); open = false" class="w-full text-left px-4 py-3 text-xs font-bold rounded-xl transition-colors" :class="activeFilter === 'all' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'">
+                            <i class="material-icons text-base align-middle mr-2">all_inclusive</i> Semua Jenjang
+                        </button>
+                        <button @click="filterJenjang('sd'); open = false" class="w-full text-left px-4 py-3 text-xs font-bold rounded-xl transition-colors" :class="activeFilter === 'sd' ? 'bg-red-50 text-red-600' : 'text-slate-600 hover:bg-slate-50'">
+                            <i class="material-icons text-base align-middle mr-2 text-red-500">school</i> Sekolah Dasar (SD)
+                        </button>
+                        <button @click="filterJenjang('smp'); open = false" class="w-full text-left px-4 py-3 text-xs font-bold rounded-xl transition-colors" :class="activeFilter === 'smp' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'">
+                            <i class="material-icons text-base align-middle mr-2 text-blue-500">history_edu</i> SMP
+                        </button>
+                        <button @click="filterJenjang('sma_smk'); open = false" class="w-full text-left px-4 py-3 text-xs font-bold rounded-xl transition-colors" :class="activeFilter === 'sma_smk' ? 'bg-slate-100 text-slate-700' : 'text-slate-600 hover:bg-slate-50'">
+                            <i class="material-icons text-base align-middle mr-2 text-slate-600">apartment</i> SMA/SMK
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="distributionMap" class="w-full h-[500px] rounded-[1.5rem] border border-slate-100 shadow-inner z-10"></div>
+    </div>
+</div>
+
+@push('styles')
+<style>
+    #distributionMap { background-color: #f8fafc; }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}"></script>
+<script>
+    function schoolMapWidget() {
+        return {
+            map: null,
+            markers: [],
+            activeFilter: 'all',
+            counts: { sd: 0, smp: 0, sma_smk: 0 },
+            schools: @json($schoolsWithLocation),
+
+            init() {
+                this.calculateCounts();
+                this.initMap();
+                this.renderMarkers();
+            },
+
+            calculateCounts() {
+                this.counts.sd = this.schools.filter(s => s.jenjang === 'sd').length;
+                this.counts.smp = this.schools.filter(s => s.jenjang === 'smp').length;
+                this.counts.sma_smk = this.schools.filter(s => s.jenjang === 'sma_smk').length;
+            },
+
+            initMap() {
+                const defaultCenter = { lat: -2.5489, lng: 118.0149 };
+                this.map = new google.maps.Map(document.getElementById('distributionMap'), {
+                    center: defaultCenter,
+                    zoom: 4,
+                    mapTypeControl: true,
+                    streetViewControl: false,
+                    fullscreenControl: true,
+                    styles: [
+                        {
+                            "featureType": "administrative",
+                            "elementType": "geometry",
+                            "stylers": [{ "visibility": "off" }]
+                        },
+                        {
+                            "featureType": "poi",
+                            "stylers": [{ "visibility": "off" }]
+                        }
+                    ]
+                });
+                
+                if (this.schools.length > 0) {
+                    const bounds = new google.maps.LatLngBounds();
+                    this.schools.forEach(s => bounds.extend({ lat: parseFloat(s.latitude), lng: parseFloat(s.longitude) }));
+                    this.map.fitBounds(bounds);
+                }
+            },
+
+            renderMarkers() {
+                // Clear existing markers
+                this.markers.forEach(m => m.setMap(null));
+                this.markers = [];
+
+                this.schools.forEach(school => {
+                    if (this.activeFilter !== 'all' && school.jenjang !== this.activeFilter) return;
+
+                    const markerColor = school.jenjang === 'sd' ? '#ef4444' : (school.jenjang === 'smp' ? '#3b82f6' : '#475569');
+                    
+                    const marker = new google.maps.Marker({
+                        position: { lat: parseFloat(school.latitude), lng: parseFloat(school.longitude) },
+                        map: this.map,
+                        title: school.nama_sekolah,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            fillColor: markerColor,
+                            fillOpacity: 1,
+                            strokeColor: '#FFFFFF',
+                            strokeWeight: 2,
+                            scale: 10
+                        }
+                    });
+
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="padding: 8px; font-family: sans-serif;">
+                                <p style="margin: 0 0 4px 0; font-weight: 800; color: #1e293b; font-size: 14px;">${school.nama_sekolah}</p>
+                                <p style="margin: 0 0 8px 0; color: #64748b; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">${school.alamat}</p>
+                                <a href="/dinas/schools/${school.id}" style="color: #d90d8b; font-weight: 700; font-size: 12px; text-decoration: none;">Lihat Detail</a>
+                            </div>
+                        `
+                    });
+
+                    marker.addListener('click', () => {
+                        infoWindow.open(this.map, marker);
+                    });
+
+                    this.markers.push(marker);
+                });
+            },
+
+            filterJenjang(jenjang) {
+                this.activeFilter = jenjang;
+                this.renderMarkers();
+            }
+        }
+    }
+</script>
+@endpush
 @endsection

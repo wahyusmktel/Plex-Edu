@@ -29,6 +29,9 @@ class SekolahController extends Controller
         $request->validate([
             'nama_sekolah' => 'required',
             'status_sekolah' => 'required|in:Negeri,Swasta',
+            'jenjang' => 'required|in:sd,smp,sma_smk',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $identity = auth()->user()->school;

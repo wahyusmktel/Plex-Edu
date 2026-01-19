@@ -2,6 +2,12 @@
 
 @section('title', 'Manajemen Sekolah - Literasia')
 
+@push('styles')
+<style>
+    #pickerMap { cursor: crosshair; background-color: #f8fafc; }
+</style>
+@endpush
+
 @section('content')
 <div x-data="sekolahPage()">
     <!-- Header -->
@@ -68,6 +74,15 @@
                             </select>
                         </div>
 
+                        <div>
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Jenjang Sekolah</label>
+                            <select x-model="identityForm.jenjang" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700">
+                                <option value="sd">SD</option>
+                                <option value="smp">SMP</option>
+                                <option value="sma_smk">SMA/SMK</option>
+                            </select>
+                        </div>
+
                         <div class="col-span-1 md:col-span-2">
                             <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Alamat</label>
                             <textarea x-model="identityForm.alamat" rows="3" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-[#ba80e8] focus:bg-white transition-all outline-none font-bold text-slate-700" placeholder="Alamat lengkap sekolah"></textarea>
@@ -131,6 +146,22 @@
                                     </template>
                                 </select>
                             </div>
+                        </div>
+
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Titik Lokasi (Map)</label>
+                            <div id="pickerMap" class="w-full h-[400px] bg-slate-100 rounded-2xl border border-slate-100 mb-4 z-10"></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Latitude</span>
+                                    <input type="text" x-model="identityForm.latitude" readonly class="bg-transparent border-none outline-none font-mono font-bold text-slate-600 w-full text-sm">
+                                </div>
+                                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Longitude</span>
+                                    <input type="text" x-model="identityForm.longitude" readonly class="bg-transparent border-none outline-none font-mono font-bold text-slate-600 w-full text-sm">
+                                </div>
+                            </div>
+                            <p class="text-[10px] font-medium text-slate-400 mt-2 italic px-2">Geser pin pada peta untuk menyesuaikan titik koordinat sekolah.</p>
                         </div>
 
                         <div class="col-span-1 md:col-span-2 pt-4">
@@ -422,21 +453,25 @@
 </div>
 
 @push('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}"></script>
 <script>
 function sekolahPage() {
     return {
         activeTab: '{{ $identity ? "settings" : "identity" }}',
         identity: @json($identity),
-        identityForm: {
-            nama_sekolah: '{{ $identity->nama_sekolah ?? "" }}',
-            npsn: '{{ $identity->npsn ?? "" }}',
-            alamat: '{{ $identity->alamat ?? "" }}',
-            desa_kelurahan: '{{ $identity->desa_kelurahan ?? "" }}',
-            kecamatan: '{{ $identity->kecamatan ?? "" }}',
-            kabupaten_kota: '{{ $identity->kabupaten_kota ?? "" }}',
-            provinsi: '{{ $identity->provinsi ?? "" }}',
-            status_sekolah: '{{ $identity->status_sekolah ?? "Swasta" }}',
-        },
+            identityForm: {
+                nama_sekolah: '{{ $identity->nama_sekolah ?? "" }}',
+                npsn: '{{ $identity->npsn ?? "" }}',
+                jenjang: '{{ $identity->jenjang ?? "sma_smk" }}',
+                alamat: '{{ $identity->alamat ?? "" }}',
+                latitude: '{{ $identity->latitude ?? "-6.175392" }}',
+                longitude: '{{ $identity->longitude ?? "106.827153" }}',
+                desa_kelurahan: '{{ $identity->desa_kelurahan ?? "" }}',
+                kecamatan: '{{ $identity->kecamatan ?? "" }}',
+                kabupaten_kota: '{{ $identity->kabupaten_kota ?? "" }}',
+                provinsi: '{{ $identity->provinsi ?? "" }}',
+                status_sekolah: '{{ $identity->status_sekolah ?? "Swasta" }}',
+            },
 
         provinceList: [],
         regencyList: [],
@@ -455,8 +490,30 @@ function sekolahPage() {
             village: false
         },
 
+        pickerMap: null,
+        pickerMarker: null,
+
         async init() {
             await this.fetchProvinces();
+            
+            if (this.activeTab === 'identity') {
+                setTimeout(() => this.initPickerMap(), 500);
+            }
+
+            this.$watch('activeTab', value => {
+                if (value === 'identity') {
+                    if (!this.pickerMap) {
+                        this.initPickerMap();
+                    } else {
+                        setTimeout(() => {
+                            google.maps.event.trigger(this.pickerMap, 'resize');
+                            if (this.pickerMarker) {
+                                this.pickerMap.setCenter(this.pickerMarker.getPosition());
+                            }
+                        }, 300);
+                    }
+                }
+            });
             
             // Rehydrate saved data
             if (this.identity && this.identity.provinsi) {
@@ -502,6 +559,42 @@ function sekolahPage() {
             } finally {
                 this.loading.province = false;
             }
+        },
+
+        initPickerMap() {
+            if (this.pickerMap || typeof google === 'undefined') return;
+
+            const lat = parseFloat(this.identityForm.latitude) || -6.175392;
+            const lng = parseFloat(this.identityForm.longitude) || 106.827153;
+            const initialPos = { lat: lat, lng: lng };
+
+            this.pickerMap = new google.maps.Map(document.getElementById('pickerMap'), {
+                center: initialPos,
+                zoom: 13,
+                mapTypeControl: true,
+                streetViewControl: true,
+                fullscreenControl: true,
+            });
+
+            this.pickerMarker = new google.maps.Marker({
+                position: initialPos,
+                map: this.pickerMap,
+                draggable: true,
+                animation: google.maps.Animation.DROP
+            });
+
+            this.pickerMarker.addListener('dragend', () => {
+                const pos = this.pickerMarker.getPosition();
+                this.identityForm.latitude = pos.lat().toFixed(8);
+                this.identityForm.longitude = pos.lng().toFixed(8);
+            });
+
+            this.pickerMap.addListener('click', (e) => {
+                const pos = e.latLng;
+                this.pickerMarker.setPosition(pos);
+                this.identityForm.latitude = pos.lat().toFixed(8);
+                this.identityForm.longitude = pos.lng().toFixed(8);
+            });
         },
 
         async onProvinsiChange() {

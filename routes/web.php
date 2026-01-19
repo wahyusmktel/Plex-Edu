@@ -276,7 +276,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/schools/{school}/reset-password', [App\Http\Controllers\Admin\DinasController::class, 'resetSchoolPassword'])->name('schools.reset-password');
         Route::get('/certificates', [App\Http\Controllers\Admin\DinasController::class, 'certificates'])->name('certificates');
         Route::get('/violations', [App\Http\Controllers\Admin\DinasController::class, 'violations'])->name('violations');
-        Route::get('/school/{school}', [App\Http\Controllers\Admin\DinasController::class, 'show'])->name('show');
+        Route::get('/schools/{school}', [App\Http\Controllers\Admin\DinasController::class, 'show'])->name('schools.show');
         Route::post('/school/{school}/approve', [App\Http\Controllers\Admin\DinasController::class, 'approve'])->name('approve');
         Route::post('/school/{school}/reject', [App\Http\Controllers\Admin\DinasController::class, 'reject'])->name('reject');
         Route::post('/school/{school}/toggle', [App\Http\Controllers\Admin\DinasController::class, 'toggleActive'])->name('toggle');

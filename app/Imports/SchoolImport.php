@@ -45,6 +45,9 @@ class SchoolImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpt
             'kecamatan' => ['kecamatan'],
             'desa_kelurahan' => ['desa', 'kelurahan'],
             'alamat' => ['alamat'],
+            'jenjang' => ['jenjang'],
+            'latitude' => ['lintang', 'latitude', 'lat'],
+            'longitude' => ['bujur', 'longitude', 'lng'],
         ];
 
         foreach ($map as $target => $parts) {
@@ -79,6 +82,9 @@ class SchoolImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpt
             'kecamatan' => $row['kecamatan'] ?? null,
             'desa_kelurahan' => $row['desa_kelurahan'] ?? null,
             'alamat' => $row['alamat'] ?? null,
+            'jenjang' => $row['jenjang'] ?? null,
+            'latitude' => $row['latitude'] ?? null,
+            'longitude' => $row['longitude'] ?? null,
             'status' => 'approved',
             'is_active' => true, // Set is_active to true on import
         ]);
@@ -95,6 +101,7 @@ class SchoolImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpt
             '*.kecamatan' => 'required|string|max:255',
             '*.desa_kelurahan' => 'required|string|max:255',
             '*.alamat' => 'required|string',
+            '*.jenjang' => 'required|in:sd,smp,sma_smk',
         ];
     }
 

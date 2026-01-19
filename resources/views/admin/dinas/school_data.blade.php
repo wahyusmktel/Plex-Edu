@@ -97,6 +97,9 @@
                         </td>
                         <td class="py-6 px-8 text-right">
                             <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a href="{{ route('dinas.schools.show', $school->id) }}" class="p-2 text-indigo-500 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors" title="Detail Sekolah">
+                                    <i class="material-icons text-lg">visibility</i>
+                                </a>
                                 @if($hasAdmin)
                                 <button @click="resetPassword('{{ $school->id }}', '{{ $school->nama_sekolah }}')" class="p-2 text-amber-500 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors" title="Reset Password">
                                     <i class="material-icons text-lg">lock_reset</i>
@@ -142,6 +145,14 @@
                         <input name="npsn" type="text" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="12345678" required>
                     </div>
                     <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Jenjang</label>
+                        <select name="jenjang" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all">
+                            <option value="sd">SD</option>
+                            <option value="smp">SMP</option>
+                            <option value="sma_smk">SMA/SMK</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
                         <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Status Sekolah</label>
                         <select name="status_sekolah" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all">
                             <option value="Negeri">Negeri</option>
@@ -166,7 +177,15 @@
                     </div>
                     <div class="md:col-span-2 space-y-1.5">
                         <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
-                        <textarea name="alamat" rows="3" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="Jl. Merdeka No. 10" required></textarea>
+                        <textarea name="alamat" rows="2" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="Jl. Merdeka No. 10" required></textarea>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Lintang (Lat)</label>
+                        <input name="latitude" type="text" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="-5.2528000">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Bujur (Lng)</label>
+                        <input name="longitude" type="text" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all" placeholder="105.0443000">
                     </div>
                 </div>
 

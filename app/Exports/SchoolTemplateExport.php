@@ -16,22 +16,28 @@ class SchoolTemplateExport implements FromArray, WithHeadings, WithStyles, WithC
             [
                 'SMA Negeri 1 Jakarta',
                 '12345678',
+                'sma_smk',
                 'Negeri',
                 'DKI Jakarta',
                 'Jakarta Pusat',
                 'Gambir',
                 'Gambir',
                 'Jl. Merdeka No. 10',
+                '-6.175392',
+                '106.827153',
             ],
             [
                 'SMK Swasta Harapan Bangsa',
                 '87654321',
+                'sma_smk',
                 'Swasta',
                 'Jawa Barat',
                 'Bandung',
                 'Coblong',
                 'Dago',
                 'Jl. Ir. H. Juanda No. 5',
+                '-6.891480',
+                '107.610659',
             ],
         ];
     }
@@ -41,12 +47,15 @@ class SchoolTemplateExport implements FromArray, WithHeadings, WithStyles, WithC
         return [
             'NAMA SEKOLAH',
             'NPSN',
+            'JENJANG',
             'STATUS SEKOLAH',
             'PROVINSI',
             'KABUPATEN KOTA',
             'KECAMATAN',
             'DESA KELURAHAN',
             'ALAMAT',
+            'LINTANG',
+            'BUJUR',
         ];
     }
 
@@ -68,12 +77,15 @@ class SchoolTemplateExport implements FromArray, WithHeadings, WithStyles, WithC
         return [
             'A' => 36,
             'B' => 16,
-            'C' => 18,
-            'D' => 20,
-            'E' => 24,
-            'F' => 20,
-            'G' => 22,
-            'H' => 40,
+            'C' => 12,
+            'D' => 18,
+            'E' => 20,
+            'F' => 24,
+            'G' => 20,
+            'H' => 22,
+            'I' => 40,
+            'J' => 18,
+            'K' => 18,
         ];
     }
 }

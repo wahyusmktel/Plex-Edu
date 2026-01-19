@@ -36,13 +36,19 @@ class DashboardController extends Controller
             // Latest registrations for quick look
             $latestRegistrations = \App\Models\School::latest()->take(5)->get();
 
+            // All schools with coordinates for the map
+            $schoolsWithLocation = \App\Models\School::whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->get(['id', 'nama_sekolah', 'latitude', 'longitude', 'jenjang', 'alamat']);
+
             return view('admin.dinas.dashboard', compact(
                 'totalSchools',
                 'pendingSchools',
                 'activeSchools',
                 'totalSiswaAcrossSchools',
                 'totalGuruAcrossSchools',
-                'latestRegistrations'
+                'latestRegistrations',
+                'schoolsWithLocation'
             ));
         }
 

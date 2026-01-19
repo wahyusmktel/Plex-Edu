@@ -99,12 +99,15 @@ class DinasController extends Controller
         $request->validate([
             'nama_sekolah' => 'required|string|max:255',
             'npsn' => 'required|max:20|unique:schools,npsn|unique:users,username',
+            'jenjang' => 'required|in:sd,smp,sma_smk',
             'status_sekolah' => 'required|in:Negeri,Swasta',
             'provinsi' => 'required|string|max:255',
             'kabupaten_kota' => 'required|string|max:255',
             'kecamatan' => 'required|string|max:255',
             'desa_kelurahan' => 'required|string|max:255',
             'alamat' => 'required|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $email = $request->npsn . '@admin.literasia.org';
@@ -116,12 +119,15 @@ class DinasController extends Controller
             $school = School::create([
                 'nama_sekolah' => $request->nama_sekolah,
                 'npsn' => $request->npsn,
+                'jenjang' => $request->jenjang,
                 'status_sekolah' => $request->status_sekolah,
                 'provinsi' => $request->provinsi,
                 'kabupaten_kota' => $request->kabupaten_kota,
                 'kecamatan' => $request->kecamatan,
                 'desa_kelurahan' => $request->desa_kelurahan,
                 'alamat' => $request->alamat,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
                 'status' => 'approved',
                 'is_active' => true,
             ]);
