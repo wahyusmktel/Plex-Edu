@@ -47,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/destroy/{id}', [FungsionarisController::class, 'destroy'])->name('destroy');
         Route::post('/import', [FungsionarisController::class, 'import'])->name('import');
         Route::get('/download-template', [FungsionarisController::class, 'downloadTemplate'])->name('download-template');
+        Route::post('/generate-accounts', [FungsionarisController::class, 'generateAccounts'])->name('generate-accounts');
+        Route::post('/{id}/reset-password', [FungsionarisController::class, 'resetPassword'])->name('reset-password');
     });
 
     // Siswa Routes
@@ -58,6 +60,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/destroy/{id}', [SiswaController::class, 'destroy'])->name('destroy');
         Route::post('/import', [SiswaController::class, 'import'])->name('import');
         Route::get('/download-template', [SiswaController::class, 'downloadTemplate'])->name('download-template');
+        Route::post('/generate-accounts', [SiswaController::class, 'generateAccounts'])->name('generate-accounts');
+        Route::post('/{id}/reset-password', [SiswaController::class, 'resetPassword'])->name('reset-password');
     });
 
     // E-Raport Routes
@@ -267,6 +271,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/schools/store', [App\Http\Controllers\Admin\DinasController::class, 'storeSchool'])->name('schools.store');
         Route::post('/schools/import', [App\Http\Controllers\Admin\DinasController::class, 'importSchools'])->name('schools.import');
         Route::get('/schools/download-template', [App\Http\Controllers\Admin\DinasController::class, 'downloadSchoolTemplate'])->name('schools.download-template');
+        Route::post('/schools/generate-accounts', [App\Http\Controllers\Admin\DinasController::class, 'generateSchoolAccounts'])->name('schools.generate-accounts');
+        Route::post('/schools/{school}/reset-password', [App\Http\Controllers\Admin\DinasController::class, 'resetSchoolPassword'])->name('schools.reset-password');
         Route::get('/certificates', [App\Http\Controllers\Admin\DinasController::class, 'certificates'])->name('certificates');
         Route::get('/violations', [App\Http\Controllers\Admin\DinasController::class, 'violations'])->name('violations');
         Route::get('/school/{school}', [App\Http\Controllers\Admin\DinasController::class, 'show'])->name('show');

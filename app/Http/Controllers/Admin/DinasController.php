@@ -85,7 +85,13 @@ class DinasController extends Controller
         }
 
         $schools = $query->latest()->paginate(20);
-        return view('admin.dinas.school_data', compact('schools'));
+        
+        // Count schools without admin accounts
+        $schoolsWithoutAccount = School::whereDoesntHave('users', function($q) {
+            $q->where('role', 'admin');
+        })->count();
+        
+        return view('admin.dinas.school_data', compact('schools', 'schoolsWithoutAccount'));
     }
 
     public function storeSchool(Request $request)
@@ -101,7 +107,7 @@ class DinasController extends Controller
             'alamat' => 'required|string',
         ]);
 
-        $email = $request->npsn . '@admin.literasia.com';
+        $email = $request->npsn . '@admin.literasia.org';
         if (User::where('email', $email)->exists()) {
             return back()->with('error', 'Email admin sekolah sudah terdaftar.');
         }
@@ -117,7 +123,7 @@ class DinasController extends Controller
                 'desa_kelurahan' => $request->desa_kelurahan,
                 'alamat' => $request->alamat,
                 'status' => 'approved',
-                'is_active' => false,
+                'is_active' => true,
             ]);
 
             User::create([
@@ -141,16 +147,80 @@ class DinasController extends Controller
 
         try {
             Excel::import(new SchoolImport, $request->file('file'));
-            return back()->with('success', 'Data sekolah berhasil diimport.');
+            return response()->json(['success' => 'Data sekolah berhasil diimport.']);
         } catch (ValidationException $e) {
             $errors = collect($e->failures())->map(function ($failure) {
                 return 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
             })->implode(' | ');
 
-            return back()->with('error', $errors ?: 'Gagal import data sekolah.');
+            return response()->json(['error' => $errors ?: 'Gagal import data sekolah.'], 422);
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal import data sekolah.');
+            return response()->json(['error' => 'Gagal import data sekolah: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function generateSchoolAccounts(Request $request)
+    {
+        // Get schools without admin account
+        $schools = School::whereDoesntHave('users', function($q) {
+            $q->where('role', 'admin');
+        })->get();
+
+        $total = $schools->count();
+        $generated = 0;
+        $errors = [];
+
+        foreach ($schools as $school) {
+            try {
+                $email = $school->npsn . '@admin.literasia.org';
+                
+                // Skip if email already exists
+                if (User::where('email', $email)->exists()) {
+                    $errors[] = "NPSN {$school->npsn}: Email sudah terdaftar";
+                    continue;
+                }
+
+                User::create([
+                    'school_id' => $school->id,
+                    'name' => $school->nama_sekolah,
+                    'email' => $email,
+                    'username' => $school->npsn,
+                    'password' => Hash::make($school->npsn),
+                    'role' => 'admin',
+                ]);
+
+                $generated++;
+            } catch (\Exception $e) {
+                $errors[] = "NPSN {$school->npsn}: " . $e->getMessage();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'total' => $total,
+            'generated' => $generated,
+            'errors' => $errors,
+            'message' => "{$generated} akun admin sekolah berhasil di-generate dari {$total} sekolah."
+        ]);
+    }
+
+    public function resetSchoolPassword(School $school)
+    {
+        $user = User::where('school_id', $school->id)->where('role', 'admin')->first();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Akun admin sekolah tidak ditemukan.'], 404);
+        }
+
+        $user->update([
+            'password' => Hash::make($school->npsn),
+            'email' => $school->npsn . '@admin.literasia.org', // Update email domain too
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Password akun {$school->nama_sekolah} berhasil direset ke NPSN ({$school->npsn})."
+        ]);
     }
 
     public function downloadSchoolTemplate()
@@ -174,3 +244,4 @@ class DinasController extends Controller
         return view('admin.dinas.violations', compact('violations'));
     }
 }
+

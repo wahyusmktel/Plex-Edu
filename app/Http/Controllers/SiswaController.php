@@ -18,7 +18,11 @@ class SiswaController extends Controller
     {
         $siswas = Siswa::with(['user', 'kelas'])->get();
         $kelas = Kelas::all();
-        return view('admin.siswa.index', compact('siswas', 'kelas'));
+        
+        // Count siswa without user accounts
+        $withoutAccount = Siswa::whereNull('user_id')->count();
+        
+        return view('admin.siswa.index', compact('siswas', 'kelas', 'withoutAccount'));
     }
 
     public function store(Request $request)
@@ -37,7 +41,7 @@ class SiswaController extends Controller
             $user = User::create([
                 'name' => $request->nama_lengkap,
                 'username' => $request->username,
-                'email' => $request->username . '@siswa.literasia.com',
+                'email' => $request->username . '@siswa.literasia.org',
                 'password' => Hash::make($request->password),
                 'role' => 'siswa',
             ]);
@@ -81,7 +85,7 @@ class SiswaController extends Controller
             $user->update([
                 'name' => $request->nama_lengkap,
                 'username' => $request->username,
-                'email' => $request->username . '@siswa.literasia.com',
+                'email' => $request->username . '@siswa.literasia.org',
             ]);
 
             if ($request->password) {
@@ -122,9 +126,86 @@ class SiswaController extends Controller
             'file' => 'required|mimes:xlsx,xls'
         ]);
 
-        Excel::import(new SiswaImport, $request->file('file'));
+        try {
+            Excel::import(new SiswaImport, $request->file('file'));
+            return response()->json(['success' => 'Data siswa berhasil diimport']);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = [];
+            foreach ($failures as $failure) {
+                $errors[] = "Baris " . $failure->row() . ": " . implode(', ', $failure->errors());
+            }
+            return response()->json(['errors' => $errors], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
+    }
 
-        return response()->json(['success' => 'Data siswa berhasil diimport']);
+    public function generateAccounts()
+    {
+        // Get siswa without user account
+        $siswaList = Siswa::whereNull('user_id')->get();
+
+        $total = $siswaList->count();
+        $generated = 0;
+        $errors = [];
+
+        foreach ($siswaList as $siswa) {
+            try {
+                $email = $siswa->nisn . '@siswa.literasia.org';
+                
+                // Skip if email already exists
+                if (User::where('email', $email)->exists()) {
+                    $errors[] = "NISN {$siswa->nisn}: Email sudah terdaftar";
+                    continue;
+                }
+
+                $user = User::create([
+                    'name' => $siswa->nama_lengkap,
+                    'username' => $siswa->nisn,
+                    'email' => $email,
+                    'password' => Hash::make($siswa->nisn), // Password is NISN
+                    'role' => 'siswa',
+                ]);
+
+                $siswa->update(['user_id' => $user->id]);
+                $generated++;
+            } catch (\Exception $e) {
+                $errors[] = "{$siswa->nama_lengkap}: " . $e->getMessage();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'total' => $total,
+            'generated' => $generated,
+            'errors' => $errors,
+            'message' => "{$generated} akun siswa berhasil di-generate dari {$total} data."
+        ]);
+    }
+
+    public function resetPassword($id)
+    {
+        $siswa = Siswa::findOrFail($id);
+        
+        if (!$siswa->user_id) {
+            return response()->json(['error' => 'Siswa ini belum memiliki akun.'], 404);
+        }
+
+        $user = User::find($siswa->user_id);
+        if (!$user) {
+            return response()->json(['error' => 'Akun user tidak ditemukan.'], 404);
+        }
+
+        $user->update([
+            'password' => Hash::make($siswa->nisn), // Reset to NISN
+            'email' => $siswa->nisn . '@siswa.literasia.org', // Update email domain too
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Password {$siswa->nama_lengkap} berhasil direset ke NISN ({$siswa->nisn})."
+        ]);
     }
 
     public function downloadTemplate()
@@ -138,3 +219,4 @@ class SiswaController extends Controller
         return response()->json($siswa);
     }
 }
+

@@ -177,16 +177,41 @@
                 <div class="space-y-1.5">
                     <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">File Scan Raport</label>
                     <div class="relative group">
-                        <input type="file" name="file_raport" class="hidden" id="raportFile" @change="fileName = $event.target.files[0].name">
+                        <input type="file" name="file_raport" class="hidden" id="raportFile" @change="handleFileSelect($event)">
                         <label for="raportFile" class="flex flex-col items-center justify-center w-full h-40 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer group-hover:bg-pink-50 group-hover:border-[#d90d8b]/30 transition-all">
                             <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm mb-3 group-hover:text-[#d90d8b]">
                                 <i class="material-icons text-2xl">cloud_upload</i>
                             </div>
                             <p class="text-sm font-bold text-slate-500" x-text="fileName || 'Klik untuk pilih file'"></p>
-                            <p class="text-[10px] uppercase font-black tracking-widest text-slate-400 mt-1">JPG, JPEG, PDF (Maks. 2MB)</p>
+                            <p class="text-[10px] uppercase font-black tracking-widest text-slate-400 mt-1">JPG, JPEG, PDF (Maks. 10MB)</p>
                         </label>
                     </div>
-                    <p class="text-[10px] text-slate-400 font-bold px-1" x-show="editMode">* Kosongkan jika tidak ingin mengganti file</p>
+                    
+                    <!-- Upload Progress Indicator -->
+                    <div x-show="uploading" class="mt-4">
+                        <div class="flex items-center gap-4">
+                            <div class="relative w-14 h-14 flex-shrink-0">
+                                <svg class="w-14 h-14 transform -rotate-90" viewBox="0 0 36 36">
+                                    <path class="text-slate-100" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                    <path class="text-[#d90d8b]" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"
+                                          :stroke-dasharray="uploadProgress + ', 100'"
+                                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-xs font-black text-[#d90d8b]" x-text="Math.round(uploadProgress) + '%'"></span>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-700" x-text="fileName"></p>
+                                <p class="text-xs text-slate-400">Mengunggah file...</p>
+                                <div class="w-full h-2 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] rounded-full transition-all duration-300" :style="'width: ' + uploadProgress + '%'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-[10px] text-slate-400 font-bold px-1" x-show="editMode && !uploading">* Kosongkan jika tidak ingin mengganti file</p>
                 </div>
             </form>
 
@@ -210,6 +235,8 @@
             openModal: false,
             editMode: false,
             fileName: '',
+            uploading: false,
+            uploadProgress: 0,
             formData: {
                 id: '',
                 siswa_id: '',
@@ -217,10 +244,17 @@
                 tahun_pelajaran: '{{ $activeSetting->tahun_pelajaran ?? '-' }}',
             },
             init() {},
+            handleFileSelect(event) {
+                if (event.target.files.length > 0) {
+                    this.fileName = event.target.files[0].name;
+                }
+            },
             openCreateModal() {
                 this.editMode = false;
                 this.openModal = true;
                 this.fileName = '';
+                this.uploading = false;
+                this.uploadProgress = 0;
                 this.formData = {
                     id: '',
                     siswa_id: '',
@@ -234,24 +268,41 @@
                 let form = document.getElementById('raportForm');
                 let data = new FormData(form);
                 
-                Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                this.uploading = true;
+                this.uploadProgress = 0;
 
-                $.ajax({
-                    url: url,
-                    method: 'POST',
-                    data: data,
-                    contentType: false,
-                    processData: false,
-                    success: (res) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', url, true);
+                xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
+                
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        this.uploadProgress = (e.loaded / e.total) * 100;
+                    }
+                };
+                
+                xhr.onload = () => {
+                    this.uploading = false;
+                    if (xhr.status === 200) {
+                        const res = JSON.parse(xhr.responseText);
                         this.openModal = false;
                         Swal.fire({ icon: 'success', title: 'Berhasil', text: res.success, timer: 1500, showConfirmButton: false }).then(() => location.reload());
-                    },
-                    error: (err) => {
-                        let msg = err.responseJSON?.message || 'Terjadi kesalahan.';
-                        if (err.responseJSON?.errors) msg = Object.values(err.responseJSON.errors).join('<br>');
+                    } else {
+                        let msg = 'Terjadi kesalahan.';
+                        try {
+                            const err = JSON.parse(xhr.responseText);
+                            msg = err.message || Object.values(err.errors || {}).join('<br>');
+                        } catch(e) {}
                         Swal.fire('Oops...', msg, 'error');
                     }
-                });
+                };
+                
+                xhr.onerror = () => {
+                    this.uploading = false;
+                    Swal.fire('Oops...', 'Terjadi kesalahan jaringan.', 'error');
+                };
+                
+                xhr.send(data);
             },
             editData(id) {
                 $.get(`{{ url('e-raport/show') }}/${id}`, (data) => {

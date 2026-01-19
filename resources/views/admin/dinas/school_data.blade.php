@@ -28,6 +28,11 @@
                 <button @click="openImportModal = true" class="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
                     <i class="material-icons text-[20px]">file_upload</i> Import
                 </button>
+                @if($schoolsWithoutAccount > 0)
+                <button @click="generateAccounts()" class="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-md hover:bg-emerald-600 transition-all">
+                    <i class="material-icons text-[20px]">group_add</i> Generate Akun ({{ $schoolsWithoutAccount }})
+                </button>
+                @endif
                 <button @click="openCreateModal = true" class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                     <i class="material-icons text-[20px]">add_circle</i> Tambah Sekolah
                 </button>
@@ -45,6 +50,8 @@
                         <th class="py-6 px-8 border-b border-slate-50">Status</th>
                         <th class="py-6 px-8 border-b border-slate-50">Wilayah</th>
                         <th class="py-6 px-8 border-b border-slate-50">Koneksi</th>
+                        <th class="py-6 px-8 border-b border-slate-50">Akun</th>
+                        <th class="py-6 px-8 border-b border-slate-50 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -73,6 +80,29 @@
                                     <span class="w-1.5 h-1.5 bg-slate-300 rounded-full"></span> Terputus
                                 </span>
                             @endif
+                        </td>
+                        <td class="py-6 px-8">
+                            @php
+                                $hasAdmin = $school->users()->where('role', 'admin')->exists();
+                            @endphp
+                            @if($hasAdmin)
+                                <span class="flex items-center gap-1.5 text-emerald-600 text-[10px] font-black uppercase">
+                                    <i class="material-icons text-sm">check_circle</i> Ada
+                                </span>
+                            @else
+                                <span class="flex items-center gap-1.5 text-amber-500 text-[10px] font-black uppercase">
+                                    <i class="material-icons text-sm">warning</i> Belum
+                                </span>
+                            @endif
+                        </td>
+                        <td class="py-6 px-8 text-right">
+                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                @if($hasAdmin)
+                                <button @click="resetPassword('{{ $school->id }}', '{{ $school->nama_sekolah }}')" class="p-2 text-amber-500 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors" title="Reset Password">
+                                    <i class="material-icons text-lg">lock_reset</i>
+                                </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @endforeach
@@ -160,10 +190,10 @@
                 <i class="material-icons text-[18px]">file_download</i> Unduh Template
             </a>
 
-            <form action="{{ route('dinas.schools.import') }}" method="POST" enctype="multipart/form-data" class="mt-6">
+            <form id="importForm" method="POST" enctype="multipart/form-data" class="mt-6">
                 @csrf
                 <div class="relative group">
-                    <input type="file" name="file" class="hidden" id="excelFile" @change="fileName = $event.target.files[0].name">
+                    <input type="file" name="file" class="hidden" id="excelFile" @change="handleFileSelect($event)">
                     <label for="excelFile" class="flex flex-col items-center justify-center w-full h-48 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer group-hover:bg-pink-50 group-hover:border-[#d90d8b]/30 transition-all">
                         <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm mb-4 group-hover:text-[#d90d8b]">
                             <i class="material-icons text-3xl">cloud_upload</i>
@@ -173,11 +203,60 @@
                     </label>
                 </div>
 
-                <div class="flex gap-3 mt-8">
+                <!-- Progress Indicator -->
+                <div x-show="importing" class="mt-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-slate-600">Mengimport data...</span>
+                        <span class="text-sm font-bold text-[#d90d8b]" x-text="importProgress + '%'"></span>
+                    </div>
+                    <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] rounded-full transition-all duration-300 ease-out" 
+                             :style="'width: ' + importProgress + '%'"></div>
+                    </div>
+                    <div class="flex justify-center mt-4">
+                        <div class="relative w-16 h-16">
+                            <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
+                                <path class="text-slate-100" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="text-[#d90d8b]" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"
+                                      :stroke-dasharray="importProgress + ', 100'"
+                                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <i class="material-icons text-[#d90d8b] animate-pulse">sync</i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-8" x-show="!importing">
                     <button type="button" @click="openImportModal = false" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
-                    <button type="submit" class="flex-1 py-4 bg-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:bg-[#ba80e8] transition-all">Import</button>
+                    <button type="button" @click="importData()" class="flex-1 py-4 bg-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:bg-[#ba80e8] transition-all">Import</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Generate Accounts Progress Modal -->
+    <div x-show="generating" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-10 relative z-10 text-center">
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
+                    <path class="text-slate-100" stroke="currentColor" stroke-width="2.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    <path class="text-emerald-500" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"
+                          :stroke-dasharray="generateProgress + ', 100'"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-2xl font-black text-emerald-600" x-text="generateProgress + '%'"></span>
+                </div>
+            </div>
+            <h3 class="text-xl font-black text-slate-800 mb-2">Generate Akun Sekolah</h3>
+            <p class="text-slate-500 font-medium">Membuat akun admin untuk sekolah yang belum memiliki akun...</p>
+            <div class="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400">
+                <i class="material-icons text-lg animate-spin">autorenew</i>
+                <span>Mohon tunggu sebentar</span>
+            </div>
         </div>
     </div>
 </div>
@@ -190,6 +269,161 @@
             openCreateModal: false,
             openImportModal: false,
             fileName: '',
+            importing: false,
+            importProgress: 0,
+            generating: false,
+            generateProgress: 0,
+
+            handleFileSelect(event) {
+                if (event.target.files.length > 0) {
+                    this.fileName = event.target.files[0].name;
+                }
+            },
+
+            importData() {
+                const fileInput = document.getElementById('excelFile');
+                if (!fileInput.files.length) {
+                    Swal.fire('Peringatan', 'Pilih file Excel terlebih dahulu', 'warning');
+                    return;
+                }
+
+                this.importing = true;
+                this.importProgress = 0;
+
+                // Simulate progress animation
+                const progressInterval = setInterval(() => {
+                    if (this.importProgress < 90) {
+                        this.importProgress += Math.random() * 15;
+                    }
+                }, 200);
+
+                let formData = new FormData(document.getElementById('importForm'));
+
+                $.ajax({
+                    url: '{{ route("dinas.schools.import") }}',
+                    method: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: (res) => {
+                        clearInterval(progressInterval);
+                        this.importProgress = 100;
+                        
+                        setTimeout(() => {
+                            this.importing = false;
+                            this.openImportModal = false;
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: res.success,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => location.reload());
+                        }, 500);
+                    },
+                    error: (err) => {
+                        clearInterval(progressInterval);
+                        this.importing = false;
+                        let msg = err.responseJSON?.error || 'Terjadi kesalahan saat import.';
+                        Swal.fire('Gagal Import', msg, 'error');
+                    }
+                });
+            },
+
+            generateAccounts() {
+                Swal.fire({
+                    title: 'Generate Akun Sekolah',
+                    text: 'Akun admin akan dibuat untuk sekolah yang belum memiliki akun. Email: NPSN@admin.literasia.org, Password: NPSN',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'Ya, Generate',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.generating = true;
+                        this.generateProgress = 0;
+
+                        // Animate progress
+                        const progressInterval = setInterval(() => {
+                            if (this.generateProgress < 90) {
+                                this.generateProgress += Math.random() * 10;
+                            }
+                        }, 150);
+
+                        $.ajax({
+                            url: '{{ route("dinas.schools.generate-accounts") }}',
+                            method: 'POST',
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: (res) => {
+                                clearInterval(progressInterval);
+                                this.generateProgress = 100;
+                                
+                                setTimeout(() => {
+                                    this.generating = false;
+                                    
+                                    let message = res.message;
+                                    if (res.errors && res.errors.length > 0) {
+                                        message += '\n\nError:\n' + res.errors.join('\n');
+                                    }
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Selesai!',
+                                        text: message,
+                                        timer: 3000,
+                                        showConfirmButton: true
+                                    }).then(() => location.reload());
+                                }, 500);
+                            },
+                            error: (err) => {
+                                clearInterval(progressInterval);
+                                this.generating = false;
+                                Swal.fire('Gagal', 'Terjadi kesalahan saat generate akun.', 'error');
+                            }
+                        });
+                    }
+                });
+            },
+
+            resetPassword(schoolId, schoolName) {
+                Swal.fire({
+                    title: 'Reset Password',
+                    html: `Reset password akun admin <strong>${schoolName}</strong> ke NPSN?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f59e0b',
+                    confirmButtonText: 'Ya, Reset',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Memproses...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        $.ajax({
+                            url: `/dinas/schools/${schoolId}/reset-password`,
+                            method: 'POST',
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: (res) => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: res.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            },
+                            error: (err) => {
+                                let msg = err.responseJSON?.error || 'Terjadi kesalahan.';
+                                Swal.fire('Gagal', msg, 'error');
+                            }
+                        });
+                    }
+                });
+            }
         }
     }
 </script>

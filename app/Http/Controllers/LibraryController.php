@@ -56,7 +56,7 @@ class LibraryController extends Controller
             'category' => 'required|in:book,audio,video',
             'kategori' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'file' => 'required|file',
+            'file' => 'required|file|max:512000', // 500MB max
             'cover_image' => 'nullable|image|max:2048',
         ]);
 

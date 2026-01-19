@@ -18,6 +18,11 @@
             <button @click="openImportModal = true" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
                 <i class="material-icons text-[20px]">file_upload</i> Import
             </button>
+            @if($withoutAccount > 0)
+            <button @click="generateAccounts()" class="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-2xl text-sm font-bold shadow-md hover:bg-emerald-600 transition-all">
+                <i class="material-icons text-[20px]">group_add</i> Generate Akun ({{ $withoutAccount }})
+            </button>
+            @endif
             <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <i class="material-icons text-[20px]">add_circle</i> Tambah Siswa
             </button>
@@ -35,6 +40,7 @@
                         <th class="px-6 py-3">NIS / NISN</th>
                         <th class="px-6 py-3">Kelas</th>
                         <th class="px-6 py-3 text-center">L/P</th>
+                        <th class="px-6 py-3 text-center">Akun</th>
                         <th class="px-6 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -62,8 +68,24 @@
                         <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center">
                             <span class="font-bold text-slate-600">{{ $item->jenis_kelamin }}</span>
                         </td>
+                        <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center">
+                            @if($item->user_id)
+                                <span class="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-black uppercase">
+                                    <i class="material-icons text-sm">check_circle</i> Ada
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 text-amber-500 text-[10px] font-black uppercase">
+                                    <i class="material-icons text-sm">warning</i> Belum
+                                </span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
                             <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                @if($item->user_id)
+                                <button @click="resetPassword('{{ $item->id }}', '{{ $item->nama_lengkap }}', '{{ $item->nisn }}')" class="p-2 text-amber-500 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors cursor-pointer" title="Reset Password">
+                                    <i class="material-icons text-lg">lock_reset</i>
+                                </button>
+                                @endif
                                 <button @click="editData('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
                                     <i class="material-icons text-lg">edit</i>
                                 </button>
@@ -75,7 +97,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="py-20 text-center">
+                        <td colspan="6" class="py-20 text-center">
                             <div class="flex flex-col items-center">
                                 <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
                                     <i class="material-icons text-4xl">inventory_2</i>
@@ -231,10 +253,42 @@
                 </div>
             </form>
 
-            <div class="flex gap-3 mt-8">
+            <!-- Progress Indicator -->
+            <div x-show="importing" class="mt-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-bold text-slate-600">Mengimport data...</span>
+                    <span class="text-sm font-bold text-[#d90d8b]" x-text="importProgress + '%'"></span>
+                </div>
+                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] rounded-full transition-all duration-300 ease-out" 
+                         :style="'width: ' + importProgress + '%'"></div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-8" x-show="!importing">
                 <button @click="openImportModal = false" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
                 <button @click="importData()" class="flex-1 py-4 bg-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:bg-[#ba80e8] transition-all">Import</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Generate Accounts Progress Modal -->
+    <div x-show="generating" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-10 relative z-10 text-center">
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
+                    <path class="text-slate-100" stroke="currentColor" stroke-width="2.5" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    <path class="text-emerald-500" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"
+                          :stroke-dasharray="generateProgress + ', 100'"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-2xl font-black text-emerald-600" x-text="generateProgress + '%'"></span>
+                </div>
+            </div>
+            <h3 class="text-xl font-black text-slate-800 mb-2">Generate Akun Siswa</h3>
+            <p class="text-slate-500 font-medium">Membuat akun untuk siswa yang belum memiliki akun...</p>
         </div>
     </div>
 
@@ -250,6 +304,10 @@
             editMode: false,
             formTab: 'wajib',
             fileName: '',
+            importing: false,
+            importProgress: 0,
+            generating: false,
+            generateProgress: 0,
             formData: {
                 id: '',
                 nama_lengkap: '',
@@ -307,7 +365,7 @@
                         nisn: data.nisn,
                         kelas_id: data.kelas_id,
                         jenis_kelamin: data.jenis_kelamin,
-                        username: data.user.username,
+                        username: data.user?.username || '',
                         password: '',
                         tempat_lahir: data.tempat_lahir || '',
                         tanggal_lahir: data.tanggal_lahir || '',
@@ -346,7 +404,15 @@
             },
             importData() {
                 let formData = new FormData($('#importForm')[0]);
-                Swal.fire({ title: 'Mengimport...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                
+                this.importing = true;
+                this.importProgress = 0;
+
+                const progressInterval = setInterval(() => {
+                    if (this.importProgress < 90) {
+                        this.importProgress += Math.random() * 15;
+                    }
+                }, 200);
 
                 $.ajax({
                     url: `{{ route('siswa.import') }}`,
@@ -355,10 +421,98 @@
                     contentType: false,
                     processData: false,
                     success: (res) => {
-                        Swal.fire('Berhasil', res.success, 'success').then(() => location.reload());
+                        clearInterval(progressInterval);
+                        this.importProgress = 100;
+                        
+                        setTimeout(() => {
+                            this.importing = false;
+                            Swal.fire('Berhasil', res.success, 'success').then(() => location.reload());
+                        }, 500);
                     },
-                    error: () => {
-                        Swal.fire('Gagal', 'Pastikan format Excel sesuai template.', 'error');
+                    error: (err) => {
+                        clearInterval(progressInterval);
+                        this.importing = false;
+                        let msg = 'Pastikan format Excel sesuai template.';
+                        if (err.responseJSON?.errors) {
+                            msg = err.responseJSON.errors.join('<br>');
+                        }
+                        Swal.fire('Gagal', msg, 'error');
+                    }
+                });
+            },
+            generateAccounts() {
+                Swal.fire({
+                    title: 'Generate Akun Siswa',
+                    text: 'Akun akan dibuat untuk siswa yang belum memiliki akun. Email: NISN@siswa.literasia.org, Password: NISN',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'Ya, Generate',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.generating = true;
+                        this.generateProgress = 0;
+
+                        const progressInterval = setInterval(() => {
+                            if (this.generateProgress < 90) {
+                                this.generateProgress += Math.random() * 10;
+                            }
+                        }, 150);
+
+                        $.ajax({
+                            url: '{{ route("siswa.generate-accounts") }}',
+                            method: 'POST',
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: (res) => {
+                                clearInterval(progressInterval);
+                                this.generateProgress = 100;
+                                
+                                setTimeout(() => {
+                                    this.generating = false;
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Selesai!',
+                                        text: res.message,
+                                        timer: 3000,
+                                        showConfirmButton: true
+                                    }).then(() => location.reload());
+                                }, 500);
+                            },
+                            error: () => {
+                                clearInterval(progressInterval);
+                                this.generating = false;
+                                Swal.fire('Gagal', 'Terjadi kesalahan saat generate akun.', 'error');
+                            }
+                        });
+                    }
+                });
+            },
+            resetPassword(id, nama, nisn) {
+                Swal.fire({
+                    title: 'Reset Password',
+                    html: `Reset password <strong>${nama}</strong> ke NISN (${nisn})?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f59e0b',
+                    confirmButtonText: 'Ya, Reset',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                        $.ajax({
+                            url: `/siswa/${id}/reset-password`,
+                            method: 'POST',
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: (res) => {
+                                Swal.fire({ icon: 'success', title: 'Berhasil!', text: res.message, timer: 2000, showConfirmButton: false });
+                            },
+                            error: (err) => {
+                                let msg = err.responseJSON?.error || 'Terjadi kesalahan.';
+                                Swal.fire('Gagal', msg, 'error');
+                            }
+                        });
                     }
                 });
             }

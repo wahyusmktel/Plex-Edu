@@ -3,9 +3,6 @@
 namespace App\Imports;
 
 use App\Models\Fungsionaris;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -40,9 +37,6 @@ class FungsionarisImport implements ToModel, WithHeadingRow, WithValidation, Ski
         $jabatanRaw = strtolower($row[$jabatanKey] ?? 'guru');
         $jabatan = str_contains($jabatanRaw, 'pegawai') ? 'pegawai' : 'guru';
         
-        $username = $row['username'] ?? null;
-        $password = $row['password'] ?? 'password';
-        
         $statusRaw = strtolower($row[$statusKey] ?? 'aktif');
         $status = str_contains($statusRaw, 'non') ? 'nonaktif' : 'aktif';
         
@@ -56,50 +50,39 @@ class FungsionarisImport implements ToModel, WithHeadingRow, WithValidation, Ski
         
         $pendidikan = $row['pendidikan_terakhir'] ?? null;
 
-        return DB::transaction(function () use ($schoolId, $nama, $nip, $nik, $posisi, $jabatan, $username, $password, $status, $no_hp, $alamat, $tempat_lahir, $tanggal_lahir, $jenis_kelamin, $pendidikan) {
-            $user = User::create([
-                'school_id' => $schoolId,
-                'name'     => $nama,
-                'username' => $username,
-                'password' => Hash::make($password),
-                'role'     => $jabatan,
-                'email'    => $username . '@literasia.com',
-            ]);
-
-            return new Fungsionaris([
-                'school_id'           => $schoolId,
-                'user_id'             => $user->id,
-                'nama'                => $nama,
-                'nip'                 => $nip,
-                'nik'                 => $nik,
-                'posisi'              => $posisi,
-                'jabatan'             => $jabatan,
-                'status'              => $status,
-                'no_hp'               => $no_hp,
-                'alamat'              => $alamat,
-                'tempat_lahir'        => $tempat_lahir,
-                'tanggal_lahir'       => $tanggal_lahir,
-                'jenis_kelamin'       => $jenis_kelamin,
-                'pendidikan_terakhir' => $pendidikan,
-            ]);
-        });
+        // Only create fungsionaris data, user account will be generated separately
+        return new Fungsionaris([
+            'school_id'           => $schoolId,
+            'user_id'             => null, // User will be generated separately
+            'nama'                => $nama,
+            'nip'                 => $nip,
+            'nik'                 => $nik,
+            'posisi'              => $posisi,
+            'jabatan'             => $jabatan,
+            'status'              => $status,
+            'no_hp'               => $no_hp,
+            'alamat'              => $alamat,
+            'tempat_lahir'        => $tempat_lahir,
+            'tanggal_lahir'       => $tanggal_lahir,
+            'jenis_kelamin'       => $jenis_kelamin,
+            'pendidikan_terakhir' => $pendidikan,
+        ]);
     }
 
     public function rules(): array
     {
         return [
-            '*.nip'      => 'required|unique:fungsionaris,nip',
-            '*.nik'      => 'required|unique:fungsionaris,nik',
-            '*.username' => 'required|unique:users,username',
+            '*.nip' => 'required|unique:fungsionaris,nip',
+            '*.nik' => 'required|unique:fungsionaris,nik',
         ];
     }
 
     public function customValidationMessages()
     {
         return [
-            '*.nip.unique'      => 'NIP :input sudah terdaftar.',
-            '*.nik.unique'      => 'NIK :input sudah terdaftar.',
-            '*.username.unique' => 'Username :input sudah digunakan.',
+            '*.nip.unique' => 'NIP :input sudah terdaftar.',
+            '*.nik.unique' => 'NIK :input sudah terdaftar.',
         ];
     }
 }
+

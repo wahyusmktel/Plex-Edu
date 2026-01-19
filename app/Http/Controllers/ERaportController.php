@@ -38,7 +38,7 @@ class ERaportController extends Controller
             'siswa_id' => 'required|exists:siswas,id',
             'semester' => 'required',
             'tahun_pelajaran' => 'required',
-            'file_raport' => 'required|file|mimes:jpg,jpeg,pdf|max:2048',
+            'file_raport' => 'required|file|mimes:jpg,jpeg,pdf|max:10240',
         ]);
 
         try {
@@ -81,7 +81,7 @@ class ERaportController extends Controller
         ];
 
         if ($request->hasFile('file_raport')) {
-            $rules['file_raport'] = 'file|mimes:jpg,jpeg,pdf|max:2048';
+            $rules['file_raport'] = 'file|mimes:jpg,jpeg,pdf|max:10240';
         }
 
         $request->validate($rules);

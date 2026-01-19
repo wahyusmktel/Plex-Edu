@@ -17,7 +17,11 @@ class FungsionarisController extends Controller
     {
         $guru = Fungsionaris::where('jabatan', 'guru')->with('user')->get();
         $pegawai = Fungsionaris::where('jabatan', 'pegawai')->with('user')->get();
-        return view('admin.fungsionaris.index', compact('guru', 'pegawai'));
+        
+        // Count fungsionaris without user accounts
+        $withoutAccount = Fungsionaris::whereNull('user_id')->count();
+        
+        return view('admin.fungsionaris.index', compact('guru', 'pegawai', 'withoutAccount'));
     }
 
     public function store(Request $request)
@@ -38,7 +42,7 @@ class FungsionarisController extends Controller
                 'school_id' => auth()->user()->school_id,
                 'name' => $request->nama,
                 'username' => $request->username,
-                'email' => $request->username . '@literasia.com',
+                'email' => $request->username . '@guru.literasia.org',
                 'password' => Hash::make($request->password),
                 'role' => $request->jabatan === 'guru' ? 'guru' : 'pegawai',
             ]);
@@ -82,7 +86,7 @@ class FungsionarisController extends Controller
             $user->update([
                 'name' => $request->nama,
                 'username' => $request->username,
-                'email' => $request->username . '@literasia.com',
+                'email' => $request->username . '@guru.literasia.org',
                 'role' => $request->jabatan === 'guru' ? 'guru' : 'pegawai',
             ]);
 
@@ -138,6 +142,79 @@ class FungsionarisController extends Controller
         }
     }
 
+    public function generateAccounts()
+    {
+        $schoolId = auth()->user()->school_id;
+        
+        // Get fungsionaris without user account
+        $fungsionarisList = Fungsionaris::where('school_id', $schoolId)
+            ->whereNull('user_id')
+            ->get();
+
+        $total = $fungsionarisList->count();
+        $generated = 0;
+        $errors = [];
+
+        foreach ($fungsionarisList as $fungsionaris) {
+            try {
+                // Generate random number for email
+                $randomNumber = mt_rand(100000, 999999);
+                $email = $randomNumber . '@guru.literasia.org';
+                
+                // Make sure email is unique
+                while (User::where('email', $email)->exists()) {
+                    $randomNumber = mt_rand(100000, 999999);
+                    $email = $randomNumber . '@guru.literasia.org';
+                }
+
+                $user = User::create([
+                    'school_id' => $schoolId,
+                    'name' => $fungsionaris->nama,
+                    'username' => (string)$randomNumber,
+                    'email' => $email,
+                    'password' => Hash::make('literasia'),
+                    'role' => $fungsionaris->jabatan,
+                ]);
+
+                $fungsionaris->update(['user_id' => $user->id]);
+                $generated++;
+            } catch (\Exception $e) {
+                $errors[] = "{$fungsionaris->nama}: " . $e->getMessage();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'total' => $total,
+            'generated' => $generated,
+            'errors' => $errors,
+            'message' => "{$generated} akun guru/pegawai berhasil di-generate dari {$total} data."
+        ]);
+    }
+
+    public function resetPassword($id)
+    {
+        $fungsionaris = Fungsionaris::findOrFail($id);
+        
+        if (!$fungsionaris->user_id) {
+            return response()->json(['error' => 'Fungsionaris ini belum memiliki akun.'], 404);
+        }
+
+        $user = User::find($fungsionaris->user_id);
+        if (!$user) {
+            return response()->json(['error' => 'Akun user tidak ditemukan.'], 404);
+        }
+
+        $user->update([
+            'password' => Hash::make('literasia')
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Password {$fungsionaris->nama} berhasil direset ke 'literasia'."
+        ]);
+    }
+
     public function downloadTemplate()
     {
         return Excel::download(new FungsionarisTemplateExport, 'template_import_fungsionaris.xlsx');
@@ -149,3 +226,4 @@ class FungsionarisController extends Controller
         return response()->json($fungsionaris);
     }
 }
+

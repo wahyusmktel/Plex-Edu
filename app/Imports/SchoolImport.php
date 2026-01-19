@@ -3,9 +3,6 @@
 namespace App\Imports;
 
 use App\Models\School;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -72,38 +69,26 @@ class SchoolImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmpt
         $statusRaw = strtolower(trim((string) ($row['status_sekolah'] ?? 'swasta')));
         $status = str_contains($statusRaw, 'negeri') ? 'Negeri' : 'Swasta';
 
-        return DB::transaction(function () use ($row, $npsn, $status) {
-            $school = School::create([
-                'nama_sekolah' => $row['nama_sekolah'] ?? null,
-                'npsn' => $npsn,
-                'status_sekolah' => $status,
-                'provinsi' => $row['provinsi'] ?? null,
-                'kabupaten_kota' => $row['kabupaten_kota'] ?? null,
-                'kecamatan' => $row['kecamatan'] ?? null,
-                'desa_kelurahan' => $row['desa_kelurahan'] ?? null,
-                'alamat' => $row['alamat'] ?? null,
-                'status' => 'approved',
-                'is_active' => false,
-            ]);
-
-            User::create([
-                'school_id' => $school->id,
-                'name' => $school->nama_sekolah,
-                'email' => $npsn . '@admin.literasia.com',
-                'username' => $npsn,
-                'password' => Hash::make($npsn),
-                'role' => 'admin',
-            ]);
-
-            return $school;
-        });
+        // Only create school data, user account will be generated separately
+        return new School([
+            'nama_sekolah' => $row['nama_sekolah'] ?? null,
+            'npsn' => $npsn,
+            'status_sekolah' => $status,
+            'provinsi' => $row['provinsi'] ?? null,
+            'kabupaten_kota' => $row['kabupaten_kota'] ?? null,
+            'kecamatan' => $row['kecamatan'] ?? null,
+            'desa_kelurahan' => $row['desa_kelurahan'] ?? null,
+            'alamat' => $row['alamat'] ?? null,
+            'status' => 'approved',
+            'is_active' => true, // Set is_active to true on import
+        ]);
     }
 
     public function rules(): array
     {
         return [
             '*.nama_sekolah' => 'required|string|max:255',
-            '*.npsn' => 'required|max:20|unique:schools,npsn|unique:users,username',
+            '*.npsn' => 'required|max:20|unique:schools,npsn',
             '*.status_sekolah' => 'required|in:Negeri,Swasta,negeri,swasta',
             '*.provinsi' => 'required|string|max:255',
             '*.kabupaten_kota' => 'required|string|max:255',
