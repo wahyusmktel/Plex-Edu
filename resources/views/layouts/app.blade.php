@@ -166,7 +166,7 @@
                             <p class="text-xs font-bold text-slate-800 leading-tight">{{ Auth::user()->name }}</p>
                             <p class="text-[10px] uppercase font-bold text-[#d90d8b] tracking-wider">{{ Auth::user()->role }}</p>
                         </div>
-                        <img class="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=ba80e8&color=fff" alt="Avatar">
+                        <img class="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm" src="{{ Auth::user()->avatar_url }}" alt="Avatar">
                         <i class="material-icons text-slate-400 text-lg transition-transform duration-300" :class="open ? 'rotate-180' : ''">expand_more</i>
                     </button>
 
@@ -179,10 +179,10 @@
                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
                         class="absolute right-0 mt-3 w-56 p-2 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 origin-top-right"
                     >
-                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 transition-colors">
+                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 transition-colors">
                             <i class="material-icons text-slate-400 text-lg">person_outline</i> Profil Saya
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 transition-colors">
+                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 transition-colors">
                             <i class="material-icons text-slate-400 text-lg">settings</i> Pengaturan
                         </a>
                         <div class="my-2 border-t border-slate-50"></div>
