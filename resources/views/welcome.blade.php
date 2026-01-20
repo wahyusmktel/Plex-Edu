@@ -57,7 +57,7 @@
 <body class="bg-slate-50 text-slate-900 selection:bg-pink-100 selection:text-pink-600">
     <!-- Navbar -->
     <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex items-center justify-between glossy-card px-6 py-4 rounded-[2rem]">
+        <div class="max-w-7xl mx-auto flex items-center justify-between bg-white/70 backdrop-blur-xl border border-white/30 shadow-lg px-6 py-4 rounded-[2rem]">
             <div class="flex items-center gap-3">
                 @if($app_settings->app_logo)
                     <img src="{{ $app_settings->logo_url }}" class="w-10 h-10 rounded-xl object-contain bg-white shadow-md p-2" alt="Logo">

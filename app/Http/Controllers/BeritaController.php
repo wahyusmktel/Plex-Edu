@@ -58,8 +58,11 @@ class BeritaController extends Controller
         foreach ($students as $student) {
             $student->notify(new GeneralNotification([
                 'type' => 'news',
+                'icon' => 'article',
+                'color' => 'blue',
                 'title' => 'Berita Terbaru',
                 'message' => $berita->judul,
+                'url' => route('berita.read', $berita->id),
                 'action_type' => 'news_detail',
                 'action_id' => $berita->id
             ]));

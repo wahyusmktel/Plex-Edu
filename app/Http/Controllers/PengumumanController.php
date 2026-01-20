@@ -53,8 +53,11 @@ class PengumumanController extends Controller
         foreach ($students as $student) {
             $student->notify(new GeneralNotification([
                 'type' => 'announcement',
+                'icon' => 'campaign',
+                'color' => 'amber',
                 'title' => 'Pengumuman Baru',
                 'message' => $pengumuman->judul,
+                'url' => route('pengumuman.read', $pengumuman->id),
                 'action_type' => 'announcement_detail',
                 'action_id' => $pengumuman->id
             ]));

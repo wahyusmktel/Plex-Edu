@@ -113,8 +113,11 @@ class PelanggaranController extends Controller
         if ($siswa && $siswa->user) {
             $siswa->user->notify(new GeneralNotification([
                 'type' => 'violation',
+                'icon' => 'gavel',
+                'color' => 'red',
                 'title' => 'Catatan Pelanggaran Baru',
                 'message' => 'Anda mendapatkan catatan pelanggaran baru: ' . $pelanggaran->masterPelanggaran?->nama,
+                'url' => route('student.pelanggaran.index'),
                 'action_type' => 'violation_list'
             ]));
         }

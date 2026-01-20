@@ -371,6 +371,20 @@ class ELearningController extends Controller
             'feedback' => $request->feedback,
         ]);
 
+        // Notify student
+        if ($submission->siswa && $submission->siswa->user) {
+            $submission->siswa->user->notify(new \App\Notifications\GeneralNotification([
+                'type' => 'elearning_graded',
+                'icon' => 'grade',
+                'color' => 'yellow',
+                'title' => 'Tugas Dinilai',
+                'message' => 'Tugas Anda telah dinilai: ' . ($submission->eLearning->judul ?? 'Tugas E-Learning'),
+                'url' => route('elearning.show', $submission->e_learning_id),
+                'action_type' => 'elearning_detail',
+                'action_id' => $submission->e_learning_id
+            ]));
+        }
+
         return back()->with('success', 'Nilai berhasil disimpan.');
     }
 }

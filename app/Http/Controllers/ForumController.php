@@ -102,8 +102,11 @@ class ForumController extends Controller
         foreach ($recipients as $recipient) {
             $recipient->notify(new GeneralNotification([
                 'type' => 'forum',
+                'icon' => 'add_comment',
+                'color' => 'blue',
                 'title' => 'Topik Forum Baru',
                 'message' => "{$topic->user->name} membuat topik baru: {$topic->title}",
+                'url' => route('forum.topic.show', $topic->id),
                 'action_type' => 'forum_topic',
                 'action_id' => $topic->id
             ]));
@@ -172,8 +175,11 @@ class ForumController extends Controller
         if ($recipient) {
             $recipient->notify(new GeneralNotification([
                 'type' => 'forum',
+                'icon' => 'forum',
+                'color' => 'purple',
                 'title' => $title,
                 'message' => $message,
+                'url' => route('forum.topic.show', $topic->id),
                 'action_type' => 'forum_topic',
                 'action_id' => $topic->id
             ]));

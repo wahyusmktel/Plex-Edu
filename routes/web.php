@@ -39,6 +39,11 @@ Route::get('/register-school/regional/{type}/{code?}', [App\Http\Controllers\Aut
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Notification Routes
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+
     // Fungsionaris Routes
     Route::prefix('fungsionaris')->name('fungsionaris.')->group(function () {
         Route::get('/', [FungsionarisController::class, 'index'])->name('index');

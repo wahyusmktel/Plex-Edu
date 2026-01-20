@@ -163,11 +163,49 @@
 
             <!-- Right: Search & Profile -->
             <div class="flex items-center gap-3 sm:gap-6">
-                <!-- Notifications -->
-                <button class="relative p-2.5 rounded-xl text-slate-400 hover:text-[#d90d8b] hover:bg-pink-50 transition-all duration-200">
-                    <i class="material-icons">notifications_none</i>
-                    <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                </button>
+                <!-- Notifications Dropdown -->
+                <div class="relative" x-data="notificationDropdown()" @click.away="open = false">
+                    <button @click="toggle()" class="relative p-2.5 rounded-xl text-slate-400 hover:text-[#d90d8b] hover:bg-pink-50 transition-all duration-200">
+                        <i class="material-icons">notifications_none</i>
+                        <span x-show="unreadCount > 0" x-cloak class="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center" x-text="unreadCount > 9 ? '9+' : unreadCount"></span>
+                    </button>
+
+                    <!-- Notification Panel -->
+                    <div 
+                        x-show="open"
+                        x-cloak
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                        class="absolute right-0 mt-3 w-96 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 origin-top-right overflow-hidden"
+                    >
+                        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest">Notifikasi</h4>
+                            <button @click="markAllAsRead()" class="text-[10px] font-bold text-[#d90d8b] hover:underline uppercase tracking-wider">Tandai Dibaca</button>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                            <template x-if="notifications.length === 0">
+                                <div class="px-5 py-10 text-center">
+                                    <i class="material-icons text-4xl text-slate-200">notifications_off</i>
+                                    <p class="text-xs text-slate-400 font-medium mt-2">Belum ada notifikasi</p>
+                                </div>
+                            </template>
+                            <template x-for="notif in notifications" :key="notif.id">
+                                <a :href="notif.data.url" @click="markAsRead(notif.id)" class="flex gap-4 px-5 py-4 hover:bg-slate-50 transition-colors" :class="!notif.read_at ? 'bg-blue-50/30' : ''">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center" :class="getIconBg(notif.data.color)">
+                                        <i class="material-icons text-lg" :class="getIconColor(notif.data.color)" x-text="notif.data.icon"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-bold text-slate-800 line-clamp-1" x-text="notif.data.title"></p>
+                                        <p class="text-[11px] text-slate-500 font-medium line-clamp-1 mt-0.5" x-text="notif.data.message"></p>
+                                        <p class="text-[10px] text-slate-400 mt-1" x-text="notif.created_at"></p>
+                                    </div>
+                                    <div x-show="!notif.read_at" class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                </a>
+                            </template>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Profile Dropdown -->
                 <div class="relative" x-data="{ open: false }" @click.away="open = false">
@@ -240,6 +278,57 @@
     @yield('scripts')
 
     <script>
+        function notificationDropdown() {
+            return {
+                open: false,
+                notifications: [],
+                unreadCount: 0,
+                init() {
+                    this.fetchNotifications();
+                    // Refresh every 30 seconds
+                    setInterval(() => this.fetchNotifications(), 30000);
+                },
+                toggle() {
+                    this.open = !this.open;
+                    if (this.open) this.fetchNotifications();
+                },
+                async fetchNotifications() {
+                    try {
+                        const res = await fetch('{{ route("notifications.index") }}');
+                        const data = await res.json();
+                        this.notifications = data.notifications;
+                        this.unreadCount = data.unread_count;
+                    } catch (e) { console.error('Failed to load notifications', e); }
+                },
+                async markAsRead(id) {
+                    try {
+                        await fetch('{{ url("/notifications") }}/' + id + '/read', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+                        });
+                        this.fetchNotifications();
+                    } catch (e) { console.error('Failed to mark as read', e); }
+                },
+                async markAllAsRead() {
+                    try {
+                        await fetch('{{ route("notifications.readAll") }}', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+                        });
+                        this.fetchNotifications();
+                    } catch (e) { console.error('Failed to mark all as read', e); }
+                },
+                getIconBg(color) {
+                    const map = { 'purple': 'bg-purple-50', 'blue': 'bg-blue-50', 'red': 'bg-red-50', 'yellow': 'bg-yellow-50', 'amber': 'bg-amber-50', 'green': 'bg-green-50' };
+                    return map[color] || 'bg-slate-50';
+                },
+                getIconColor(color) {
+                    const map = { 'purple': 'text-purple-500', 'blue': 'text-blue-500', 'red': 'text-red-500', 'yellow': 'text-yellow-500', 'amber': 'text-amber-500', 'green': 'text-green-500' };
+                    return map[color] || 'text-slate-500';
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             @if(session('success'))
                 Swal.fire({
