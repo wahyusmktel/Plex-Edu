@@ -92,7 +92,7 @@
                                     @elseif($module->type === 'material') article
                                     @elseif($module->type === 'assignment') task
                                     @elseif($module->type === 'exercise') quiz
-                                    @else psychological_test @endif
+                                    @else history_edu @endif
                                 </i>
                             </div>
                             <div>
@@ -200,7 +200,7 @@
                             <label class="cursor-pointer">
                                 <input type="radio" name="type" value="exam" x-model="moduleType" class="hidden peer">
                                 <div class="p-3 text-center rounded-2xl border border-slate-100 bg-slate-50 peer-checked:bg-rose-50 peer-checked:border-rose-200 peer-checked:text-rose-500 transition-all">
-                                    <i class="material-icons text-xl block mb-1">psychological_test</i>
+                                    <i class="material-icons text-xl block mb-1">history_edu</i>
                                     <span class="text-[8px] font-black uppercase">UJIAN</span>
                                 </div>
                             </label>

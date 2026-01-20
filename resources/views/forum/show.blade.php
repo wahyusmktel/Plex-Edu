@@ -22,6 +22,7 @@
                     <p class="text-sm text-slate-400 font-medium">{{ $forum->description }}</p>
                 </div>
             </div>
+            @if(auth()->user()->role !== 'siswa')
             <button 
                 @click="createTopicModalOpen = true"
                 class="flex items-center gap-2 px-6 py-3 bg-[#d90d8b] text-white text-sm font-bold rounded-2xl shadow-lg shadow-pink-100 hover:scale-[1.02] transition-all cursor-pointer {{ auth()->user()->is_suspended_from_forum ? 'opacity-50 cursor-not-allowed' : '' }}"
@@ -30,6 +31,7 @@
                 <i class="material-icons text-lg">add</i>
                 MULAI DISKUSI
             </button>
+            @endif
         </div>
     </div>
 

@@ -71,7 +71,11 @@ class ForumController extends Controller
             'content' => 'required|string',
         ]);
 
-        if (Auth::user()->is_suspended_from_forum) {
+        if (!in_array(Auth::user()->role, ['guru', 'admin', 'dinas'])) {
+        return back()->with('error', 'Hanya guru, admin, atau dinas yang dapat memulai diskusi baru.');
+    }
+
+    if (Auth::user()->is_suspended_from_forum) {
             return back()->with('error', 'Anda ditangguhkan dari forum.');
         }
 
