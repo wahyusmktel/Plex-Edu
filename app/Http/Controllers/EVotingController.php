@@ -16,12 +16,21 @@ class EVotingController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $user = auth()->user();
+        
         $elections = Election::with(['candidates.student'])
             ->when($search, function ($query, $search) {
                 return $query->where('judul', 'like', "%{$search}%");
             })
             ->latest()
             ->paginate(10);
+
+        // For students, check if they have voted for each election
+        if ($user->role === 'siswa') {
+            foreach ($elections as $election) {
+                $election->has_voted = $election->votes()->where('voter_id', $user->id)->exists();
+            }
+        }
 
         // Data for results tab (including vote counts)
         $results = Election::with(['candidates.student'])
@@ -44,6 +53,40 @@ class EVotingController extends Controller
         $siswas = Siswa::select('id', 'nama_lengkap', 'nisn')->orderBy('nama_lengkap')->get();
 
         return view('admin.e-voting.index', compact('elections', 'results', 'siswas', 'search'));
+    }
+
+    public function vote(Request $request, $id)
+    {
+        $election = Election::findOrFail($id);
+        $user = auth()->user();
+
+        // 1. Must be student
+        if ($user->role !== 'siswa') {
+            return response()->json(['error' => 'Hanya siswa yang dapat memberikan suara.'], 403);
+        }
+
+        // 2. Must be within date range
+        $now = now();
+        if (!$now->between($election->start_date, $election->end_date)) {
+            return response()->json(['error' => 'Pemilihan tidak dalam periode voting.'], 400);
+        }
+
+        // 3. Must not have voted yet
+        if ($election->votes()->where('voter_id', $user->id)->exists()) {
+            return response()->json(['error' => 'Anda sudah memberikan suara untuk pemilihan ini.'], 400);
+        }
+
+        $request->validate([
+            'candidate_id' => 'required|exists:election_candidates,id'
+        ]);
+
+        // 4. Record vote
+        $election->votes()->create([
+            'candidate_id' => $request->candidate_id,
+            'voter_id' => $user->id,
+        ]);
+
+        return response()->json(['success' => 'Terima kasih! Suara Anda berhasil dikirim.']);
     }
 
     public function store(Request $request)

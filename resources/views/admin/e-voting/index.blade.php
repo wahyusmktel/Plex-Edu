@@ -24,11 +24,13 @@
             <h1 class="text-3xl font-black text-slate-800 tracking-tight">E-Voting Sekolah</h1>
             <p class="text-slate-500 font-medium mt-1">Kelola ajang pemilihan dan pantau hasil suara secara real-time</p>
         </div>
+        @if(auth()->user()->role !== 'siswa')
         <div class="flex flex-wrap items-center gap-3">
             <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <i class="material-icons text-[20px]">add_circle</i> Tambah Pemilihan
             </button>
         </div>
+        @endif
     </div>
 
     <!-- Tabs Navigation -->
@@ -38,7 +40,7 @@
             :class="activeTab === 'selection' ? 'tab-active' : 'text-slate-400'"
             class="pb-4 text-sm font-black uppercase tracking-widest px-2 transition-all"
         >
-            Pengaturan Pemilihan
+            {{ auth()->user()->role === 'siswa' ? 'Daftar Pemilihan' : 'Pengaturan Pemilihan' }}
         </button>
         <button 
             @click="activeTab = 'results'" 
@@ -125,12 +127,34 @@
                             </td>
                             <td class="px-8 py-5 text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <button @click="editElection('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer" title="Edit">
-                                        <i class="material-icons text-lg">edit</i>
-                                    </button>
-                                    <button @click="deleteElection('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer" title="Hapus">
-                                        <i class="material-icons text-lg">delete</i>
-                                    </button>
+                                    @if(auth()->user()->role === 'siswa')
+                                        @if($status === 'Aktif')
+                                            @if($item->has_voted)
+                                                <span class="px-4 py-2 bg-emerald-50 text-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                                                    <i class="material-icons text-sm">check_circle</i> SUDAH VOTE
+                                                </span>
+                                            @else
+                                                <button @click="openVoteModal('{{ $item->id }}')" class="px-6 py-2.5 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md shadow-pink-50 hover:scale-105 transition-all">
+                                                    VOTE SEKARANG
+                                                </button>
+                                            @endif
+                                        @elseif($status === 'Selesai')
+                                            <span class="px-4 py-2 bg-slate-100 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                                SELESAI
+                                            </span>
+                                        @else
+                                            <span class="px-4 py-2 bg-blue-50 text-blue-400 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                                BELUM DIMULAI
+                                            </span>
+                                        @endif
+                                    @else
+                                        <button @click="editElection('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer" title="Edit">
+                                            <i class="material-icons text-lg">edit</i>
+                                        </button>
+                                        <button @click="deleteElection('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer" title="Hapus">
+                                            <i class="material-icons text-lg">delete</i>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -208,6 +232,9 @@
                 end_date: '',
                 candidates: [],
             },
+            voteModalOpen: false,
+            votingElection: null,
+            selectedCandidate: null,
             results: @json($results),
 
             init() {
@@ -391,6 +418,48 @@
                 } else {
                     window.location.href = `{{ url('e-voting') }}/${id}/export/pdf`;
                 }
+            },
+
+            openVoteModal(id) {
+                $.get(`{{ url('e-voting') }}/${id}`, (data) => {
+                    this.votingElection = data;
+                    this.selectedCandidate = null;
+                    this.voteModalOpen = true;
+                });
+            },
+
+            submitVote() {
+                if (!this.selectedCandidate) {
+                    Swal.fire('Eitss!', 'Pilih salah satu kandidat dulu ya.', 'warning');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Yakin dengan pilihanmu?',
+                    text: "Pilihan yang sudah dikirim tidak bisa diubah loh.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d90d8b',
+                    confirmButtonText: 'Ya, Kirim Suara'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `{{ url('e-voting') }}/${this.votingElection.id}/vote`,
+                            method: 'POST',
+                            data: {
+                                candidate_id: this.selectedCandidate,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: (res) => {
+                                this.voteModalOpen = false;
+                                Swal.fire('Berhasil!', res.success, 'success').then(() => location.reload());
+                            },
+                            error: (err) => {
+                                Swal.fire('Gagal', err.responseJSON?.error || 'Terjadi kesalahan.', 'error');
+                            }
+                        });
+                    }
+                });
             }
         }
     }

@@ -140,6 +140,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('absensi/export/student/{id}', [AbsensiController::class, 'exportStudent'])->name('absensi.export.student');
     Route::get('e-voting/{id}/export/excel', [EVotingController::class, 'exportExcel'])->name('e-voting.export.excel');
     Route::get('e-voting/{id}/export/pdf', [EVotingController::class, 'exportPdf'])->name('e-voting.export.pdf');
+    Route::post('e-voting/{id}/vote', [EVotingController::class, 'vote'])->name('e-voting.vote');
     Route::get('api/calendar/events', [CalendarController::class, 'getEvents'])->name('calendar.events');
 
     // Mata Pelajaran Routes
