@@ -32,6 +32,43 @@
     <x-stat-card icon="badge" label="Pegawai" value="{{ number_format($pegawaiCount) }}" color="cyan" />
 </div>
 
+@if(Auth::user()->role === 'siswa' && $todaySchedule->isNotEmpty())
+<!-- Today's Schedule -->
+<div class="mb-10">
+    <div class="flex items-center justify-between mb-8">
+        <h3 class="text-xl font-extrabold text-slate-800 flex items-center gap-3">
+            <i class="material-icons text-orange-500">event_note</i>
+            Jadwal Pelajaran Hari Ini
+        </h3>
+        <a href="{{ route('student.schedule.index') }}" class="text-[#d90d8b] text-sm font-bold hover:underline flex items-center gap-1">
+            Lihat Semua <i class="material-icons text-sm">arrow_forward</i>
+        </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        @foreach($todaySchedule as $sch)
+            <div class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+                <div class="absolute bottom-0 right-0 w-12 h-12 bg-orange-50 rounded-tl-[2rem] flex items-center justify-center text-orange-500 opacity-50 group-hover:opacity-100 transition-opacity">
+                    <i class="material-icons text-xl">book</i>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <span class="px-3 py-1 bg-slate-50 text-slate-400 text-[10px] font-black rounded-full uppercase tracking-widest group-hover:bg-orange-500 group-hover:text-white transition-all">JAM {{ $sch->jam->nama_jam }}</span>
+                        <div class="text-right">
+                             <p class="text-[10px] font-black text-slate-800 leading-none">{{ \Carbon\Carbon::parse($sch->jam->jam_mulai)->format('H:i') }}</p>
+                             <p class="text-[8px] font-bold text-slate-300 uppercase tracking-tighter mt-1">MULAI</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-black text-slate-800 leading-snug line-clamp-1 group-hover:text-orange-600 transition-colors">{{ $sch->subject->nama_pelajaran }}</h4>
+                        <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest line-clamp-1">{{ $sch->subject->guru->nama ?? 'Guru Pengampu' }}</p>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 <!-- Main Section Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
     <!-- Chart Section -->

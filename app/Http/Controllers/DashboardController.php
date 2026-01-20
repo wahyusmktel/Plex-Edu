@@ -99,6 +99,28 @@ class DashboardController extends Controller
 
         $schoolName = $user->school->nama_sekolah ?? 'Sekolah Literasia';
 
+        $todaySchedule = collect();
+        if ($user->role === 'siswa' && $user->siswa) {
+            $days = [
+                'Sunday' => 'Minggu',
+                'Monday' => 'Senin',
+                'Tuesday' => 'Selasa',
+                'Wednesday' => 'Rabu',
+                'Thursday' => 'Kamis',
+                'Friday' => 'Jumat',
+                'Saturday' => 'Sabtu'
+            ];
+            $dayName = $days[Carbon::now()->format('l')];
+            
+            $todaySchedule = \App\Models\Schedule::with(['subject.guru', 'jam'])
+                ->where('kelas_id', $user->siswa->kelas_id)
+                ->where('hari', $dayName)
+                ->get()
+                ->sortBy(function($item) {
+                    return $item->jam->jam_mulai;
+                });
+        }
+
         return view('dashboard', compact(
             'books',
             'audios',
@@ -115,7 +137,8 @@ class DashboardController extends Controller
             'pelanggaranCount',
             'latestNews',
             'latestAnnouncements',
-            'schoolName'
+            'schoolName',
+            'todaySchedule'
         ));
     }
 }
