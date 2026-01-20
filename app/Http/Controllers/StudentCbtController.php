@@ -12,7 +12,36 @@ class StudentCbtController extends Controller
 {
     public function index()
     {
-        return view('student.cbt.enter-token');
+        $user = Auth::user();
+        $siswa = $user->siswa;
+
+        if (!$siswa) {
+            return back()->with('error', 'Hanya siswa yang dapat mengakses halaman ini.');
+        }
+
+        $cbtList = Cbt::with(['subject.guru', 'sessions' => function($q) use ($siswa) {
+                $q->where('siswa_id', $siswa->id);
+            }])
+            ->where('school_id', $user->school_id)
+            ->where(function ($query) use ($siswa) {
+                $query->where('participant_type', 'all')
+                    ->orWhere(function ($q) use ($siswa) {
+                        $q->where('participant_type', 'kelas')
+                            ->whereHas('allowedKelas', function ($qk) use ($siswa) {
+                                $qk->where('kelas.id', $siswa->kelas_id);
+                            });
+                    })
+                    ->orWhere(function ($q) use ($siswa) {
+                        $q->where('participant_type', 'siswa')
+                            ->whereHas('allowedSiswas', function ($qs) use ($siswa) {
+                                $qs->where('siswas.id', $siswa->id);
+                            });
+                    });
+            })
+            ->latest()
+            ->get();
+
+        return view('student.cbt.index', compact('cbtList', 'siswa'));
     }
 
     public function join(Request $request)
