@@ -10,14 +10,48 @@ use App\Models\Fungsionaris;
 use App\Models\PelanggaranSiswa;
 use App\Imports\SchoolImport;
 use App\Exports\SchoolTemplateExport;
+use App\Models\AppSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
 class DinasController extends Controller
 {
+    public function settings()
+    {
+        $settings = AppSetting::first() ?? new AppSetting(['app_name' => 'LITERASIA']);
+        return view('admin.dinas.settings', compact('settings'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $request->validate([
+            'app_name' => 'required|string|max:255',
+            'app_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'school_registration_enabled' => 'sometimes|boolean',
+        ]);
+
+        $settings = AppSetting::first() ?? new AppSetting();
+        $settings->app_name = $request->app_name;
+        $settings->school_registration_enabled = $request->has('school_registration_enabled');
+
+        if ($request->hasFile('app_logo')) {
+            // Delete old logo if exists
+            if ($settings->app_logo) {
+                $oldPath = str_replace('public/', '', $settings->app_logo);
+                Storage::disk('public')->delete($oldPath);
+            }
+            $path = $request->file('app_logo')->store('settings', 'public');
+            $settings->app_logo = $path;
+        }
+
+        $settings->save();
+
+        return back()->with('success', 'Pengaturan aplikasi berhasil diperbarui.');
+    }
     public function index()
     {
         $schools = School::orderBy('created_at', 'desc')->get();

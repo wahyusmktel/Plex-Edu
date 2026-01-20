@@ -280,6 +280,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/school/{school}/approve', [App\Http\Controllers\Admin\DinasController::class, 'approve'])->name('approve');
         Route::post('/school/{school}/reject', [App\Http\Controllers\Admin\DinasController::class, 'reject'])->name('reject');
         Route::post('/school/{school}/toggle', [App\Http\Controllers\Admin\DinasController::class, 'toggleActive'])->name('toggle');
+        
+        // App Settings
+        Route::get('/settings', [App\Http\Controllers\Admin\DinasController::class, 'settings'])->name('settings');
+        Route::post('/settings', [App\Http\Controllers\Admin\DinasController::class, 'updateSettings'])->name('settings.update');
     });
 
     // Profile Routes

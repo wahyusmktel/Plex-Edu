@@ -20,5 +20,18 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Illuminate\Pagination\Paginator::useTailwind();
+
+        // Share application settings across all views
+        try {
+            $settings = \App\Models\AppSetting::first() ?? new \App\Models\AppSetting(['app_name' => 'LITERASIA']);
+            \Illuminate\Support\Facades\View::share('app_settings', $settings);
+        } catch (\Exception $e) {
+            // Fallback for when migrations haven't run yet or other issues
+            \Illuminate\Support\Facades\View::share('app_settings', (object)[
+                'app_name' => 'LITERASIA',
+                'logo_url' => null,
+                'app_logo' => null
+            ]);
+        }
     }
 }

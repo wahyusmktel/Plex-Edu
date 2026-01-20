@@ -14,11 +14,24 @@ class SchoolRegistrationController extends Controller
 {
     public function showRegistrationForm()
     {
+        $settings = \App\Models\AppSetting::first();
+        if ($settings && !$settings->school_registration_enabled) {
+            return redirect('/login')->with('error', 'Pendaftaran sekolah baru sedang ditutup.');
+        }
+
         return view('auth.register-school');
     }
 
     public function register(Request $request)
     {
+        $settings = \App\Models\AppSetting::first();
+        if ($settings && !$settings->school_registration_enabled) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pendaftaran sekolah baru sedang ditutup.'
+            ], 403);
+        }
+
         $request->validate([
             // Step 1: School Identity
             'nama_sekolah' => 'required|string|max:255',

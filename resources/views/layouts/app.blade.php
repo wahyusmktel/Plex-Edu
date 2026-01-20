@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Literasia')</title>
+    <title>@yield('title', $app_settings->app_name)</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <!-- Google Fonts & Icons -->
@@ -33,17 +33,21 @@
     >
         <!-- Logo -->
         <div class="flex items-center gap-4 px-6 py-8 mb-6">
-            <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white shadow-md shadow-pink-100">
-                <i class="material-icons text-2xl">import_contacts</i>
-            </div>
+            @if($app_settings->app_logo)
+                <img src="{{ $app_settings->logo_url }}" class="w-10 h-10 rounded-xl object-contain shadow-md shadow-pink-100 bg-white" alt="Logo">
+            @else
+                <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white shadow-md shadow-pink-100">
+                    <i class="material-icons text-2xl">import_contacts</i>
+                </div>
+            @endif
             <span 
                 x-show="sidebarOpen" 
                 x-transition:enter="transition ease-out duration-300" 
                 x-transition:enter-start="opacity-0 -translate-x-4" 
                 x-transition:enter-end="opacity-100 translate-x-0"
-                class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] bg-clip-text text-transparent"
+                class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] bg-clip-text text-transparent uppercase"
             >
-                LITERASIA
+                {{ $app_settings->app_name }}
             </span>
         </div>
 
@@ -65,6 +69,7 @@
                 <x-nav-item icon="article" label="Berita Dinas" :active="Request::is('berita*')" href="{{ route('berita.index') }}" />
                 <x-nav-item icon="computer" label="CBT Global" :active="Request::is('cbt*')" href="{{ route('cbt.index') }}" />
                 <x-nav-item icon="calendar_today" label="Agenda Global" :active="Request::is('calendar*')" href="{{ route('calendar.index') }}" />
+                <x-nav-item icon="settings" label="Pengaturan Aplikasi" :active="Request::is('dinas/settings*')" href="{{ route('dinas.settings') }}" />
             @endif
 
             {{-- Guru Role --}}
@@ -207,7 +212,7 @@
         <footer class="px-8 py-6 bg-white border-t border-slate-50">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="text-sm text-slate-400 font-medium">
-                    &copy; 2026 <span class="text-[#d90d8b] font-bold uppercase">Literasia</span>. Seluruh hak cipta dilindungi.
+                    &copy; 2026 <span class="text-[#d90d8b] font-bold uppercase">{{ $app_settings->app_name }}</span>. Seluruh hak cipta dilindungi.
                 </p>
                 <div class="flex gap-6">
                     <a href="#" class="text-xs font-bold text-slate-300 hover:text-[#d90d8b] transition-colors">BANTUAN</a>
