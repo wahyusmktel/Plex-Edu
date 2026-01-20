@@ -115,6 +115,7 @@
                 <x-nav-item icon="class" label="Mata Pelajaran" :active="Request::is('student/subjects*')" href="{{ route('student.subjects.index') }}" />
                 <x-nav-item icon="event_note" label="Jadwal Pelajaran" :active="Request::is('student/schedule*')" href="{{ route('student.schedule.index') }}" />
                 <x-nav-item icon="grade" label="Nilai" :active="Request::is('student/grades*')" href="{{ route('student.grades.index') }}" />
+                <x-nav-item icon="inventory_2" label="Bank Soal" :active="Request::is('student/bank-soal*')" href="{{ route('student.bank-soal.index') }}" />
                 <x-nav-item icon="library_books" label="E-Library" :active="Request::is('library*')" href="{{ route('library.index') }}" />
                 <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
                 <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />

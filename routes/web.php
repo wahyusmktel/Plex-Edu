@@ -278,6 +278,12 @@ Route::middleware(['auth'])->group(function () {
     // Student Grade Routes
     Route::get('student/grades', [\App\Http\Controllers\Student\GradeController::class, 'index'])->name('student.grades.index');
 
+    // Student Bank Soal Routes
+    Route::prefix('student/bank-soal')->name('student.bank-soal.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Student\BankSoalController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Student\BankSoalController::class, 'show'])->name('show');
+    });
+
     // Student CBT Routes
     Route::prefix('test')->name('test.')->group(function () {
         Route::get('/', [App\Http\Controllers\StudentCbtController::class, 'index'])->name('index');
