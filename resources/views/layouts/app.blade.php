@@ -118,6 +118,7 @@
                 <x-nav-item icon="inventory_2" label="Bank Soal" :active="Request::is('student/bank-soal*')" href="{{ route('student.bank-soal.index') }}" />
                 <x-nav-item icon="quiz" label="CBT" :active="Request::is('test*')" href="{{ route('test.index') }}" />
                 <x-nav-item icon="library_books" label="E-Library" :active="Request::is('library*')" href="{{ route('library.index') }}" />
+                <x-nav-item icon="description" label="E-Raport" :active="Request::is('student/raport*')" href="{{ route('student.raport.index') }}" />
                 <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
                 <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />
                  <x-nav-item icon="how_to_vote" label="E-Voting" :active="Request::is('e-voting*')" href="{{ route('e-voting.index') }}" />

@@ -284,6 +284,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}', [\App\Http\Controllers\Student\BankSoalController::class, 'show'])->name('show');
     });
 
+    // Student Raport Routes
+    Route::get('student/raport', [\App\Http\Controllers\Student\RaportController::class, 'index'])->name('student.raport.index');
+
     // Student CBT Routes
     Route::prefix('test')->name('test.')->group(function () {
         Route::get('/', [App\Http\Controllers\StudentCbtController::class, 'index'])->name('index');
