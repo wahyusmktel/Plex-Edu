@@ -266,6 +266,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/submit', [\App\Http\Controllers\Student\AbsensiController::class, 'submit'])->name('submit');
     });
 
+    // Student Subjects Routes
+    Route::prefix('student/subjects')->name('student.subjects.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Student\SubjectController::class, 'index'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\Student\SubjectController::class, 'show'])->name('show');
+    });
+
+    // Student Schedule Routes
+    Route::get('student/schedule', [\App\Http\Controllers\Student\ScheduleController::class, 'index'])->name('student.schedule.index');
+
     // Student CBT Routes
     Route::prefix('test')->name('test.')->group(function () {
         Route::get('/', [App\Http\Controllers\StudentCbtController::class, 'index'])->name('index');

@@ -112,6 +112,8 @@
             @if(Auth::user()->role === 'siswa')
                 <x-nav-item icon="dashboard" label="Dashboard" :active="Request::is('dashboard')" href="{{ route('dashboard') }}" />
                 <x-nav-item icon="assignment_ind" label="Absensi" :active="Request::is('student/absensi*')" href="{{ route('student.absensi.index') }}" />
+                <x-nav-item icon="class" label="Mata Pelajaran" :active="Request::is('student/subjects*')" href="{{ route('student.subjects.index') }}" />
+                <x-nav-item icon="event_note" label="Jadwal Pelajaran" :active="Request::is('student/schedule*')" href="{{ route('student.schedule.index') }}" />
                 <x-nav-item icon="library_books" label="E-Library" :active="Request::is('library*')" href="{{ route('library.index') }}" />
                 <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
                 <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />

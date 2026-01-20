@@ -42,7 +42,7 @@
                             <div class="flex items-center gap-6 text-purple-50 font-medium">
                                 <div class="flex items-center gap-2">
                                     <i class="material-icons text-lg">person</i>
-                                    <span>{{ $activeSession->subject->guru->nama_lengkap ?? 'Guru Pengampu' }}</span>
+                                    <span>{{ $activeSession->subject->guru->nama ?? 'Guru Pengampu' }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <i class="material-icons text-lg">schedule</i>
