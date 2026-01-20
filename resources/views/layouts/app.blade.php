@@ -121,7 +121,8 @@
                 <x-nav-item icon="description" label="E-Raport" :active="Request::is('student/raport*')" href="{{ route('student.raport.index') }}" />
                 <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
                 <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />
-                 <x-nav-item icon="how_to_vote" label="E-Voting" :active="Request::is('e-voting*')" href="{{ route('e-voting.index') }}" />
+                <x-nav-item icon="how_to_vote" label="E-Voting" :active="Request::is('e-voting*')" href="{{ route('e-voting.index') }}" />
+                <x-nav-item icon="gavel" label="Pelanggaran" :active="Request::is('student/pelanggaran*')" href="{{ route('student.pelanggaran.index') }}" />
                 <x-nav-item icon="newspaper" label="Berita" :active="Request::is('berita*')" href="{{ route('berita.index') }}" />
             @endif
 
