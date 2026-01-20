@@ -27,6 +27,12 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            transition: all 0.5s ease;
+        }
+        .glossy-card:hover {
+            background: linear-gradient(135deg, #d90d8b 0%, #ba80e8 100%);
+            border-color: transparent;
+            transform: translateY(-10px);
         }
         .text-gradient {
             background: linear-gradient(135deg, #d90d8b 0%, #ba80e8 100%);
@@ -45,6 +51,8 @@
             100% { transform: translateY(0px); }
         }
     </style>
+    <!-- Add FontAwesome for social icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="bg-slate-50 text-slate-900 selection:bg-pink-100 selection:text-pink-600">
     <!-- Navbar -->
@@ -144,7 +152,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
                 <!-- Feature 1 -->
-                <div class="glossy-card p-10 rounded-[3rem] group hover:bg-gradient-main transition-all duration-500 overflow-hidden relative">
+                <div class="glossy-card p-10 rounded-[3rem] group transition-all duration-500 overflow-hidden relative">
                     <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-pink-50 rounded-full opacity-50 group-hover:scale-[3] transition-transform duration-700"></div>
                     <div class="relative z-10">
                         <div class="w-16 h-16 bg-pink-100 group-hover:bg-white rounded-2xl flex items-center justify-center mb-8 transition-colors">
@@ -162,7 +170,7 @@
                 </div>
 
                 <!-- Feature 2 -->
-                <div class="glossy-card p-10 rounded-[3rem] group hover:bg-gradient-main transition-all duration-500 overflow-hidden relative">
+                <div class="glossy-card p-10 rounded-[3rem] group transition-all duration-500 overflow-hidden relative">
                     <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-50 rounded-full opacity-50 group-hover:scale-[3] transition-transform duration-700"></div>
                     <div class="relative z-10">
                         <div class="w-16 h-16 bg-purple-100 group-hover:bg-white rounded-2xl flex items-center justify-center mb-8 transition-colors">
@@ -180,7 +188,7 @@
                 </div>
 
                 <!-- Feature 3 -->
-                <div class="glossy-card p-10 rounded-[3rem] group hover:bg-gradient-main transition-all duration-500 overflow-hidden relative">
+                <div class="glossy-card p-10 rounded-[3rem] group transition-all duration-500 overflow-hidden relative">
                     <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-50 rounded-full opacity-50 group-hover:scale-[3] transition-transform duration-700"></div>
                     <div class="relative z-10">
                         <div class="w-16 h-16 bg-blue-100 group-hover:bg-white rounded-2xl flex items-center justify-center mb-8 transition-colors">
@@ -266,11 +274,18 @@
                         Platform manajemen pendidikan terbaik untuk sekolah modern di Indonesia.
                     </p>
                     <div class="flex items-center gap-4">
-                        @foreach(['facebook', 'twitter', 'instagram', 'youtube'] as $icon)
-                            <a href="#" class="w-10 h-10 border border-slate-800 rounded-xl flex items-center justify-center hover:bg-white hover:text-slate-900 transition-all">
-                                <i class="material-icons text-xl">{{ $icon }}</i>
-                            </a>
-                        @endforeach
+                        <a href="#" class="w-10 h-10 border border-slate-800 rounded-xl flex items-center justify-center hover:bg-pink-600 hover:border-pink-600 hover:text-white transition-all">
+                            <i class="fa-brands fa-facebook-f text-lg"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 border border-slate-800 rounded-xl flex items-center justify-center hover:bg-pink-600 hover:border-pink-600 hover:text-white transition-all">
+                            <i class="fa-brands fa-x-twitter text-lg"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 border border-slate-800 rounded-xl flex items-center justify-center hover:bg-pink-600 hover:border-pink-600 hover:text-white transition-all">
+                            <i class="fa-brands fa-instagram text-lg"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 border border-slate-800 rounded-xl flex items-center justify-center hover:bg-pink-600 hover:border-pink-600 hover:text-white transition-all">
+                            <i class="fa-brands fa-youtube text-lg"></i>
+                        </a>
                     </div>
                 </div>
                 
