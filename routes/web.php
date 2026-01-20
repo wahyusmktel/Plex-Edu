@@ -275,6 +275,9 @@ Route::middleware(['auth'])->group(function () {
     // Student Schedule Routes
     Route::get('student/schedule', [\App\Http\Controllers\Student\ScheduleController::class, 'index'])->name('student.schedule.index');
 
+    // Student Grade Routes
+    Route::get('student/grades', [\App\Http\Controllers\Student\GradeController::class, 'index'])->name('student.grades.index');
+
     // Student CBT Routes
     Route::prefix('test')->name('test.')->group(function () {
         Route::get('/', [App\Http\Controllers\StudentCbtController::class, 'index'])->name('index');
