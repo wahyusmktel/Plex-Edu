@@ -11,6 +11,7 @@ use App\Exports\BankSoalTemplateExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Kelas;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
@@ -44,8 +45,9 @@ class BankSoalController extends Controller
 
         $bankSoals = $query->latest()->paginate(10)->withQueryString();
         $subjects = Subject::where('is_active', true)->get();
+        $levels = Kelas::distinct()->pluck('tingkat')->sort()->values();
 
-        return view('bank-soal.index', compact('bankSoals', 'subjects'));
+        return view('bank-soal.index', compact('bankSoals', 'subjects', 'levels'));
     }
 
     public function archive(Request $request)
@@ -80,8 +82,9 @@ class BankSoalController extends Controller
 
         $bankSoals = $query->latest()->paginate(10)->withQueryString();
         $subjects = Subject::where('is_active', true)->get();
+        $levels = Kelas::distinct()->pluck('tingkat')->sort()->values();
 
-        return view('bank-soal.archive', compact('bankSoals', 'subjects'));
+        return view('bank-soal.archive', compact('bankSoals', 'subjects', 'levels'));
     }
 
     public function store(Request $request)
@@ -89,7 +92,7 @@ class BankSoalController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'subject_id' => 'required|exists:subjects,id',
-            'level' => 'required|in:X,XI,XII',
+            'level' => 'required|string',
             'status' => 'required|in:private,public',
         ]);
 
@@ -139,7 +142,7 @@ class BankSoalController extends Controller
         $bankSoal = BankSoal::findOrFail($id);
         $request->validate([
             'title' => 'required|string|max:255',
-            'level' => 'required|in:X,XI,XII',
+            'level' => 'required|string',
             'status' => 'required|in:private,public',
         ]);
 

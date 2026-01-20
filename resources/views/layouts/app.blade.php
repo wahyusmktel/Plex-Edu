@@ -96,7 +96,6 @@
                 <x-nav-item icon="computer" label="CBT" :active="Request::is('cbt*')" href="{{ route('cbt.index') }}" />
                 <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
                 <x-nav-item icon="cast_for_education" label="E-Learning" :active="Request::is('elearning*')" href="{{ route('elearning.index') }}" />
-                <x-nav-item icon="collections_bookmark" label="Bank Soal" :active="Request::is('bank-soal*')" href="{{ route('bank-soal.index') }}" />
                 <x-nav-item icon="library_books" label="E-Library" :active="Request::is('library*')" href="{{ route('library.index') }}" />
                 <x-nav-item icon="workspace_premium" label="Sertifikat Guru" :active="Request::is('certificates*')" href="{{ route('certificates.index') }}" />
                 <x-nav-item icon="warning" label="Pelanggaran" :active="Request::is('pelanggaran*')" href="{{ route('pelanggaran.index') }}" />

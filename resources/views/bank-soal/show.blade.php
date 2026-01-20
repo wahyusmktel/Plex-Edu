@@ -239,15 +239,42 @@
 
 <!-- Import Questions Modal -->
 <x-modal name="import-questions" title="Import Bank Soal">
-    <form action="{{ route('bank-soal.import', $bankSoal->id) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+    <form action="{{ route('bank-soal.import', $bankSoal->id) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6" x-data="{ fileName: '', fileSelected: false }">
         @csrf
-        <div class="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-6 text-center">
-            <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm mx-auto mb-4">
-                <i class="material-icons text-2xl">cloud_upload</i>
+        <div 
+            @click="$refs.fileInput.click()" 
+            class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-10 text-center cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group relative overflow-hidden"
+        >
+            <div x-show="!fileSelected" class="space-y-4">
+                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm mx-auto group-hover:scale-110 group-hover:text-indigo-500 transition-all">
+                    <i class="material-icons text-3xl">cloud_upload</i>
+                </div>
+                <div>
+                    <p class="text-sm font-black text-slate-700 mb-1">Unggah file Excel</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Format .xlsx atau .xls</p>
+                </div>
             </div>
-            <p class="text-sm font-bold text-slate-600 mb-1">Unggah file Excel</p>
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Format .xlsx atau .xls</p>
-            <input type="file" name="file" accept=".xlsx,.xls" required class="mt-4 w-full text-xs font-bold text-slate-500">
+
+            <div x-show="fileSelected" x-cloak class="space-y-4">
+                <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 shadow-sm mx-auto">
+                    <i class="material-icons text-3xl">description</i>
+                </div>
+                <div>
+                    <p class="text-sm font-black text-emerald-700 mb-1" x-text="fileName"></p>
+                    <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest">File Siap di Import</p>
+                </div>
+                <button type="button" @click.stop="fileSelected = false; fileName = ''; $refs.fileInput.value = ''" class="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-600 underline">Ganti File</button>
+            </div>
+
+            <input 
+                type="file" 
+                name="file" 
+                x-ref="fileInput"
+                accept=".xlsx,.xls" 
+                required 
+                class="hidden"
+                @change="fileSelected = true; fileName = $event.target.files[0].name"
+            >
         </div>
         <div class="flex items-center justify-between gap-4">
             <a href="{{ route('bank-soal.download-template') }}" class="flex items-center gap-2 px-4 py-3 bg-white border border-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-50 transition-all text-xs uppercase tracking-widest">

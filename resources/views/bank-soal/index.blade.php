@@ -29,9 +29,9 @@
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tingkat Kelas</label>
                 <select name="level" onchange="this.form.submit()" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 transition-all">
                     <option value="">Semua Tingkat</option>
-                    <option value="X" {{ request('level') == 'X' ? 'selected' : '' }}>Kelas X</option>
-                    <option value="XI" {{ request('level') == 'XI' ? 'selected' : '' }}>Kelas XI</option>
-                    <option value="XII" {{ request('level') == 'XII' ? 'selected' : '' }}>Kelas XII</option>
+                    @foreach($levels as $lvl)
+                        <option value="{{ $lvl }}" {{ request('level') == $lvl ? 'selected' : '' }}>Kelas {{ $lvl }}</option>
+                    @endforeach
                 </select>
             </div>
             <div>
@@ -115,9 +115,9 @@
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Tingkat</label>
                         <select name="level" required class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 transition-all">
-                            <option value="X" {{ $bank->level == 'X' ? 'selected' : '' }}>Kelas X</option>
-                            <option value="XI" {{ $bank->level == 'XI' ? 'selected' : '' }}>Kelas XI</option>
-                            <option value="XII" {{ $bank->level == 'XII' ? 'selected' : '' }}>Kelas XII</option>
+                            @foreach($levels as $lvl)
+                                <option value="{{ $lvl }}" {{ $bank->level == $lvl ? 'selected' : '' }}>Kelas {{ $lvl }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -202,9 +202,9 @@
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Tingkat</label>
                 <select name="level" required class="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 transition-all">
-                    <option value="X">Kelas X</option>
-                    <option value="XI">Kelas XI</option>
-                    <option value="XII">Kelas XII</option>
+                    @foreach($levels as $lvl)
+                        <option value="{{ $lvl }}">Kelas {{ $lvl }}</option>
+                    @endforeach
                 </select>
             </div>
             <div>
