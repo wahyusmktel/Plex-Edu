@@ -33,7 +33,7 @@
                         </div>
                     @endif
                 </div>
-                <h1 class="text-5xl font-black tracking-tight mb-6 uppercase">{{ $app_settings->app_name }}</h1>
+                <h1 class="text-5xl font-black tracking-tight mb-6 uppercase bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">{{ $app_settings->app_name }}</h1>
                 <p class="text-xl font-medium text-white/80 leading-relaxed mb-12">Ekosistem pendidikan digital modern untuk mendukung masa depan literasi dan manajemen sekolah yang lebih baik.</p>
                 
                 <div class="grid grid-cols-2 gap-6 text-left">

@@ -40,7 +40,7 @@
                     <i class="material-icons">import_contacts</i>
                 </div>
             @endif
-            <span class="text-xl font-black tracking-tight text-slate-800 uppercase">{{ $app_settings->app_name }}</span>
+            <span class="text-xl font-black tracking-tight text-gradient uppercase">{{ $app_settings->app_name }}</span>
         </div>
         <a href="{{ route('login') }}" class="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm uppercase tracking-widest">
             Sudah Terdaftar? Masuk

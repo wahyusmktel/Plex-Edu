@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Plex-Edu - Modern School Management System</title>
+    <title>{{ $app_settings->app_name }} - Modern School Management System</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,10 +51,14 @@
     <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between glossy-card px-6 py-4 rounded-[2rem]">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-main rounded-xl flex items-center justify-center shadow-lg">
-                    <i class="material-icons text-white">school</i>
-                </div>
-                <span class="text-2xl font-black font-outfit tracking-tight text-slate-800">Plex<span class="text-pink-600">Edu</span></span>
+                @if($app_settings->app_logo)
+                    <img src="{{ $app_settings->logo_url }}" class="w-10 h-10 rounded-xl object-contain bg-white shadow-md p-2" alt="Logo">
+                @else
+                    <div class="w-10 h-10 bg-gradient-main rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="material-icons text-white">school</i>
+                    </div>
+                @endif
+                <span class="text-2xl font-black font-outfit tracking-tight text-gradient uppercase">{{ $app_settings->app_name }}</span>
             </div>
             
             <div class="hidden md:flex items-center gap-8">
@@ -249,10 +253,14 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-20 mb-20">
                 <div class="col-span-1 md:col-span-1">
                     <div class="flex items-center gap-3 mb-8">
-                        <div class="w-12 h-12 bg-gradient-main rounded-2xl flex items-center justify-center shadow-lg">
-                            <i class="material-icons text-white">school</i>
-                        </div>
-                        <span class="text-3xl font-black font-outfit tracking-tight">Plex<span class="text-pink-600">Edu</span></span>
+                        @if($app_settings->app_logo)
+                            <img src="{{ $app_settings->logo_url }}" class="w-12 h-12 rounded-xl object-contain bg-white shadow-md p-2" alt="Logo">
+                        @else
+                            <div class="w-12 h-12 bg-gradient-main rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="material-icons text-white">school</i>
+                            </div>
+                        @endif
+                        <span class="text-3xl font-black font-outfit tracking-tight text-gradient uppercase">{{ $app_settings->app_name }}</span>
                     </div>
                     <p class="text-slate-400 font-medium leading-relaxed mb-8">
                         Platform manajemen pendidikan terbaik untuk sekolah modern di Indonesia.
@@ -295,7 +303,7 @@
             </div>
             
             <div class="pt-10 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
-                <p class="text-slate-500 text-xs font-black uppercase tracking-widest">&copy; 2026 Plex-Edu. All rights reserved.</p>
+                <p class="text-slate-500 text-xs font-black uppercase tracking-widest">&copy; 2026 {{ $app_settings->app_name }}. All rights reserved.</p>
                 <div class="flex items-center gap-10 text-xs font-black uppercase tracking-widest text-slate-500">
                     <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
                     <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
