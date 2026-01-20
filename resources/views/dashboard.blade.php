@@ -38,8 +38,8 @@
     <div class="lg:col-span-8 bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h3 class="text-xl font-extrabold text-slate-800">Absensi Siswa</h3>
-                <p class="text-sm text-slate-400 font-medium">Statistik kehadiran murid hari ini</p>
+                <h3 class="text-xl font-extrabold text-slate-800">{{ Auth::user()->role === 'siswa' ? 'Absensi Kelas Saya' : 'Absensi Siswa' }}</h3>
+                <p class="text-sm text-slate-400 font-medium">{{ Auth::user()->role === 'siswa' ? 'Statistik kehadiran teman sekelas hari ini' : 'Statistik kehadiran murid hari ini' }}</p>
             </div>
             <span class="px-4 py-2 bg-slate-50 text-slate-500 text-sm font-bold rounded-xl border border-slate-100">
                 {{ \Carbon\Carbon::today()->translatedFormat('d F Y') }}

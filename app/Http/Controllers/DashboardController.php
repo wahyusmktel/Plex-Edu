@@ -66,10 +66,26 @@ class DashboardController extends Controller
 
         // Today's attendance
         $today = Carbon::today();
-        $totalSiswa = $siswaCount > 0 ? $siswaCount : 1; // Prevent division by zero
-        $hadirCount = Absensi::whereDate('tanggal', $today)->where('status', 'hadir')->count();
-        $absenCount = max(0, $totalSiswa - $hadirCount);
-        $hadirPercentage = $totalSiswa > 0 ? round(($hadirCount / $totalSiswa) * 100) : 0;
+        
+        if ($user->role === 'siswa' && $user->siswa) {
+            $siswaIdsInClass = Siswa::where('kelas_id', $user->siswa->kelas_id)->pluck('id');
+            $currentTotalSiswa = $siswaIdsInClass->count();
+            $hadirCount = Absensi::whereIn('siswa_id', $siswaIdsInClass)
+                ->whereDate('tanggal', $today)
+                ->whereIn('status', ['H', 'hadir'])
+                ->distinct('siswa_id')
+                ->count();
+        } else {
+            $currentTotalSiswa = $siswaCount;
+            $hadirCount = Absensi::whereDate('tanggal', $today)
+                ->whereIn('status', ['H', 'hadir'])
+                ->distinct('siswa_id')
+                ->count();
+        }
+
+        $denominator = $currentTotalSiswa > 0 ? $currentTotalSiswa : 1;
+        $absenCount = max(0, $currentTotalSiswa - $hadirCount);
+        $hadirPercentage = round(($hadirCount / $denominator) * 100);
 
         // Info items
         $eLearningCount = ELearning::count();

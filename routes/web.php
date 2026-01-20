@@ -260,6 +260,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/grade-essay/store', [App\Http\Controllers\CbtController::class, 'storeGrade'])->name('gradeEssay.store');
     });
 
+    // Student Absensi Routes
+    Route::prefix('student/absensi')->name('student.absensi.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Student\AbsensiController::class, 'index'])->name('index');
+        Route::post('/submit', [\App\Http\Controllers\Student\AbsensiController::class, 'submit'])->name('submit');
+    });
+
     // Student CBT Routes
     Route::prefix('test')->name('test.')->group(function () {
         Route::get('/', [App\Http\Controllers\StudentCbtController::class, 'index'])->name('index');
