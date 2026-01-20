@@ -123,6 +123,10 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/kelas/destroy/{id}', [SekolahController::class, 'destroyKelas'])->name('kelas.destroy');
     });
 
+    // Berita & Pengumuman Reader Routes
+    Route::get('berita/{id}/read', [BeritaController::class, 'read'])->name('berita.read');
+    Route::get('pengumuman/{id}/read', [PengumumanController::class, 'read'])->name('pengumuman.read');
+
     // Berita Routes
     Route::resource('berita', BeritaController::class);
     Route::resource('pengumuman', PengumumanController::class);
@@ -228,6 +232,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/loans', [LibraryController::class, 'loans'])->name('loans');
         Route::post('/loans/store', [LibraryController::class, 'storeLoan'])->name('loans.store');
         Route::post('/loans/{id}/return', [LibraryController::class, 'returnLoan'])->name('loans.return');
+        Route::post('/{id}/borrow', [LibraryController::class, 'borrow'])->name('borrow');
     });
 
     // CBT Routes

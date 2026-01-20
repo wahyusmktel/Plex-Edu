@@ -34,7 +34,20 @@ class LibraryController extends Controller
         
         $categories = LibraryItem::whereNotNull('kategori')->distinct()->pluck('kategori');
         
-        return view('pages.library.index', compact('books', 'audios', 'videos', 'categories'));
+        $borrowedItems = [];
+        $totalBorrowedCount = 0;
+        if (auth()->user()->role === 'siswa') {
+            $siswa = auth()->user()->siswa;
+            if ($siswa) {
+                $borrowedItems = LibraryLoan::where('student_id', $siswa->id)
+                    ->where('status', 'borrowed')
+                    ->pluck('due_date', 'library_item_id')
+                    ->toArray();
+                $totalBorrowedCount = count($borrowedItems);
+            }
+        }
+        
+        return view('pages.library.index', compact('books', 'audios', 'videos', 'categories', 'borrowedItems', 'totalBorrowedCount'));
     }
 
     public function create()
@@ -135,5 +148,44 @@ class LibraryController extends Controller
         ]);
 
         return redirect()->route('library.loans')->with('success', 'Buku telah dikembalikan.');
+    }
+
+    public function borrow(Request $request, $id)
+    {
+        if (auth()->user()->role !== 'siswa') {
+            return back()->with('error', 'Hanya siswa yang dapat melakukan peminjaman mandiri.');
+        }
+
+        $request->validate([
+            'duration' => 'required|integer|min:1|max:30',
+        ]);
+
+        $siswa = auth()->user()->siswa;
+        if (!$siswa) {
+            return back()->with('error', 'Profil siswa tidak ditemukan.');
+        }
+
+        $item = LibraryItem::findOrFail($id);
+
+        // Check if already borrowed
+        $existing = LibraryLoan::where('student_id', $siswa->id)
+            ->where('library_item_id', $id)
+            ->where('status', 'borrowed')
+            ->first();
+
+        if ($existing) {
+            return back()->with('info', 'Anda sudah meminjam item ini.');
+        }
+
+        LibraryLoan::create([
+            'student_id' => $siswa->id,
+            'library_item_id' => $item->id,
+            'loan_date' => now(),
+            'due_date' => now()->addDays((int) $request->duration),
+            'status' => 'borrowed',
+            'school_id' => auth()->user()->school_id,
+        ]);
+
+        return back()->with('success', "Berhasil meminjam {$item->title} selama {$request->duration} hari.");
     }
 }

@@ -11,6 +11,7 @@
             <p class="text-slate-500">Kelola koleksi digital (Buku, Audio, Video) dan peminjaman.</p>
         </div>
         <div class="flex items-center gap-3">
+            @if(auth()->user()->role !== 'siswa')
             <a href="{{ route('library.loans') }}" class="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-600 font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all">
                 <i class="material-icons text-lg">swap_horiz</i> Transaksi Peminjaman
             </a>
@@ -19,11 +20,12 @@
                 <i class="material-icons text-lg">add</i> Tambah Koleksi
             </a>
             @endif
+            @endif
         </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-{{ auth()->user()->role === 'siswa' ? '4' : '3' }} gap-6">
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
                 <i class="material-icons">menu_book</i>
@@ -51,6 +53,17 @@
                 <h3 class="text-2xl font-bold text-slate-800">{{ $videos->count() }}</h3>
             </div>
         </div>
+        @if(auth()->user()->role === 'siswa')
+        <div class="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <i class="material-icons">bookmark_added</i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-emerald-600/70">Sedang Dipinjam</p>
+                <h3 class="text-2xl font-bold text-emerald-700">{{ $totalBorrowedCount }}</h3>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- Tabs Section -->
@@ -97,12 +110,17 @@
                             @endif
                             <!-- Overlay actions -->
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-10">
+                                @php $isBorrowed = array_key_exists($book->id, $borrowedItems) || auth()->user()->role !== 'siswa'; @endphp
                                 <button type="button" 
-                                    @click="$store.reader.openModal('{{ addslashes($book->title) }}', '{{ asset('storage/' . $book->file_path) }}')" 
+                                    @if($isBorrowed)
+                                        @click="$store.reader.openModal('{{ addslashes($book->title) }}', '{{ asset('storage/' . $book->file_path) }}')" 
+                                    @else
+                                        @click="$dispatch('open-modal', 'borrow-item-{{ $book->id }}')"
+                                    @endif
                                     class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-[#d90d8b] hover:text-white transition-colors cursor-pointer shadow-lg outline-none border-none">
-                                    <i class="material-icons">visibility</i>
+                                    <i class="material-icons">{{ $isBorrowed ? 'visibility' : 'lock' }}</i>
                                 </button>
-                                @if(auth()->user()->role !== 'guru')
+                                @if(auth()->user()->role === 'admin')
                                 <button type="button" 
                                     @click="deleteItem('{{ $book->id }}', '{{ addslashes($book->title) }}')"
                                     class="w-10 h-10 rounded-full bg-white text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-lg cursor-pointer">
@@ -117,6 +135,16 @@
                             @if($book->kategori)
                                 <div class="mt-2 text-[10px] font-bold text-[#d90d8b] bg-pink-50 px-2 py-0.5 rounded-md inline-block uppercase">
                                     {{ $book->kategori }}
+                                </div>
+                            @endif
+                            @if(array_key_exists($book->id, $borrowedItems))
+                                @php 
+                                    $dueDate = \Carbon\Carbon::parse($borrowedItems[$book->id]);
+                                    $remaining = round(now()->diffInDays($dueDate, false));
+                                    $remaining = $remaining < 0 ? 0 : $remaining;
+                                @endphp
+                                <div class="mt-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md inline-block uppercase">
+                                    Dipinjam (Sisa {{ $remaining }} Hari)
                                 </div>
                             @endif
                         </div>
@@ -146,12 +174,29 @@
                                             {{ $audio->kategori }}
                                         </span>
                                     @endif
+                                    @if(array_key_exists($audio->id, $borrowedItems))
+                                        @php 
+                                            $dueDate = \Carbon\Carbon::parse($borrowedItems[$audio->id]);
+                                            $remaining = round(now()->diffInDays($dueDate, false));
+                                            $remaining = $remaining < 0 ? 0 : $remaining;
+                                        @endphp
+                                        <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded uppercase">
+                                            Dipinjam (Sisa {{ $remaining }} Hari)
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
-                            <audio src="{{ asset('storage/' . $audio->file_path) }}" controls class="h-8 max-w-[200px]"></audio>
-                            @if(auth()->user()->role !== 'guru')
+                            @php $isBorrowed = array_key_exists($audio->id, $borrowedItems) || auth()->user()->role !== 'siswa'; @endphp
+                            @if($isBorrowed)
+                                <audio src="{{ asset('storage/' . $audio->file_path) }}" controls class="h-8 max-w-[200px]"></audio>
+                            @else
+                                <button type="button" @click="$dispatch('open-modal', 'borrow-item-{{ $audio->id }}')" class="flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-orange-100 transition-all cursor-pointer">
+                                    <i class="material-icons text-sm">lock</i> Pinjam Sekarang
+                                </button>
+                            @endif
+                            @if(auth()->user()->role === 'admin')
                             <button type="button" @click="deleteItem('{{ $audio->id }}', '{{ addslashes($audio->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
                                 <i class="material-icons">delete</i>
                             </button>
@@ -173,10 +218,15 @@
                         <div class="aspect-video bg-black relative">
                             <video src="{{ asset('storage/' . $video->file_path) }}" class="w-full h-full object-cover"></video>
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                @php $isBorrowed = array_key_exists($video->id, $borrowedItems) || auth()->user()->role !== 'siswa'; @endphp
                                 <button type="button" 
-                                    @click="$store.videoPlayer.openModal('{{ addslashes($video->title) }}', '{{ asset('storage/' . $video->file_path) }}')"
+                                    @if($isBorrowed)
+                                        @click="$store.videoPlayer.openModal('{{ addslashes($video->title) }}', '{{ asset('storage/' . $video->file_path) }}')"
+                                    @else
+                                        @click="$dispatch('open-modal', 'borrow-item-{{ $video->id }}')"
+                                    @endif
                                     class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-[#d90d8b] hover:text-white transition-colors shadow-lg cursor-pointer">
-                                    <i class="material-icons text-3xl">play_arrow</i>
+                                    <i class="material-icons text-3xl">{{ $isBorrowed ? 'play_arrow' : 'lock' }}</i>
                                 </button>
                             </div>
                         </div>
@@ -188,6 +238,16 @@
                                     @if($video->kategori)
                                         <span class="text-[9px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded uppercase">
                                             {{ $video->kategori }}
+                                        </span>
+                                    @endif
+                                    @if(array_key_exists($video->id, $borrowedItems))
+                                        @php 
+                                            $dueDate = \Carbon\Carbon::parse($borrowedItems[$video->id]);
+                                            $remaining = round(now()->diffInDays($dueDate, false));
+                                            $remaining = $remaining < 0 ? 0 : $remaining;
+                                        @endphp
+                                        <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded uppercase">
+                                            Dipinjam (Sisa {{ $remaining }} Hari)
                                         </span>
                                     @endif
                                 </div>
@@ -308,6 +368,65 @@
         </div>
     </div>
 </div>
+
+@if(auth()->user()->role === 'siswa')
+    @foreach($books->concat($audios)->concat($videos) as $item)
+        @if(!array_key_exists($item->id, $borrowedItems))
+            <x-modal name="borrow-item-{{ $item->id }}" title="Pinjam Koleksi">
+                <form action="{{ route('library.borrow', $item->id) }}" method="POST" class="p-8 space-y-6">
+                    @csrf
+                    <div class="flex items-start gap-6">
+                        <div class="w-24 h-32 rounded-xl bg-slate-100 flex-shrink-0 overflow-hidden shadow-sm">
+                            @if($item->cover_image)
+                                <img src="{{ asset('storage/' . $item->cover_image) }}" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-slate-300">
+                                    <i class="material-icons text-3xl">library_books</i>
+                                </div>
+                            @endif
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-slate-800 mb-1 tracking-tight">{{ $item->title }}</h3>
+                            <p class="text-sm font-bold text-slate-400 mb-4">{{ $item->author }}</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[9px] font-black uppercase tracking-widest">{{ $item->category }}</span>
+                                @if($item->kategori)
+                                    <span class="px-3 py-1 bg-pink-50 text-[#d90d8b] rounded-full text-[9px] font-black uppercase tracking-widest">{{ $item->kategori }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 pt-4 border-t border-slate-50">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Durasi Peminjaman (Hari)</label>
+                        <div class="grid grid-cols-4 gap-3" x-data="{ duration: 3 }">
+                            <template x-for="d in [1, 3, 7, 14]">
+                                <button type="button" 
+                                    @click="duration = d"
+                                    :class="duration === d ? 'bg-[#d90d8b] text-white shadow-md shadow-pink-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'"
+                                    class="py-4 rounded-2xl text-xs font-black transition-all cursor-pointer"
+                                    x-text="d + ' Hari'">
+                                </button>
+                            </template>
+                            <input type="hidden" name="duration" :value="duration">
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 flex items-start gap-3">
+                        <i class="material-icons text-indigo-500">info</i>
+                        <p class="text-[10px] font-bold text-indigo-700 leading-relaxed uppercase tracking-wide">Setelah dikonfirmasi, Anda dapat segera menikmati koleksi ini sesuai dengan durasi yang dipilih.</p>
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button type="submit" class="flex-1 py-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white text-[10px] font-black rounded-2xl uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-slate-200">
+                            KONFIRMASI PINJAM
+                        </button>
+                    </div>
+                </form>
+            </x-modal>
+        @endif
+    @endforeach
+@endif
 @endsection
 
 @section('styles')

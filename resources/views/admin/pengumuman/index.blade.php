@@ -37,9 +37,11 @@
             <p class="text-slate-500 font-medium mt-1">Kelola pengumuman dan informasi penting sekolah</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
+            @if(auth()->user()->role !== 'siswa')
             <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <i class="material-icons text-[20px]">add_circle</i> Tambah Pengumuman
             </button>
+            @endif
         </div>
     </div>
 
@@ -119,12 +121,17 @@
                         </td>
                         <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
                             <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button @click="viewPengumuman('{{ $item->id }}')" class="p-2 text-emerald-500 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer" title="Baca Detail">
+                                    <i class="material-icons text-lg">visibility</i>
+                                </button>
+                                @if(auth()->user()->role !== 'siswa')
                                 <button @click="editPengumuman('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer" title="Edit">
                                     <i class="material-icons text-lg">edit</i>
                                 </button>
                                 <button @click="deletePengumuman('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer" title="Hapus">
                                     <i class="material-icons text-lg">delete</i>
                                 </button>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -162,10 +169,12 @@
         return {
             openModal: false,
             editMode: false,
+            viewMode: false,
             formData: {
                 id: '',
                 judul: '',
                 pesan: '',
+                author_name: '',
                 tanggal_terbit: '{{ date('Y-m-d') }}',
                 tanggal_berakhir: '',
                 is_permanen: false,
@@ -205,16 +214,25 @@
 
             openCreateModal() {
                 this.editMode = false;
+                this.viewMode = false;
                 this.formData = {
                     id: '',
                     judul: '',
                     pesan: '',
+                    author_name: '{{ Auth::user()->name }}',
                     tanggal_terbit: '{{ date('Y-m-d') }}',
                     tanggal_berakhir: '',
                     is_permanen: false,
                 };
-                if (this.quill) this.quill.root.innerHTML = '';
+                if (this.quill) {
+                    this.quill.root.innerHTML = '';
+                    this.quill.enable(true);
+                }
                 this.openModal = true;
+            },
+
+            viewPengumuman(id) {
+                window.location.href = `{{ url('pengumuman') }}/${id}/read`;
             },
 
             editPengumuman(id) {
@@ -223,12 +241,17 @@
                         id: data.id,
                         judul: data.judul,
                         pesan: data.pesan,
+                        author_name: data.user?.name || 'Administrator',
                         tanggal_terbit: data.tanggal_terbit,
                         tanggal_berakhir: data.tanggal_berakhir || '',
                         is_permanen: data.is_permanen == 1,
                     };
                     this.editMode = true;
-                    if (this.quill) this.quill.root.innerHTML = data.pesan;
+                    this.viewMode = false;
+                    if (this.quill) {
+                        this.quill.root.innerHTML = data.pesan;
+                        this.quill.enable(true);
+                    }
                     this.openModal = true;
                 });
             },

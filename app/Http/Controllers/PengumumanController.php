@@ -65,7 +65,7 @@ class PengumumanController extends Controller
 
     public function show($id)
     {
-        return response()->json(Pengumuman::findOrFail($id));
+        return response()->json(Pengumuman::with('user')->findOrFail($id));
     }
 
     public function update(Request $request, $id)
@@ -97,5 +97,11 @@ class PengumumanController extends Controller
         $pengumuman->delete();
 
         return response()->json(['success' => 'Pengumuman telah dihapus.']);
+    }
+
+    public function read($id)
+    {
+        $pengumuman = Pengumuman::with('user')->findOrFail($id);
+        return view('pages.pengumuman.read', compact('pengumuman'));
     }
 }

@@ -42,9 +42,11 @@
             <p class="text-slate-500 font-medium mt-1">Kelola publikasi berita dan artikel sekolah</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
+            @if(auth()->user()->role !== 'siswa')
             <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <i class="material-icons text-[20px]">add_circle</i> Tambah Berita
             </button>
+            @endif
         </div>
     </div>
 
@@ -89,7 +91,7 @@
                     {{ \Carbon\Carbon::parse($item->jam_terbit)->format('H:i') }} WIB
                 </div>
                 <h3 class="text-xl font-black text-slate-800 leading-snug group-hover:text-[#d90d8b] transition-all duration-300">
-                    {{ Str::limit($item->judul, 60) }}
+                    <a href="{{ route('berita.read', $item->id) }}">{{ Str::limit($item->judul, 60) }}</a>
                 </h3>
                 <div class="text-slate-500 text-sm font-medium line-clamp-3 leading-relaxed">
                     {!! strip_tags($item->deskripsi) !!}
@@ -103,12 +105,17 @@
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ $item->user->name }}</span>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button @click="viewBerita('{{ $item->id }}')" class="p-2 text-emerald-500 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer" title="Baca Detail">
+                        <i class="material-icons text-lg">visibility</i>
+                    </button>
+                    @if(auth()->user()->role !== 'siswa')
                     <button @click="editBerita('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer" title="Edit">
                         <i class="material-icons text-lg">edit</i>
                     </button>
                     <button @click="deleteBerita('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer" title="Hapus">
                         <i class="material-icons text-lg">delete</i>
                     </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -142,10 +149,12 @@
         return {
             openModal: false,
             editMode: false,
+            viewMode: false,
             formData: {
                 id: '',
                 judul: '',
                 deskripsi: '',
+                author_name: '',
                 tanggal_terbit: '{{ date('Y-m-d') }}',
                 jam_terbit: '{{ date('H:i') }}',
             },
@@ -190,18 +199,25 @@
 
             openCreateModal() {
                 this.editMode = false;
+                this.viewMode = false;
                 this.formData = {
                     id: '',
                     judul: '',
                     deskripsi: '',
+                    author_name: '{{ Auth::user()->name }}',
                     tanggal_terbit: '{{ date('Y-m-d') }}',
                     jam_terbit: '{{ date('H:i') }}',
                 };
                 this.thumbnailPreview = null;
                 if (this.quill) {
                     this.quill.root.innerHTML = '';
+                    this.quill.enable(true);
                 }
                 this.openModal = true;
+            },
+
+            viewBerita(id) {
+                window.location.href = `{{ url('berita') }}/${id}/read`;
             },
 
             editBerita(id) {
@@ -210,13 +226,16 @@
                         id: data.id,
                         judul: data.judul,
                         deskripsi: data.deskripsi,
+                        author_name: data.user?.name || 'Administrator',
                         tanggal_terbit: data.tanggal_terbit,
                         jam_terbit: data.jam_terbit.substring(0, 5),
                     };
                     this.editMode = true;
+                    this.viewMode = false;
                     this.thumbnailPreview = data.thumbnail ? `{{ asset('storage') }}/${data.thumbnail}` : null;
                     if (this.quill) {
                         this.quill.root.innerHTML = data.deskripsi;
+                        this.quill.enable(true);
                     }
                     this.openModal = true;
                 });

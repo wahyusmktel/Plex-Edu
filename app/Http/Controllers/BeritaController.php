@@ -70,7 +70,7 @@ class BeritaController extends Controller
 
     public function show($id)
     {
-        return response()->json(Berita::findOrFail($id));
+        return response()->json(Berita::with('user')->findOrFail($id));
     }
 
     public function update(Request $request, $id)
@@ -114,5 +114,11 @@ class BeritaController extends Controller
         $berita->delete();
 
         return response()->json(['success' => 'Berita berhasil dihapus']);
+    }
+
+    public function read($id)
+    {
+        $berita = Berita::with('user')->findOrFail($id);
+        return view('pages.berita.read', compact('berita'));
     }
 }

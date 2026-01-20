@@ -12,6 +12,7 @@ use App\Models\ForumTopic;
 use App\Models\PelanggaranSiswa;
 use App\Models\Absensi;
 use App\Models\Berita;
+use App\Models\LibraryLoan;
 use App\Models\Pengumuman;
 use Carbon\Carbon;
 use Illuminate\Http\Request;

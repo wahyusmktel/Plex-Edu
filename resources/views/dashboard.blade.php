@@ -114,10 +114,10 @@
         </div>
         <div class="space-y-4">
             @forelse($latestAnnouncements as $ann)
-                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
+                <a href="{{ route('pengumuman.read', $ann->id) }}" class="block p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
                     <p class="text-[10px] font-black text-[#d90d8b] uppercase tracking-widest mb-1">{{ $ann->created_at->translatedFormat('d M Y') }}</p>
-                    <h4 class="text-sm font-bold text-slate-800 line-clamp-1">{{ $ann->title }}</h4>
-                </div>
+                    <h4 class="text-sm font-bold text-slate-800 line-clamp-1">{{ $ann->judul }}</h4>
+                </a>
             @empty
                 <p class="text-center py-8 text-slate-400 font-medium italic">Belum ada pengumuman.</p>
             @endforelse
@@ -135,13 +135,13 @@
         </div>
         <div class="space-y-4">
             @forelse($latestNews as $item)
-                <div class="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
+                <a href="{{ route('berita.read', $item->id) }}" class="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
                     <img src="{{ Storage::url($item->thumbnail) }}" class="w-16 h-16 rounded-xl object-cover" alt="">
                     <div>
                         <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">{{ $item->created_at->diffForHumans() }}</p>
                         <h4 class="text-sm font-bold text-slate-800 line-clamp-1">{{ $item->judul }}</h4>
                     </div>
-                </div>
+                </a>
             @empty
                 <p class="text-center py-8 text-slate-400 font-medium italic">Belum ada berita.</p>
             @endforelse
