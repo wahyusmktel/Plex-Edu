@@ -155,13 +155,14 @@ class DinasApiController extends Controller
 
         foreach ($admins as $admin) {
             $admin->update([
-                'password' => bcrypt('password') // Default password
+                'password' => bcrypt($school->npsn)
             ]);
         }
 
         return response()->json([
             'status' => 'success',
-            'message' => "Password admin untuk sekolah {$school->nama_sekolah} berhasil direset menjadi 'password'."
+            'message' => "Password admin untuk sekolah {$school->nama_sekolah} berhasil direset menjadi NPSN ({$school->npsn})."
         ]);
+
     }
 }
