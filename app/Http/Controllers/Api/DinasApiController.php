@@ -136,4 +136,32 @@ class DinasApiController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Reset School Admin Password
+     */
+    public function resetAdminPassword($id)
+    {
+        $school = School::findOrFail($id);
+        
+        $admins = $school->users()->where('role', 'admin')->get();
+        
+        if ($admins->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Tidak ada admin ditemukan untuk sekolah {$school->nama_sekolah}."
+            ], 404);
+        }
+
+        foreach ($admins as $admin) {
+            $admin->update([
+                'password' => bcrypt('password') // Default password
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Password admin untuk sekolah {$school->nama_sekolah} berhasil direset menjadi 'password'."
+        ]);
+    }
 }

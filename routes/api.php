@@ -151,8 +151,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/schools/{id}/approve', [DinasApiController::class, 'approveSchool']);
         Route::post('/schools/{id}/reject', [DinasApiController::class, 'rejectSchool']);
         Route::post('/schools/{id}/toggle-active', [DinasApiController::class, 'toggleSchoolActive']);
+        Route::post('/schools/{id}/reset-password', [DinasApiController::class, 'resetAdminPassword']);
         Route::get('/student-stats', [DinasApiController::class, 'studentStats']);
     });
+
 
 });
 
