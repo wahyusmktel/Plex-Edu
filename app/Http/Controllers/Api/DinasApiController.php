@@ -7,6 +7,7 @@ use App\Models\School;
 use App\Models\User;
 use App\Models\Fungsionaris;
 use App\Models\TeacherCertificate;
+use App\Models\PelanggaranSiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -224,6 +225,31 @@ class DinasApiController extends Controller
                 'teacher' => $teacher,
                 'certificates' => $certificates
             ]
+        ]);
+    }
+
+    /**
+     * Get Global Violation Monitoring
+     */
+    public function violations(Request $request)
+    {
+        $query = PelanggaranSiswa::withoutGlobalScopes()
+            ->with(['siswa', 'school', 'masterPelanggaran']);
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->whereHas('siswa', function($sq) use ($search) {
+                $sq->where('nama_lengkap', 'like', "%{$search}%");
+            })->orWhereHas('school', function($sq) use ($search) {
+                $sq->where('nama_sekolah', 'like', "%{$search}%");
+            });
+        }
+
+        $violations = $query->latest()->paginate(20);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $violations
         ]);
     }
 }

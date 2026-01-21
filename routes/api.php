@@ -154,7 +154,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/schools/{id}/reset-password', [DinasApiController::class, 'resetAdminPassword']);
         Route::get('/teacher-certificates', [DinasApiController::class, 'teacherCertificates']);
         Route::get('/teacher-certificates/{id}', [DinasApiController::class, 'teacherCertificateDetails']);
+        Route::get('/violations', [DinasApiController::class, 'violations']);
         Route::get('/student-stats', [DinasApiController::class, 'studentStats']);
+
     });
 
 
