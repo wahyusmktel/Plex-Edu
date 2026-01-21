@@ -15,7 +15,7 @@
                 <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Forum Diskusi</h1>
             </div>
         </div>
-        @if(auth()->user()->role === 'guru' || auth()->user()->role === 'admin')
+        @if(auth()->user()->role === 'guru' || auth()->user()->role === 'admin' || auth()->user()->role === 'dinas')
         <button 
             @click="createModalOpen = true"
             class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white text-sm font-bold rounded-2xl shadow-lg shadow-pink-100 hover:scale-[1.02] transition-all cursor-pointer"

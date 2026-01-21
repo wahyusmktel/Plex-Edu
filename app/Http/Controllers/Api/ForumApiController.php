@@ -25,7 +25,11 @@ class ForumApiController extends Controller
                 $q->withoutGlobalScope('school');
             }])
             ->where('is_active', true)
-            ->where(function ($query) use ($schoolId, $classId) {
+            ->where(function ($query) use ($schoolId, $classId, $user) {
+                if ($user->role === 'dinas') {
+                    return $query->whereRaw('1=1');
+                }
+                
                 // Access rules based on visibility
                 $query->where('visibility', 'all')
                     ->orWhere(function ($q) use ($schoolId) {
@@ -43,6 +47,7 @@ class ForumApiController extends Controller
                           });
                     });
             })
+
             ->withCount('topics')
             ->latest()
             ->get()
@@ -234,8 +239,79 @@ class ForumApiController extends Controller
         ]);
     }
 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'visibility' => 'required|in:all,school,class,specific_schools',
+            'class_id' => 'nullable|required_if:visibility,class',
+            'allowed_schools' => 'nullable|required_if:visibility,specific_schools|array',
+            'allowed_schools.*' => 'exists:schools,id',
+        ]);
+
+        $user = Auth::user();
+        if (!in_array($user->role, ['guru', 'admin', 'dinas'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $forum = Forum::create([
+            'school_id' => $user->school_id,
+            'created_by' => $user->id,
+            'title' => $request->title,
+            'description' => $request->description,
+            'visibility' => $request->visibility,
+            'class_id' => $request->visibility === 'class' ? $request->class_id : null,
+        ]);
+
+        if ($request->visibility === 'specific_schools' && $request->allowed_schools) {
+            $forum->allowedSchools()->attach($request->allowed_schools);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Forum berhasil dibuat.',
+            'data' => $forum
+        ]);
+    }
+
+    public function storeTopic(Request $request, $forum_id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+        ]);
+
+        $user = Auth::user();
+        if ($user->is_suspended_from_forum) {
+            return response()->json(['success' => false, 'message' => 'Anda ditangguhkan dari forum.'], 403);
+        }
+
+        $forum = Forum::withoutGlobalScope('school')->findOrFail($forum_id);
+        if (!$this->canAccessForum($forum, $user)) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
+
+        $topic = ForumTopic::create([
+            'forum_id' => $forum_id,
+            'user_id' => $user->id,
+            'title' => $request->title,
+            'content' => $request->content,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Topik berhasil dibuat.',
+            'data' => $topic
+        ]);
+    }
+
     private function canAccessForum(Forum $forum, $user): bool
     {
+        if ($user->role === 'dinas') {
+            return true;
+        }
+
         if ($forum->visibility === 'all') {
             return true;
         }

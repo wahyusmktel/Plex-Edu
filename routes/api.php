@@ -70,9 +70,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Forum
     Route::get('/student/forums', [ForumApiController::class, 'index']);
+    Route::post('/student/forums', [ForumApiController::class, 'store']);
     Route::get('/student/forums/{id}', [ForumApiController::class, 'show']);
+    Route::post('/student/forums/{forum_id}/topic', [ForumApiController::class, 'storeTopic']);
     Route::get('/student/forums/topic/{id}', [ForumApiController::class, 'showTopic']);
     Route::post('/student/forums/topic/{id}/post', [ForumApiController::class, 'storePost']);
+
 
     // E-Voting
     Route::get('/student/evoting', [EVotingApiController::class, 'index']);
