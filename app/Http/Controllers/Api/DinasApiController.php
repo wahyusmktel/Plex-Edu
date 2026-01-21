@@ -101,4 +101,39 @@ class DinasApiController extends Controller
             'message' => "Sekolah {$school->nama_sekolah} berhasil {$status}."
         ]);
     }
+
+    /**
+     * Get Student Statistics
+     */
+    public function studentStats()
+    {
+        $totalStudents = DB::table('siswas')->count();
+        
+        $genderStats = DB::table('siswas')
+            ->select('jenis_kelamin', DB::raw('count(*) as total'))
+            ->groupBy('jenis_kelamin')
+            ->get();
+
+        $levelStats = DB::table('siswas')
+            ->join('schools', 'siswas.school_id', '=', 'schools.id')
+            ->select('schools.jenjang', DB::raw('count(*) as total'))
+            ->groupBy('schools.jenjang')
+            ->get();
+
+        $statusStats = DB::table('siswas')
+            ->join('schools', 'siswas.school_id', '=', 'schools.id')
+            ->select('schools.status_sekolah', DB::raw('count(*) as total'))
+            ->groupBy('schools.status_sekolah')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'total_students' => $totalStudents,
+                'gender_stats' => $genderStats,
+                'level_stats' => $levelStats,
+                'status_stats' => $statusStats
+            ]
+        ]);
+    }
 }
