@@ -163,6 +163,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/sambutan', [SambutanApiController::class, 'index']);
         Route::post('/sambutan', [SambutanApiController::class, 'store']);
         Route::delete('/sambutan/{id}', [SambutanApiController::class, 'destroy']);
+        
+        // CBT Global
+        Route::get('/cbt-global', [DinasApiController::class, 'getGlobalCbts']);
+        Route::post('/cbt-global', [DinasApiController::class, 'storeCbt']);
+        Route::post('/cbt-global/{id}', [DinasApiController::class, 'updateCbt']);
+        Route::delete('/cbt-global/{id}', [DinasApiController::class, 'destroyCbt']);
+        Route::get('/subjects-global', [DinasApiController::class, 'getGlobalSubjects']);
     });
 
 

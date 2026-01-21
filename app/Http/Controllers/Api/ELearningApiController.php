@@ -266,7 +266,10 @@ class ELearningApiController extends Controller
             ->with(['subject' => function($q) {
                 $q->withoutGlobalScope('school');
             }])
-            ->where('school_id', $user->school_id)
+            ->where(function($q) use ($user) {
+                $q->where('school_id', $user->school_id)
+                  ->orWhereNull('school_id');
+            })
             ->orderBy('tanggal', 'desc')
             ->get()
             ->filter(function ($cbt) use ($siswa) {
@@ -304,7 +307,7 @@ class ELearningApiController extends Controller
     {
         $user = $request->user();
         $siswa = Siswa::where('user_id', $user->id)->first();
-        $cbt = Cbt::findOrFail($cbt_id);
+        $cbt = Cbt::withoutGlobalScope('school')->findOrFail($cbt_id);
 
         if (!$cbt->canParticipate($siswa)) {
             return response()->json(['status' => 'error', 'message' => 'Anda tidak terdaftar untuk CBT ini'], 403);

@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Fungsionaris;
 use App\Models\TeacherCertificate;
 use App\Models\PelanggaranSiswa;
+use App\Models\Cbt;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -252,4 +254,148 @@ class DinasApiController extends Controller
             'data' => $violations
         ]);
     }
+
+    /**
+     * Get Global CBT List
+     */
+    public function getGlobalCbts(Request $request)
+    {
+        $cbts = Cbt::withoutGlobalScope('school')
+            ->whereNull('school_id')
+            ->with(['subject' => function($q) {
+                $q->withoutGlobalScope('school');
+            }, 'creator'])
+            ->latest()
+            ->get()
+            ->map(function($cbt) {
+                return [
+                    'id' => $cbt->id,
+                    'nama_cbt' => $cbt->nama_cbt,
+                    'subject' => $cbt->subject?->nama_pelajaran ?? 'N/A',
+                    'subject_id' => $cbt->subject_id,
+                    'tanggal' => $cbt->tanggal->format('Y-m-d'),
+                    'jam_mulai' => $cbt->jam_mulai,
+                    'jam_selesai' => $cbt->jam_selesai,
+                    'token' => $cbt->token,
+                    'skor_maksimal' => $cbt->skor_maksimal,
+                    'show_result' => $cbt->show_result,
+                    'questions_count' => $cbt->questions()->count(),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $cbts
+        ]);
+    }
+
+    /**
+     * Store Global CBT
+     */
+    public function storeCbt(Request $request)
+    {
+        if (auth()->user()->role !== 'dinas') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'nama_cbt' => 'required|string|max:255',
+            'tanggal' => 'required|date',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
+            'subject_id' => 'required|exists:subjects,id',
+            'skor_maksimal' => 'required|integer|min:1',
+            'show_result' => 'boolean',
+        ]);
+
+        $cbt = Cbt::create([
+            'nama_cbt' => $request->nama_cbt,
+            'tanggal' => $request->tanggal,
+            'jam_mulai' => $request->jam_mulai,
+            'jam_selesai' => $request->jam_selesai,
+            'subject_id' => $request->subject_id,
+            'skor_maksimal' => $request->skor_maksimal,
+            'show_result' => $request->boolean('show_result'),
+            'participant_type' => 'all', // Global CBT is for everyone
+            'created_by' => auth()->id(),
+            'school_id' => null, // Explicitly null for global
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'CBT Global berhasil ditambahkan',
+            'data' => $cbt
+        ]);
+    }
+
+    /**
+     * Update Global CBT
+     */
+    public function updateCbt(Request $request, $id)
+    {
+        if (auth()->user()->role !== 'dinas') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $cbt = Cbt::withoutGlobalScope('school')->whereNull('school_id')->findOrFail($id);
+
+        $request->validate([
+            'nama_cbt' => 'required|string|max:255',
+            'tanggal' => 'required|date',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
+            'subject_id' => 'required|exists:subjects,id',
+            'skor_maksimal' => 'required|integer|min:1',
+            'show_result' => 'boolean',
+        ]);
+
+        $cbt->update([
+            'nama_cbt' => $request->nama_cbt,
+            'tanggal' => $request->tanggal,
+            'jam_mulai' => $request->jam_mulai,
+            'jam_selesai' => $request->jam_selesai,
+            'subject_id' => $request->subject_id,
+            'skor_maksimal' => $request->skor_maksimal,
+            'show_result' => $request->boolean('show_result'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'CBT Global berhasil diperbarui'
+        ]);
+    }
+
+    /**
+     * Delete Global CBT
+     */
+    public function destroyCbt($id)
+    {
+        if (auth()->user()->role !== 'dinas') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $cbt = Cbt::withoutGlobalScope('school')->whereNull('school_id')->findOrFail($id);
+        $cbt->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'CBT Global berhasil dihapus'
+        ]);
+    }
+
+    /**
+     * Get Global Subjects for CBT
+     */
+    public function getGlobalSubjects()
+    {
+        $subjects = Subject::withoutGlobalScope('school')
+            ->whereNull('school_id')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $subjects
+        ]);
+    }
 }
+
