@@ -19,7 +19,9 @@ use App\Http\Controllers\Api\KalenderApiController;
 use App\Http\Controllers\Api\NotificationApiController;
 use App\Http\Controllers\Api\ProfileApiController;
 use App\Http\Controllers\Api\AppSettingsController;
+use App\Http\Controllers\Api\DinasApiController;
 use Illuminate\Http\Request;
+
 
 use Illuminate\Support\Facades\Route;
 
@@ -141,4 +143,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Regional Data Helper
     Route::get('/regional/{type}/{code?}', [SchoolManagementController::class, 'getRegionalData']);
+
+    // Dinas School Management
+    Route::prefix('dinas')->group(function () {
+        Route::get('/schools', [DinasApiController::class, 'schools']);
+        Route::get('/schools/{id}', [DinasApiController::class, 'showSchool']);
+        Route::post('/schools/{id}/approve', [DinasApiController::class, 'approveSchool']);
+        Route::post('/schools/{id}/reject', [DinasApiController::class, 'rejectSchool']);
+        Route::post('/schools/{id}/toggle-active', [DinasApiController::class, 'toggleSchoolActive']);
+    });
 });
+
