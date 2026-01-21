@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\NotificationApiController;
 use App\Http\Controllers\Api\ProfileApiController;
 use App\Http\Controllers\Api\AppSettingsController;
 use App\Http\Controllers\Api\DinasApiController;
+use App\Http\Controllers\Api\SambutanApiController;
 use Illuminate\Http\Request;
 
 
@@ -159,7 +160,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/teacher-certificates/{id}', [DinasApiController::class, 'teacherCertificateDetails']);
         Route::get('/violations', [DinasApiController::class, 'violations']);
         Route::get('/student-stats', [DinasApiController::class, 'studentStats']);
-
+        Route::get('/sambutan', [SambutanApiController::class, 'index']);
+        Route::post('/sambutan', [SambutanApiController::class, 'store']);
+        Route::delete('/sambutan/{id}', [SambutanApiController::class, 'destroy']);
     });
 
 
