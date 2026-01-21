@@ -178,6 +178,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/agenda', [DinasApiController::class, 'getDinasAgenda']);
         Route::post('/agenda', [DinasApiController::class, 'storeAgenda']);
         Route::delete('/agenda/{id}', [DinasApiController::class, 'destroyAgenda']);
+
+        // App Settings
+        Route::post('/app-settings', [AppSettingsController::class, 'update']);
     });
 
 
