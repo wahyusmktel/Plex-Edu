@@ -18,13 +18,17 @@ use App\Http\Controllers\Api\ELibraryApiController;
 use App\Http\Controllers\Api\KalenderApiController;
 use App\Http\Controllers\Api\NotificationApiController;
 use App\Http\Controllers\Api\ProfileApiController;
+use App\Http\Controllers\Api\AppSettingsController;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register-school', [SchoolRegistrationController::class, 'register']);
+Route::get('/app-settings', [AppSettingsController::class, 'index']);
 Route::get('/sliders/image/{filename}', [SliderController::class, 'showImage']);
+
 
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
