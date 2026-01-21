@@ -33,4 +33,9 @@ class Fungsionaris extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function teacherCertificates()
+    {
+        return $this->hasMany(TeacherCertificate::class, 'teacher_id');
+    }
 }

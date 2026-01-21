@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\School;
+use App\Models\User;
+use App\Models\Fungsionaris;
+use App\Models\TeacherCertificate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -163,6 +166,64 @@ class DinasApiController extends Controller
             'status' => 'success',
             'message' => "Password admin untuk sekolah {$school->nama_sekolah} berhasil direset menjadi NPSN ({$school->npsn})."
         ]);
+    }
 
+        /**
+     * Get Teacher Certificate Monitoring
+     */
+    public function teacherCertificates(Request $request)
+    {
+        $query = User::withoutGlobalScopes()
+            ->where('role', 'guru')
+            ->with(['fungsionaris', 'school'])
+            ->withCount('teacherCertificates');
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('school', function($sq) use ($search) {
+                      $sq->where('nama_sekolah', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $teachers = $query->latest()->paginate(20);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $teachers
+        ]);
+    }
+
+    /**
+     * Get Teacher Certificate Details
+     */
+    public function teacherCertificateDetails($id)
+    {
+        $teacher = User::withoutGlobalScopes()
+            ->where('role', 'guru')
+            ->with(['fungsionaris', 'school'])
+            ->findOrFail($id);
+
+        if (!$teacher->fungsionaris) {
+             return response()->json([
+                'status' => 'error',
+                'message' => "Profil fungsionaris tidak ditemukan untuk guru ini."
+            ], 404);
+        }
+
+        $certificates = TeacherCertificate::withoutGlobalScopes()
+            ->where('teacher_id', $teacher->fungsionaris->id)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'teacher' => $teacher,
+                'certificates' => $certificates
+            ]
+        ]);
     }
 }

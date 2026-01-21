@@ -74,4 +74,16 @@ class User extends Authenticatable
             ? asset('storage/' . $this->avatar) 
             : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random&size=256';
     }
+
+    public function teacherCertificates()
+    {
+        return $this->hasManyThrough(
+            TeacherCertificate::class,
+            Fungsionaris::class,
+            'user_id', // Foreign key on fungsionaris table
+            'teacher_id', // Foreign key on teacher_certificates table
+            'id', // Local key on users table
+            'id' // Local key on fungsionaris table
+        );
+    }
 }
