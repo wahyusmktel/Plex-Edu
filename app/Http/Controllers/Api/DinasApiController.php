@@ -10,8 +10,11 @@ use App\Models\TeacherCertificate;
 use App\Models\PelanggaranSiswa;
 use App\Models\Cbt;
 use App\Models\Subject;
+use App\Models\Berita;
+use App\Models\KalenderEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class DinasApiController extends Controller
 {
@@ -397,5 +400,180 @@ class DinasApiController extends Controller
             'data' => $subjects
         ]);
     }
+
+    /**
+     * Get Berita List for Dinas
+     */
+    public function getDinasBerita(Request $request)
+    {
+        $beritas = Berita::withoutGlobalScope('school')
+            ->with(['user' => function ($q) {
+                $q->withoutGlobalScope('school');
+            }])
+            ->whereHas('user', function ($q) {
+                $q->where('role', 'dinas');
+            })
+            ->latest()
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'judul' => $item->judul,
+                    'deskripsi' => $item->deskripsi,
+                    'thumbnail_url' => $item->thumbnail ? asset('storage/' . $item->thumbnail) : null,
+                    'tanggal_terbit' => \Carbon\Carbon::parse($item->tanggal_terbit)->format('d M Y'),
+                    'jam_terbit' => $item->jam_terbit,
+                    'penulis' => $item->user?->name ?? 'Dinas',
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $beritas
+        ]);
+    }
+
+    /**
+     * Store Berita from Dinas
+     */
+    public function storeBerita(Request $request)
+    {
+        if (auth()->user()->role !== 'dinas') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required',
+            'thumbnail' => 'nullable|image|max:2048',
+            'tanggal_terbit' => 'required|date',
+            'jam_terbit' => 'required',
+        ]);
+
+        $path = null;
+        if ($request->hasFile('thumbnail')) {
+            $path = $request->file('thumbnail')->store('berita', 'public');
+        }
+
+        $berita = Berita::create([
+            'judul' => $request->judul,
+            'deskripsi' => $request->deskripsi,
+            'thumbnail' => $path,
+            'tanggal_terbit' => $request->tanggal_terbit,
+            'jam_terbit' => $request->jam_terbit,
+            'user_id' => auth()->id(),
+            'school_id' => null, // Global news
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berita berhasil ditambahkan!',
+            'data' => $berita
+        ]);
+    }
+
+    /**
+     * Delete Berita
+     */
+    public function destroyBerita($id)
+    {
+        if (auth()->user()->role !== 'dinas') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $berita = Berita::withoutGlobalScope('school')->findOrFail($id);
+        
+        if ($berita->thumbnail) {
+            Storage::disk('public')->delete($berita->thumbnail);
+        }
+        
+        $berita->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berita berhasil dihapus.'
+        ]);
+    }
+
+    /**
+     * Get Global Agenda (Kalender Event)
+     */
+    public function getDinasAgenda()
+    {
+        $events = KalenderEvent::withoutGlobalScope('school')
+            ->whereNull('school_id')
+            ->latest()
+            ->get()
+            ->map(function ($event) {
+                return [
+                    'id' => $event->id,
+                    'title' => $event->title,
+                    'category' => $event->category,
+                    'start_date' => $event->start_date->format('Y-m-d H:i:s'),
+                    'end_date' => $event->end_date->format('Y-m-d H:i:s'),
+                    'description' => $event->description,
+                    'color' => $event->color,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $events
+        ]);
+    }
+
+    /**
+     * Store Global Agenda
+     */
+    public function storeAgenda(Request $request)
+    {
+        if (auth()->user()->role !== 'dinas') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'category' => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'description' => 'nullable|string',
+            'color' => 'nullable|string',
+        ]);
+
+        $event = KalenderEvent::create([
+            'title' => $request->title,
+            'category' => $request->category,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'description' => $request->description,
+            'color' => $request->color ?? '#3b82f6',
+            'school_id' => null, // Global event
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Agenda berhasil ditambahkan!',
+            'data' => $event
+        ]);
+    }
+
+    /**
+     * Delete Agenda
+     */
+    public function destroyAgenda($id)
+    {
+        if (auth()->user()->role !== 'dinas') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $event = KalenderEvent::withoutGlobalScope('school')->whereNull('school_id')->findOrFail($id);
+        $event->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Agenda berhasil dihapus.'
+        ]);
+    }
 }
+
 

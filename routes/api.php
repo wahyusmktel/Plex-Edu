@@ -170,6 +170,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cbt-global/{id}', [DinasApiController::class, 'updateCbt']);
         Route::delete('/cbt-global/{id}', [DinasApiController::class, 'destroyCbt']);
         Route::get('/subjects-global', [DinasApiController::class, 'getGlobalSubjects']);
+
+        // Berita & Agenda for Dinas
+        Route::get('/berita', [DinasApiController::class, 'getDinasBerita']);
+        Route::post('/berita', [DinasApiController::class, 'storeBerita']);
+        Route::delete('/berita/{id}', [DinasApiController::class, 'destroyBerita']);
+        Route::get('/agenda', [DinasApiController::class, 'getDinasAgenda']);
+        Route::post('/agenda', [DinasApiController::class, 'storeAgenda']);
+        Route::delete('/agenda/{id}', [DinasApiController::class, 'destroyAgenda']);
     });
 
 
