@@ -9,6 +9,7 @@
         placeholder="{{ $placeholder }}"
         {{ $required ? 'required' : '' }}
         {{ $attributes->whereStartsWith('x-model') }}
+        {{ $attributes->except(['x-show', 'x-model', 'label', 'name', 'type', 'placeholder', 'required']) }}
         class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 placeholder-slate-300 focus:ring-2 focus:ring-pink-100 focus:border-[#d90d8b]/30 outline-none transition-all duration-200"
     >
 </div>

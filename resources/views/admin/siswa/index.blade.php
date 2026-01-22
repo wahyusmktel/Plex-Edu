@@ -86,9 +86,9 @@
                                     <i class="material-icons text-lg">lock_reset</i>
                                 </button>
                                 @endif
-                                <button @click="editData('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
+                                <a href="{{ route('siswa.edit', $item->id) }}" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
                                     <i class="material-icons text-lg">edit</i>
-                                </button>
+                                </a>
                                 <button @click="deleteData('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer">
                                     <i class="material-icons text-lg">delete</i>
                                 </button>
@@ -317,14 +317,6 @@
                 jenis_kelamin: 'L',
                 username: '',
                 password: '',
-                tempat_lahir: '',
-                tanggal_lahir: '',
-                nama_ayah: '',
-                nama_ibu: '',
-                no_hp: '',
-                no_hp_ortu: '',
-                alamat: '',
-                sekolah_asal: ''
             },
             init() {},
             openCreateModal() {
@@ -354,31 +346,6 @@
                         if (err.responseJSON?.errors) msg = Object.values(err.responseJSON.errors).join('<br>');
                         Swal.fire('Oops...', msg, 'error');
                     }
-                });
-            },
-            editData(id) {
-                $.get(`{{ url('siswa/show') }}/${id}`, (data) => {
-                    this.formData = {
-                        id: data.id,
-                        nama_lengkap: data.nama_lengkap,
-                        nis: data.nis,
-                        nisn: data.nisn,
-                        kelas_id: data.kelas_id,
-                        jenis_kelamin: data.jenis_kelamin,
-                        username: data.user?.username || '',
-                        password: '',
-                        tempat_lahir: data.tempat_lahir || '',
-                        tanggal_lahir: data.tanggal_lahir || '',
-                        nama_ayah: data.nama_ayah || '',
-                        nama_ibu: data.nama_ibu || '',
-                        no_hp: data.no_hp || '',
-                        no_hp_ortu: data.no_hp_ortu || '',
-                        alamat: data.alamat || '',
-                        sekolah_asal: data.sekolah_asal || ''
-                    };
-                    this.editMode = true;
-                    this.openModal = true;
-                    this.formTab = 'wajib';
                 });
             },
             deleteData(id) {

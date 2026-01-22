@@ -46,25 +46,20 @@ class SiswaController extends Controller
                 'role' => 'siswa',
             ]);
 
-            Siswa::create([
-                'user_id' => $user->id,
-                'kelas_id' => $request->kelas_id,
-                'nis' => $request->nis,
-                'nisn' => $request->nisn,
-                'nama_lengkap' => $request->nama_lengkap,
-                'jenis_kelamin' => $request->jenis_kelamin,
-                'tempat_lahir' => $request->tempat_lahir,
-                'tanggal_lahir' => $request->tanggal_lahir,
-                'alamat' => $request->alamat,
-                'nama_ayah' => $request->nama_ayah,
-                'nama_ibu' => $request->nama_ibu,
-                'no_hp' => $request->no_hp,
-                'no_hp_ortu' => $request->no_hp_ortu,
-                'sekolah_asal' => $request->sekolah_asal,
-            ]);
+            $data = $request->all();
+            $data['user_id'] = $user->id;
+            
+            Siswa::create($data);
         });
 
         return response()->json(['success' => 'Data siswa berhasil disimpan']);
+    }
+
+    public function edit($id)
+    {
+        $siswa = Siswa::with('user')->findOrFail($id);
+        $kelas = Kelas::all();
+        return view('admin.siswa.edit', compact('siswa', 'kelas'));
     }
 
     public function update(Request $request, $id)
@@ -75,41 +70,38 @@ class SiswaController extends Controller
             'nama_lengkap' => 'required',
             'nis' => 'required|unique:siswas,nis,' . $id . ',id',
             'nisn' => 'required|unique:siswas,nisn,' . $id . ',id',
-            'username' => 'required|unique:users,username,' . $siswa->user_id . ',id',
             'jenis_kelamin' => 'required|in:L,P',
             'kelas_id' => 'required|exists:kelas,id',
         ]);
 
-        DB::transaction(function () use ($request, $siswa) {
-            $user = User::findOrFail($siswa->user_id);
-            $user->update([
-                'name' => $request->nama_lengkap,
-                'username' => $request->username,
-                'email' => $request->username . '@siswa.literasia.org',
+        if ($siswa->user_id) {
+            $request->validate([
+                'username' => 'required|unique:users,username,' . $siswa->user_id . ',id',
             ]);
+        }
 
-            if ($request->password) {
-                $user->update(['password' => Hash::make($request->password)]);
+        DB::transaction(function () use ($request, $siswa) {
+            if ($siswa->user_id) {
+                $user = User::findOrFail($siswa->user_id);
+                $userUpdate = [
+                    'name' => $request->nama_lengkap,
+                    'username' => $request->username,
+                    'email' => $request->username . '@siswa.literasia.org',
+                ];
+                if ($request->password) {
+                    $userUpdate['password'] = Hash::make($request->password);
+                }
+                $user->update($userUpdate);
             }
 
-            $siswa->update([
-                'kelas_id' => $request->kelas_id,
-                'nis' => $request->nis,
-                'nisn' => $request->nisn,
-                'nama_lengkap' => $request->nama_lengkap,
-                'jenis_kelamin' => $request->jenis_kelamin,
-                'tempat_lahir' => $request->tempat_lahir,
-                'tanggal_lahir' => $request->tanggal_lahir,
-                'alamat' => $request->alamat,
-                'nama_ayah' => $request->nama_ayah,
-                'nama_ibu' => $request->nama_ibu,
-                'no_hp' => $request->no_hp,
-                'no_hp_ortu' => $request->no_hp_ortu,
-                'sekolah_asal' => $request->sekolah_asal,
-            ]);
+            $siswa->update($request->all());
         });
 
-        return response()->json(['success' => 'Data siswa berhasil diupdate']);
+        if ($request->ajax()) {
+            return response()->json(['success' => 'Data siswa berhasil diupdate']);
+        }
+
+        return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diupdate');
     }
 
     public function destroy($id)
