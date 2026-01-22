@@ -14,9 +14,29 @@ use App\Exports\SiswaTemplateExport;
 
 class SiswaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $siswas = Siswa::with(['user', 'kelas'])->get();
+        $query = Siswa::with(['user', 'kelas']);
+
+        // Search
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Kelas
+        if ($request->has('kelas') && $request->kelas != '') {
+            $query->where('kelas_id', $request->kelas);
+        }
+
+        // Pagination Custom
+        $perPage = $request->get('per_page', 10);
+        $siswas = $query->latest()->paginate($perPage)->withQueryString();
+
         $kelas = Kelas::all();
         
         // Count siswa without user accounts

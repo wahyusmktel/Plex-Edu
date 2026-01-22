@@ -303,9 +303,11 @@
 
                 this.map = new google.maps.Map(document.getElementById('pickerMap'), {
                     center: initialPos,
-                    zoom: 15,
-                    mapTypeControl: false,
-                    streetViewControl: false,
+                    zoom: 17, // Zoom in a bit more for satellite view
+                    mapTypeId: 'hybrid', // Default to satellite with labels
+                    mapTypeControl: true,
+                    streetViewControl: true,
+                    fullscreenControl: true,
                 });
 
                 this.marker = new google.maps.Marker({

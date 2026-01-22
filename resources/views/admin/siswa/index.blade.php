@@ -29,13 +29,58 @@
         </div>
     </div>
 
+    <!-- Filter & Search Area -->
+    <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-4">
+        <form action="{{ route('siswa.index') }}" method="GET" id="filterForm" class="flex flex-col lg:flex-row items-center gap-4">
+            <!-- Items per Page -->
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tampil</span>
+                <select name="per_page" onchange="this.form.submit()" class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-pink-100 transition-all">
+                    @foreach([10, 25, 50, 100] as $size)
+                        <option value="{{ $size }}" {{ request('per_page') == $size ? 'selected' : '' }}>{{ $size }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Search -->
+            <div class="relative flex-grow w-full">
+                <i class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-[20px]">search</i>
+                <input 
+                    type="text" 
+                    name="search" 
+                    value="{{ request('search') }}"
+                    placeholder="Cari nama, NIS atau NISN..." 
+                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-6 py-3 text-sm font-semibold text-slate-700 placeholder-slate-300 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
+                >
+            </div>
+
+            <!-- Class Filter -->
+            <div class="min-w-[200px] w-full lg:w-auto">
+                <select name="kelas" onchange="this.form.submit()" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-pink-100 transition-all">
+                    <option value="">Semua Kelas</option>
+                    @foreach($kelas as $k)
+                        <option value="{{ $k->id }}" {{ request('kelas') == $k->id ? 'selected' : '' }}>{{ $k->nama }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Reset Button -->
+            @if(request('search') || request('kelas') || request('per_page'))
+            <a href="{{ route('siswa.index') }}" class="px-6 py-3 bg-slate-50 text-slate-400 hover:text-slate-600 rounded-2xl text-sm font-bold transition-all">
+                Reset
+            </a>
+            @endif
+        </form>
+    </div>
+
     <!-- Main Table Card -->
-    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden p-2">
+    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden p-2 mt-4">
         <!-- Table Container -->
         <div class="overflow-x-auto p-4">
             <table class="w-full text-left border-separate border-spacing-y-3">
                 <thead>
                     <tr class="text-slate-400 text-[11px] uppercase font-black tracking-widest">
+                        <th class="px-6 py-3 text-center">No</th>
                         <th class="px-6 py-3">Nama Lengkap</th>
                         <th class="px-6 py-3">NIS / NISN</th>
                         <th class="px-6 py-3">Kelas</th>
@@ -45,9 +90,12 @@
                     </tr>
                 </thead>
                 <tbody class="text-sm">
-                    @forelse($siswas as $item)
+                    @forelse($siswas as $index => $item)
                     <tr class="group hover:scale-[1.005] transition-transform duration-200">
-                        <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-l border-transparent group-hover:border-slate-100 first:rounded-l-2xl">
+                        <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-l border-transparent group-hover:border-slate-100 first:rounded-l-2xl text-center font-bold text-slate-400">
+                            {{ ($siswas->currentPage() - 1) * $siswas->perPage() + $index + 1 }}
+                        </td>
+                        <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100">
                             <div class="flex items-center gap-3">
                                 <img class="w-9 h-9 rounded-xl border-2 border-white shadow-sm" src="https://ui-avatars.com/api/?name={{ urlencode($item->nama_lengkap) }}&background=fdf2f8&color=d90d8b" alt="">
                                 <div>
@@ -97,7 +145,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="py-20 text-center">
+                        <td colspan="7" class="py-20 text-center">
                             <div class="flex flex-col items-center">
                                 <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
                                     <i class="material-icons text-4xl">inventory_2</i>
@@ -110,6 +158,13 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination Footer -->
+        @if($siswas->hasPages())
+        <div class="px-8 py-6 border-t border-slate-50">
+            {{ $siswas->links() }}
+        </div>
+        @endif
     </div>
 
     <!-- Management Modal -->
