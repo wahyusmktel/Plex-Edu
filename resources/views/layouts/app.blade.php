@@ -59,6 +59,7 @@
                 <x-nav-item icon="admin_panel_settings" label="Manajemen Sekolah" :active="Request::is('dinas*') && !Request::is('dinas/stats*') && !Request::is('dinas/schools*') && !Request::is('dinas/certificates*') && !Request::is('dinas/violations*')" href="{{ route('dinas.index') }}" />
                 <x-nav-item icon="analytics" label="Statistik Siswa" :active="Request::is('dinas/stats*')" href="{{ route('dinas.stats') }}" />
                 <x-nav-item icon="domain" label="Data Sekolah" :active="Request::is('dinas/schools*')" href="{{ route('dinas.schools') }}" />
+                <x-nav-item icon="groups" label="Data Siswa" :active="Request::is('dinas/siswa*')" href="{{ route('dinas.siswa') }}" />
                 <x-nav-item icon="badge" label="Sertifikat Guru" :active="Request::is('dinas/certificates*')" href="{{ route('dinas.certificates') }}" />
                 <x-nav-item icon="report_problem" label="Pelanggaran" :active="Request::is('dinas/violations*')" href="{{ route('dinas.violations') }}" />
                 

@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Auth;
 
 class SiswaImport implements ToModel, WithStartRow
 {
+    protected $schoolId;
+
+    public function __construct($schoolId = null)
+    {
+        $this->schoolId = $schoolId ?? (Auth::check() ? Auth::user()->school_id : null);
+    }
+
     public function model(array $row)
     {
         // row index 0 corresponds to Column A
@@ -23,19 +30,21 @@ class SiswaImport implements ToModel, WithStartRow
         $namaLengkap = $col('B');
         if (!$namaLengkap) return null;
 
+        $nisn = $col('E');
+        if (!$nisn) return null;
+
         $namaKelas = $col('AQ');
         $kelasId = null;
 
-        if ($namaKelas) {
-            $schoolId = Auth::user()->school_id;
+        if ($namaKelas && $this->schoolId) {
             $kelas = Kelas::where('nama', $namaKelas)
-                ->where('school_id', $schoolId)
+                ->where('school_id', $this->schoolId)
                 ->first();
 
             if (!$kelas) {
                 // Auto create class if not exists
                 $kelas = Kelas::create([
-                    'school_id' => $schoolId,
+                    'school_id' => $this->schoolId,
                     'nama' => $namaKelas,
                     'tingkat' => $this->extractTingkat($namaKelas),
                 ]);
@@ -43,11 +52,11 @@ class SiswaImport implements ToModel, WithStartRow
             $kelasId = $kelas->id;
         }
 
-        return new Siswa([
+        $siswaData = [
             'nama_lengkap'        => $namaLengkap,
             'nipd'                => $col('C'),
             'jenis_kelamin'       => $col('D'),
-            'nisn'                => $col('E'),
+            'nisn'                => $nisn,
             'tempat_lahir'        => $col('F'),
             'tanggal_lahir'       => $this->formatDate($col('G')),
             'nik'                 => $col('H'),
@@ -109,8 +118,18 @@ class SiswaImport implements ToModel, WithStartRow
             'lingkar_kepala'      => $col('BL'),
             'jml_saudara_kandung' => $col('BM'),
             'jarak_rumah_km'      => $col('BN'),
-            'nis'                 => $col('C') ?? $col('E'), // Fallback NIS to NIPD or NISN
-        ]);
+            'nis'                 => $col('C') ?? $nisn,
+        ];
+
+        // Upsert logic: Find by NISN
+        $siswa = Siswa::where('nisn', $nisn)->first();
+        
+        if ($siswa) {
+            $siswa->update($siswaData);
+            return null; // Return null so Maatwebsite doesn't try to insert
+        }
+
+        return new Siswa($siswaData);
     }
 
     public function startRow(): int

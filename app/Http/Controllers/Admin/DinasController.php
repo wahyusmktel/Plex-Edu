@@ -294,5 +294,55 @@ class DinasController extends Controller
         $violations = PelanggaranSiswa::withoutGlobalScopes()->with(['siswa', 'school'])->latest()->paginate(30);
         return view('admin.dinas.violations', compact('violations'));
     }
+
+    public function siswa(Request $request)
+    {
+        $schools = School::withCount('siswa')->orderBy('nama_sekolah')->get();
+        
+        $selectedSchoolId = $request->get('school_id');
+        $siswas = collect();
+        
+        if ($selectedSchoolId) {
+            $query = Siswa::withoutGlobalScopes()->where('school_id', $selectedSchoolId);
+
+            // Search if provided
+            if ($request->has('search') && $request->search != '') {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_lengkap', 'like', "%{$search}%")
+                      ->orWhere('nis', 'like', "%{$search}%")
+                      ->orWhere('nisn', 'like', "%{$search}%");
+                });
+            }
+
+            $siswas = $query->with(['kelas', 'user'])
+                ->latest()
+                ->paginate($request->get('per_page', 10))
+                ->withQueryString();
+        }
+
+        return view('admin.dinas.siswa', compact('schools', 'siswas', 'selectedSchoolId'));
+    }
+
+    public function importSiswaForSchool(Request $request, $school_id)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+
+        try {
+            Excel::import(new SiswaImport($school_id), $request->file('file'));
+            return response()->json(['success' => 'Data siswa berhasil diimport atau diperbarui.']);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = [];
+            foreach ($failures as $failure) {
+                $errors[] = "Baris " . $failure->row() . ": " . implode(', ', $failure->errors());
+            }
+            return response()->json(['errors' => $errors], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
+    }
 }
 
