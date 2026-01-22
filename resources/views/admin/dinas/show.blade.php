@@ -30,6 +30,36 @@
         </div>
     </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <i class="material-icons text-3xl">people</i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total Siswa</p>
+                <h4 class="text-xl font-black text-slate-800">{{ number_format($school->total_siswa) }}</h4>
+            </div>
+        </div>
+        <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <i class="material-icons text-3xl">class</i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total Kelas</p>
+                <h4 class="text-xl font-black text-slate-800">{{ number_format($school->total_kelas) }}</h4>
+            </div>
+        </div>
+        <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div class="w-14 h-14 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center">
+                <i class="material-icons text-3xl">badge</i>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total Guru</p>
+                <h4 class="text-xl font-black text-slate-800">{{ number_format($school->total_guru) }}</h4>
+            </div>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Informations -->
         <div class="lg:col-span-5 space-y-8">

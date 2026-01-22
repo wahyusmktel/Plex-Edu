@@ -60,6 +60,17 @@ class DinasController extends Controller
 
     public function show(School $school)
     {
+        $school->loadCount([
+            'siswa as total_siswa' => function($query) {
+                $query->withoutGlobalScopes();
+            },
+            'kelas as total_kelas' => function($query) {
+                $query->withoutGlobalScopes();
+            },
+            'fungsionaris as total_guru' => function($query) {
+                $query->withoutGlobalScopes();
+            }
+        ]);
         return view('admin.dinas.show', compact('school'));
     }
 

@@ -29,4 +29,19 @@ class School extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function siswa()
+    {
+        return $this->hasMany(Siswa::class);
+    }
+
+    public function kelas()
+    {
+        return $this->hasMany(Kelas::class);
+    }
+
+    public function fungsionaris()
+    {
+        return $this->hasMany(Fungsionaris::class);
+    }
 }
