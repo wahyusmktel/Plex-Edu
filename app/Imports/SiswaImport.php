@@ -19,117 +19,150 @@ class SiswaImport implements ToModel, WithStartRow
 
     public function model(array $row)
     {
-        // row index 0 corresponds to Column A
-        // We start from Column B (index 1) to Column BN (index 65)
-        
-        $col = function($letter) use ($row) {
-            $index = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($letter) - 1;
-            return $row[$index] ?? null;
-        };
+        try {
+            // row index 0 corresponds to Column A
+            // We start from Column B (index 1) to Column BN (index 65)
+            
+            $col = function($letter) use ($row) {
+                $index = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($letter) - 1;
+                $val = $row[$index] ?? null;
+                return is_string($val) ? trim($val) : $val;
+            };
 
-        $namaLengkap = $col('B');
-        if (!$namaLengkap) return null;
+            $namaLengkap = $col('B');
+            if (!$namaLengkap) return null;
 
-        $nisn = $col('E');
-        if (!$nisn) return null;
+            $nisn = $col('E');
+            $nis = $col('C');
+            $namaKelas = $col('AQ');
+            $kelasId = null;
 
-        $namaKelas = $col('AQ');
-        $kelasId = null;
+            if ($namaKelas && $this->schoolId) {
+                $kelas = Kelas::where('nama', $namaKelas)
+                    ->where('school_id', $this->schoolId)
+                    ->first();
 
-        if ($namaKelas && $this->schoolId) {
-            $kelas = Kelas::where('nama', $namaKelas)
-                ->where('school_id', $this->schoolId)
-                ->first();
-
-            if (!$kelas) {
-                // Auto create class if not exists
-                $kelas = Kelas::create([
-                    'school_id' => $this->schoolId,
-                    'nama' => $namaKelas,
-                    'tingkat' => $this->extractTingkat($namaKelas),
-                ]);
+                if (!$kelas) {
+                    // Auto create class if not exists
+                    $kelas = Kelas::create([
+                        'school_id' => $this->schoolId,
+                        'nama' => $namaKelas,
+                        'tingkat' => $this->extractTingkat($namaKelas),
+                    ]);
+                }
+                $kelasId = $kelas->id;
             }
-            $kelasId = $kelas->id;
+
+            $rawLintang = $col('BG');
+            $rawBujur = $col('BH');
+            
+            // Smart Mapping: Dapodik often swaps Lintang (Lat) and Bujur (Lng)
+            // Latitude is max 90, Longitude is up to 180.
+            // If BG > 90 or < -90, it's almost certainly Longitude.
+            $lintang = $rawLintang;
+            $bujur = $rawBujur;
+
+            if (is_numeric($rawLintang) && is_numeric($rawBujur)) {
+                if (abs($rawLintang) > 90 && abs($rawBujur) <= 90) {
+                    // Looks like they are swapped!
+                    $lintang = $rawBujur;
+                    $bujur = $rawLintang;
+                    // \Log::info("Swapping Lat/Lng for " . $namaLengkap . ": Lat=$rawBujur, Lng=$rawLintang");
+                }
+            }
+
+            $siswaData = [
+                'school_id'           => $this->schoolId,
+                'nama_lengkap'        => $namaLengkap,
+                'nipd'                => $nis,
+                'jenis_kelamin'       => $col('D'),
+                'nisn'                => $nisn,
+                'tempat_lahir'        => $col('F'),
+                'tanggal_lahir'       => $this->formatDate($col('G')),
+                'nik'                 => $col('H'),
+                'agama'               => $col('I'),
+                'alamat'              => $col('J'),
+                'rt'                  => $col('K'),
+                'rw'                  => $col('L'),
+                'dusun'               => $col('M'),
+                'kelurahan'           => $col('N'),
+                'kecamatan'           => $col('O'),
+                'kode_pos'            => $col('P'),
+                'jenis_tinggal'       => $col('Q'),
+                'alat_transportasi'   => $col('R'),
+                'telepon'             => $col('S'),
+                'no_hp'               => $col('T'),
+                'email'               => $col('U'),
+                'skhun'               => $col('V'),
+                'penerima_kps'        => $col('W'),
+                'no_kps'              => $col('X'),
+                'nama_ayah'           => $col('Y'),
+                'ayah_tahun_lahir'    => $col('Z'),
+                'ayah_pendidikan'     => $col('AA'),
+                'ayah_pekerjaan'      => $col('AB'),
+                'ayah_penghasilan'    => $col('AC'),
+                'ayah_nik'            => $col('AD'),
+                'nama_ibu'            => $col('AE'),
+                'ibu_tahun_lahir'     => $col('AF'),
+                'ibu_pendidikan'      => $col('AG'),
+                'ibu_pekerjaan'       => $col('AH'),
+                'ibu_penghasilan'     => $col('AI'),
+                'ibu_nik'             => $col('AJ'),
+                'nama_wali'           => $col('AK'),
+                'wali_tahun_lahir'    => $col('AL'),
+                'wali_pendidikan'     => $col('AM'),
+                'wali_pekerjaan'      => $col('AN'),
+                'wali_penghasilan'    => $col('AO'),
+                'wali_nik'            => $col('AP'),
+                'kelas_id'            => $kelasId,
+                'no_peserta_ujian'    => $col('AR'),
+                'no_seri_ijazah'      => $col('AS'),
+                'penerima_kip'        => $col('AT'),
+                'no_kip'              => $col('AU'),
+                'nama_di_kip'         => $col('AV'),
+                'no_kks'              => $col('AW'),
+                'no_akta_lahir'       => $col('AX'),
+                'bank'                => $col('AY'),
+                'no_rekening_bank'    => $col('AZ'),
+                'rekening_atas_nama'  => $col('BA'),
+                'layak_pip'           => $col('BB'),
+                'alasan_layak_pip'    => $col('BC'),
+                'kebutuhan_khusus'    => $col('BD'),
+                'sekolah_asal'        => $col('BE'),
+                'anak_ke'             => $col('BF'),
+                'lintang'             => $lintang,
+                'bujur'               => $bujur,
+                'no_kk'               => $col('BI'),
+                'berat_badan'         => $col('BJ'),
+                'tinggi_badan'        => $col('BK'),
+                'lingkar_kepala'      => $col('BL'),
+                'jml_saudara_kandung' => $col('BM'),
+                'jarak_rumah_km'      => $col('BN'),
+                'nis'                 => $nis ?: ($nisn ?: $namaLengkap),
+            ];
+
+            // Super Upsert: Find by NISN OR by NIS (Global)
+            $existingSiswa = null;
+
+            if ($nisn) {
+                $existingSiswa = Siswa::withoutGlobalScopes()->where('nisn', $nisn)->first();
+            }
+
+            if (!$existingSiswa && $nis) {
+                $existingSiswa = Siswa::withoutGlobalScopes()->where('school_id', $this->schoolId)->where('nis', $nis)->first();
+            }
+
+            if ($existingSiswa) {
+                // If found, update its data
+                $existingSiswa->update($siswaData);
+                return null;
+            }
+
+            return new Siswa($siswaData);
+        } catch (\Exception $e) {
+            \Log::error("SiswaImport Error at " . ($namaLengkap ?? 'Unknown') . ": " . $e->getMessage());
+            throw $e;
         }
-
-        $siswaData = [
-            'nama_lengkap'        => $namaLengkap,
-            'nipd'                => $col('C'),
-            'jenis_kelamin'       => $col('D'),
-            'nisn'                => $nisn,
-            'tempat_lahir'        => $col('F'),
-            'tanggal_lahir'       => $this->formatDate($col('G')),
-            'nik'                 => $col('H'),
-            'agama'               => $col('I'),
-            'alamat'              => $col('J'),
-            'rt'                  => $col('K'),
-            'rw'                  => $col('L'),
-            'dusun'               => $col('M'),
-            'kelurahan'           => $col('N'),
-            'kecamatan'           => $col('O'),
-            'kode_pos'            => $col('P'),
-            'jenis_tinggal'       => $col('Q'),
-            'alat_transportasi'   => $col('R'),
-            'telepon'             => $col('S'),
-            'no_hp'               => $col('T'),
-            'email'               => $col('U'),
-            'skhun'               => $col('V'),
-            'penerima_kps'        => $col('W'),
-            'no_kps'              => $col('X'),
-            'nama_ayah'           => $col('Y'),
-            'ayah_tahun_lahir'    => $col('Z'),
-            'ayah_pendidikan'     => $col('AA'),
-            'ayah_pekerjaan'      => $col('AB'),
-            'ayah_penghasilan'    => $col('AC'),
-            'ayah_nik'            => $col('AD'),
-            'nama_ibu'            => $col('AE'),
-            'ibu_tahun_lahir'     => $col('AF'),
-            'ibu_pendidikan'      => $col('AG'),
-            'ibu_pekerjaan'       => $col('AH'),
-            'ibu_penghasilan'     => $col('AI'),
-            'ibu_nik'             => $col('AJ'),
-            'nama_wali'           => $col('AK'),
-            'wali_tahun_lahir'    => $col('AL'),
-            'wali_pendidikan'     => $col('AM'),
-            'wali_pekerjaan'      => $col('AN'),
-            'wali_penghasilan'    => $col('AO'),
-            'wali_nik'            => $col('AP'),
-            'kelas_id'            => $kelasId,
-            'no_peserta_ujian'    => $col('AR'),
-            'no_seri_ijazah'      => $col('AS'),
-            'penerima_kip'        => $col('AT'),
-            'no_kip'              => $col('AU'),
-            'nama_di_kip'         => $col('AV'),
-            'no_kks'              => $col('AW'),
-            'no_akta_lahir'       => $col('AX'),
-            'bank'                => $col('AY'),
-            'no_rekening_bank'    => $col('AZ'),
-            'rekening_atas_nama'  => $col('BA'),
-            'layak_pip'           => $col('BB'),
-            'alasan_layak_pip'    => $col('BC'),
-            'kebutuhan_khusus'    => $col('BD'),
-            'sekolah_asal'        => $col('BE'),
-            'anak_ke'             => $col('BF'),
-            'lintang'             => $col('BG'),
-            'bujur'               => $col('BH'),
-            'no_kk'               => $col('BI'),
-            'berat_badan'         => $col('BJ'),
-            'tinggi_badan'        => $col('BK'),
-            'lingkar_kepala'      => $col('BL'),
-            'jml_saudara_kandung' => $col('BM'),
-            'jarak_rumah_km'      => $col('BN'),
-            'nis'                 => $col('C') ?? $nisn,
-        ];
-
-        // Upsert logic: Find by NISN
-        $siswa = Siswa::where('nisn', $nisn)->first();
-        
-        if ($siswa) {
-            $siswa->update($siswaData);
-            return null; // Return null so Maatwebsite doesn't try to insert
-        }
-
-        return new Siswa($siswaData);
     }
 
     public function startRow(): int

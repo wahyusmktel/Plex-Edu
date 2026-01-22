@@ -28,33 +28,100 @@
         @endif
     </div>
 
-    <!-- School Selection Card -->
-    <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6">
-        <div class="flex flex-col lg:flex-row items-center gap-6">
-            <div class="w-full lg:w-1/3">
-                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Pilih Sekolah</label>
+    <!-- Filter & School Selection Card -->
+    <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6" x-data="{ 
+        showSchools: false, 
+        searchSchool: '',
+        selectedJenjang: '{{ $selectedJenjang ?? "" }}',
+        schools: @js($schools),
+        get filteredSchools() {
+            return this.schools.filter(s => s.nama_sekolah.toLowerCase().includes(this.searchSchool.toLowerCase()));
+        }
+    }">
+        <div class="flex flex-col lg:flex-row items-end gap-6">
+            <!-- Jenjang Filter -->
+            <div class="w-full lg:w-1/4">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Pilih Jenjang</label>
                 <select 
-                    x-model="selectedSchoolId" 
-                    @change="changeSchool()"
+                    x-model="selectedJenjang" 
+                    @change="window.location.href = `{{ route('dinas.siswa') }}?jenjang=${selectedJenjang}`"
                     class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-pink-100 transition-all"
                 >
-                    <option value="">-- Pilih Sekolah --</option>
-                    @foreach($schools as $school)
-                        <option value="{{ $school->id }}" {{ $selectedSchoolId == $school->id ? 'selected' : '' }}>
-                            {{ $school->nama_sekolah }} ({{ $school->siswa_count }} Siswa)
-                        </option>
-                    @endforeach
+                    <option value="">Semua Jenjang</option>
+                    <option value="sd" {{ ($selectedJenjang ?? '') == 'sd' ? 'selected' : '' }}>SD</option>
+                    <option value="smp" {{ ($selectedJenjang ?? '') == 'smp' ? 'selected' : '' }}>SMP</option>
+                    <option value="sma_smk" {{ ($selectedJenjang ?? '') == 'sma_smk' ? 'selected' : '' }}>SMA/SMK</option>
                 </select>
             </div>
+
+            <!-- Searchable School Select -->
+            <div class="w-full lg:w-2/4 relative">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Pilih Sekolah</label>
+                <div class="relative">
+                    <button 
+                        @click="showSchools = !showSchools"
+                        type="button"
+                        class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 text-left flex justify-between items-center focus:ring-2 focus:ring-pink-100 transition-all"
+                    >
+                        @php
+                            $currentSchool = $schools->firstWhere('id', $selectedSchoolId);
+                        @endphp
+                        <span>{{ $currentSchool ? $currentSchool->nama_sekolah : '-- Pilih Sekolah --' }}</span>
+                        <i class="material-icons text-slate-400" :class="showSchools ? 'rotate-180' : ''">expand_more</i>
+                    </button>
+
+                    <!-- Dropdown Panel -->
+                    <div 
+                        x-show="showSchools" 
+                        @click.away="showSchools = false"
+                        x-cloak
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        class="absolute left-0 right-0 mt-2 bg-white border border-slate-100 rounded-[2rem] shadow-xl z-50 overflow-hidden"
+                    >
+                        <div class="p-4 border-b border-slate-50">
+                            <div class="relative">
+                                <i class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">search</i>
+                                <input 
+                                    type="text" 
+                                    x-model="searchSchool"
+                                    placeholder="Cari sekolah..." 
+                                    class="w-full bg-slate-50 border border-slate-100 rounded-xl pl-12 pr-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-pink-100"
+                                    @click.stop
+                                >
+                            </div>
+                        </div>
+                        <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                            <template x-for="school in filteredSchools" :key="school.id">
+                                <button 
+                                    @click="window.location.href = `{{ route('dinas.siswa') }}?school_id=${school.id}&jenjang=${selectedJenjang}`"
+                                    class="w-full text-left px-6 py-4 text-sm font-bold transition-all hover:bg-slate-50 flex items-center justify-between"
+                                    :class="school.id == '{{ $selectedSchoolId }}' ? 'bg-pink-50 text-[#d90d8b]' : 'text-slate-600'"
+                                >
+                                    <span x-text="school.nama_sekolah"></span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] uppercase px-2 py-0.5 rounded-full" 
+                                              :class="school.siswa_count > 0 ? 'bg-pink-100 text-[#d90d8b]' : 'bg-slate-100 text-slate-400'"
+                                              x-text="school.siswa_count + ' Siswa'"></span>
+                                    </div>
+                                </button>
+                            </template>
+                            <div x-show="filteredSchools.length === 0" class="p-8 text-center text-slate-400 text-sm italic">
+                                Sekolah tidak ditemukan
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <div class="flex-grow grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
-                <!-- Quick Stats -->
+            <div class="flex-grow grid grid-cols-2 gap-4 w-full lg:w-1/4">
                 <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Total Sekolah</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Sekolah</p>
                     <p class="text-xl font-black text-slate-800 leading-none">{{ count($schools) }}</p>
                 </div>
                 <div class="p-4 rounded-3xl bg-pink-50 border border-pink-100">
-                    <p class="text-[10px] font-black text-pink-400 uppercase tracking-widest leading-none mb-2">Total Siswa</p>
+                    <p class="text-[10px] font-black text-pink-400 uppercase tracking-widest leading-none mb-2">Siswa</p>
                     <p class="text-xl font-black text-slate-800 leading-none">{{ $schools->sum('siswa_count') }}</p>
                 </div>
             </div>
@@ -225,21 +292,6 @@
             importing: false,
             importProgress: 0,
 
-            init() {
-                if(this.selectedSchoolId) {
-                   const sel = document.querySelector('select x-model="selectedSchoolId"');
-                   // find text for id
-                }
-            },
-
-            changeSchool() {
-                if (this.selectedSchoolId) {
-                    window.location.href = `{{ route('dinas.siswa') }}?school_id=${this.selectedSchoolId}`;
-                } else {
-                    window.location.href = `{{ route('dinas.siswa') }}`;
-                }
-            },
-
             handleFileSelect(e) {
                 if (e.target.files.length > 0) {
                     this.fileName = e.target.files[0].name;
@@ -285,7 +337,7 @@
                         if (err.responseJSON?.errors) {
                             msg = err.responseJSON.errors.join('<br>');
                         }
-                        Swal.fire('Error', msg, 'error');
+                        Swal.fire('Error Import', msg, 'error');
                     }
                 });
             }

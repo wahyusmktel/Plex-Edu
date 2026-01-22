@@ -9,6 +9,7 @@ use App\Models\Siswa;
 use App\Models\Fungsionaris;
 use App\Models\PelanggaranSiswa;
 use App\Imports\SchoolImport;
+use App\Imports\SiswaImport;
 use App\Exports\SchoolTemplateExport;
 use App\Models\AppSetting;
 use Illuminate\Http\Request;
@@ -297,7 +298,15 @@ class DinasController extends Controller
 
     public function siswa(Request $request)
     {
-        $schools = School::withCount('siswa')->orderBy('nama_sekolah')->get();
+        $selectedJenjang = $request->get('jenjang');
+        
+        $schoolQuery = School::withCount('siswa')->orderBy('nama_sekolah');
+        
+        if ($selectedJenjang) {
+            $schoolQuery->where('jenjang', $selectedJenjang);
+        }
+        
+        $schools = $schoolQuery->get();
         
         $selectedSchoolId = $request->get('school_id');
         $siswas = collect();
@@ -321,7 +330,7 @@ class DinasController extends Controller
                 ->withQueryString();
         }
 
-        return view('admin.dinas.siswa', compact('schools', 'siswas', 'selectedSchoolId'));
+        return view('admin.dinas.siswa', compact('schools', 'siswas', 'selectedSchoolId', 'selectedJenjang'));
     }
 
     public function importSiswaForSchool(Request $request, $school_id)

@@ -454,11 +454,11 @@
                     error: (err) => {
                         clearInterval(progressInterval);
                         this.importing = false;
-                        let msg = 'Pastikan format Excel sesuai template.';
+                        let msg = err.responseJSON?.message || 'Terjadi kesalahan saat import data.';
                         if (err.responseJSON?.errors) {
                             msg = err.responseJSON.errors.join('<br>');
                         }
-                        Swal.fire('Gagal', msg, 'error');
+                        Swal.fire('Gagal Import', msg, 'error');
                     }
                 });
             },
