@@ -60,7 +60,8 @@
                 <x-nav-item icon="analytics" label="Statistik Siswa" :active="Request::is('dinas/stats*')" href="{{ route('dinas.stats') }}" />
                 <x-nav-item icon="domain" label="Data Sekolah" :active="Request::is('dinas/schools*')" href="{{ route('dinas.schools') }}" />
                 <x-nav-item icon="groups" label="Data Siswa" :active="Request::is('dinas/siswa*')" href="{{ route('dinas.siswa') }}" />
-                <x-nav-item icon="person_add" label="Master Guru Dinas" :active="Request::is('dinas/master-guru*')" href="{{ route('dinas.master-guru.index') }}" />
+                <x-nav-item icon="person_add" label="Master Guru Dinas" :active="Request::is('dinas/master-guru') || Request::is('dinas/master-guru/*') && !Request::is('dinas/master-guru/sync')" href="{{ route('dinas.master-guru.index') }}" />
+                <x-nav-item icon="sync" label="Integrasi Data Guru" :active="Request::is('dinas/master-guru/sync')" href="{{ route('dinas.master-guru.sync') }}" />
                 <x-nav-item icon="local_library" label="E-Library Global" :active="Request::is('dinas/library*')" href="{{ route('dinas.library') }}" />
                 <x-nav-item icon="badge" label="Sertifikat Guru" :active="Request::is('dinas/certificates*')" href="{{ route('dinas.certificates') }}" />
                 <x-nav-item icon="report_problem" label="Pelanggaran" :active="Request::is('dinas/violations*')" href="{{ route('dinas.violations') }}" />

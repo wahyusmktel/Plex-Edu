@@ -36,6 +36,69 @@ class GuruDinasController extends Controller
         return view('admin.dinas.guru.index', compact('gurus', 'schools'));
     }
 
+    public function sync(Request $request)
+    {
+        $schools = School::orderBy('nama_sekolah')->get();
+        $selectedSchool = null;
+        $previewData = collect();
+
+        if ($request->filled('school_id')) {
+            $selectedSchool = School::findOrFail($request->school_id);
+            $previewData = MasterGuruDinas::where('npsn', $selectedSchool->npsn)->get();
+        }
+
+        return view('admin.dinas.guru.sync', compact('schools', 'selectedSchool', 'previewData'));
+    }
+
+    public function processSync(Request $request)
+    {
+        $request->validate([
+            'school_id' => 'required|exists:schools,id',
+            'ids' => 'required|array',
+        ]);
+
+        $school = School::findOrFail($request->school_id);
+        $masterData = MasterGuruDinas::whereIn('id', $request->ids)->get();
+        $synced = 0;
+        $skipped = 0;
+
+        foreach ($masterData as $data) {
+            // Check if already exists in fungsionaris for THIS school
+            $exists = \App\Models\Fungsionaris::where('school_id', $school->id)
+                ->where(function($q) use ($data) {
+                    if ($data->nik) $q->orWhere('nik', $data->nik);
+                    if ($data->nip) $q->orWhere('nip', $data->nip);
+                })->exists();
+
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            \App\Models\Fungsionaris::create([
+                'school_id' => $school->id,
+                'user_id' => null,
+                'nama' => $data->nama,
+                'nik' => $data->nik,
+                'nip' => $data->nip,
+                'jenis_kelamin' => $data->jenis_kelamin,
+                'tempat_lahir' => $data->tempat_lahir,
+                'tanggal_lahir' => $data->tanggal_lahir,
+                'no_hp' => $data->no_hp,
+                'jabatan' => str_contains(strtolower($data->jenis_ptk), 'guru') ? 'guru' : 'pegawai',
+                'posisi' => $data->jabatan_ptk,
+                'status' => 'aktif',
+                'pendidikan_terakhir' => $data->pendidikan,
+            ]);
+            $synced++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil menyalin {$synced} data guru ke {$school->nama_sekolah}. ({$skipped} data dilewati karena sudah ada)"
+        ]);
+    }
+
     public function show($id)
     {
         $guru = MasterGuruDinas::findOrFail($id);
