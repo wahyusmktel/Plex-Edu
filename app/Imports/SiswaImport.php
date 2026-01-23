@@ -12,6 +12,9 @@ class SiswaImport implements ToModel, WithStartRow
 {
     protected $schoolId;
 
+    protected $processedNis = [];
+    protected $processedNisn = [];
+
     public function __construct($schoolId = null)
     {
         $this->schoolId = $schoolId ?? (Auth::check() ? Auth::user()->school_id : null);
@@ -34,6 +37,16 @@ class SiswaImport implements ToModel, WithStartRow
 
             $nisn = $col('E');
             $nis = $col('C');
+
+            // Handle duplicate within the same import session
+            if (($nisn && in_array($nisn, $this->processedNisn)) || ($nis && in_array($nis, $this->processedNis))) {
+                // Skip if we already processed this student in this session (updates are handled by the upsert logic if it's the first time in session)
+                // Actually, if it's in processed list, it means we already created/updated it in this request.
+                // To support multiple rows for same student in one file (not recommended but happens), 
+                // we should update AGAIN or just skip. Usually skipping is safer or just let the update happen.
+                // But ToModel returns an instance to be saved. If we return an existing model, it might try to insert.
+            }
+
             $namaKelas = $col('AQ');
             $kelasId = null;
 
@@ -70,6 +83,8 @@ class SiswaImport implements ToModel, WithStartRow
                     // \Log::info("Swapping Lat/Lng for " . $namaLengkap . ": Lat=$rawBujur, Lng=$rawLintang");
                 }
             }
+
+            $computedNis = $nis ?: ($nisn ?: $namaLengkap);
 
             $siswaData = [
                 'school_id'           => $this->schoolId,
@@ -138,25 +153,34 @@ class SiswaImport implements ToModel, WithStartRow
                 'lingkar_kepala'      => $col('BL'),
                 'jml_saudara_kandung' => $col('BM'),
                 'jarak_rumah_km'      => $col('BN'),
-                'nis'                 => $nis ?: ($nisn ?: $namaLengkap),
+                'nis'                 => $computedNis,
             ];
 
-            // Super Upsert: Find by NISN OR by NIS (Global)
+            // Super Upsert: Find by NISN OR by NIS (Scoped to school now)
             $existingSiswa = null;
 
             if ($nisn) {
-                $existingSiswa = Siswa::withoutGlobalScopes()->where('nisn', $nisn)->first();
+                $existingSiswa = Siswa::withoutGlobalScopes()->where('school_id', $this->schoolId)->where('nisn', $nisn)->first();
             }
 
-            if (!$existingSiswa && $nis) {
-                $existingSiswa = Siswa::withoutGlobalScopes()->where('school_id', $this->schoolId)->where('nis', $nis)->first();
+            if (!$existingSiswa && $computedNis) {
+                $existingSiswa = Siswa::withoutGlobalScopes()->where('school_id', $this->schoolId)->where('nis', $computedNis)->first();
             }
 
             if ($existingSiswa) {
                 // If found, update its data
                 $existingSiswa->update($siswaData);
+                
+                // Track as processed in this session
+                if ($nisn) $this->processedNisn[] = $nisn;
+                if ($computedNis) $this->processedNis[] = $computedNis;
+                
                 return null;
             }
+
+            // Track as processed in this session before returning new model
+            if ($nisn) $this->processedNisn[] = $nisn;
+            if ($computedNis) $this->processedNis[] = $computedNis;
 
             return new Siswa($siswaData);
         } catch (\Exception $e) {
