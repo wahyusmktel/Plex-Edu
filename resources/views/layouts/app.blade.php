@@ -56,24 +56,24 @@
             {{-- Dinas Role --}}
             @if(Auth::user()->role === 'dinas')
                 <x-nav-item icon="dashboard" label="Dashboard" :active="Request::is('dashboard')" href="{{ route('dashboard') }}" />
-                <x-nav-item icon="admin_panel_settings" label="Manajemen Sekolah" :active="Request::is('dinas*') && !Request::is('dinas/stats*') && !Request::is('dinas/schools*') && !Request::is('dinas/certificates*') && !Request::is('dinas/violations*')" href="{{ route('dinas.index') }}" />
-                <x-nav-item icon="analytics" label="Statistik Siswa" :active="Request::is('dinas/stats*')" href="{{ route('dinas.stats') }}" />
-                <x-nav-item icon="domain" label="Data Sekolah" :active="Request::is('dinas/schools*')" href="{{ route('dinas.schools') }}" />
-                <x-nav-item icon="groups" label="Data Siswa" :active="Request::is('dinas/siswa*')" href="{{ route('dinas.siswa') }}" />
-                <x-nav-item icon="person_add" label="Master Guru Dinas" :active="Request::is('dinas/master-guru') || Request::is('dinas/master-guru/*') && !Request::is('dinas/master-guru/sync')" href="{{ route('dinas.master-guru.index') }}" />
-                <x-nav-item icon="sync" label="Integrasi Data Guru" :active="Request::is('dinas/master-guru/sync')" href="{{ route('dinas.master-guru.sync') }}" />
-                <x-nav-item icon="local_library" label="E-Library Global" :active="Request::is('dinas/library*')" href="{{ route('dinas.library') }}" />
-                <x-nav-item icon="badge" label="Sertifikat Guru" :active="Request::is('dinas/certificates*')" href="{{ route('dinas.certificates') }}" />
-                <x-nav-item icon="report_problem" label="Pelanggaran" :active="Request::is('dinas/violations*')" href="{{ route('dinas.violations') }}" />
+                <x-nav-item icon="admin_panel_settings" label="Manajemen Sekolah" :active="Request::routeIs('dinas.index')" href="{{ route('dinas.index') }}" />
+                <x-nav-item icon="analytics" label="Statistik Siswa" :active="Request::routeIs('dinas.stats*')" href="{{ route('dinas.stats') }}" />
+                <x-nav-item icon="domain" label="Data Sekolah" :active="Request::routeIs('dinas.schools*')" href="{{ route('dinas.schools') }}" />
+                <x-nav-item icon="groups" label="Data Siswa" :active="Request::routeIs('dinas.siswa*')" href="{{ route('dinas.siswa') }}" />
+                <x-nav-item icon="person_add" label="Master Guru Dinas" :active="Request::routeIs('dinas.master-guru.index') || Request::routeIs('dinas.master-guru.show')" href="{{ route('dinas.master-guru.index') }}" />
+                <x-nav-item icon="sync" label="Integrasi Data Guru" :active="Request::routeIs('dinas.master-guru.sync')" href="{{ route('dinas.master-guru.sync') }}" />
+                <x-nav-item icon="local_library" label="E-Library Global" :active="Request::routeIs('dinas.library*')" href="{{ route('dinas.library') }}" />
+                <x-nav-item icon="badge" label="Sertifikat Guru" :active="Request::routeIs('dinas.certificates*')" href="{{ route('dinas.certificates') }}" />
+                <x-nav-item icon="report_problem" label="Pelanggaran" :active="Request::routeIs('dinas.violations*')" href="{{ route('dinas.violations') }}" />
                 
                 <div class="h-px bg-slate-100 my-4 mx-4"></div>
                 <p class="px-6 pb-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">Konten Global</p>
-                <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />
-                <x-nav-item icon="record_voice_over" label="Sambutan Dinas" :active="Request::is('sambutan*')" href="{{ route('sambutan.index') }}" />
-                <x-nav-item icon="article" label="Berita Dinas" :active="Request::is('berita*')" href="{{ route('berita.index') }}" />
-                <x-nav-item icon="computer" label="CBT Global" :active="Request::is('cbt*')" href="{{ route('cbt.index') }}" />
-                <x-nav-item icon="calendar_today" label="Agenda Global" :active="Request::is('calendar*')" href="{{ route('calendar.index') }}" />
-                <x-nav-item icon="settings" label="Pengaturan Aplikasi" :active="Request::is('dinas/settings*')" href="{{ route('dinas.settings') }}" />
+                <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::routeIs('forum*')" href="{{ route('forum.index') }}" />
+                <x-nav-item icon="record_voice_over" label="Sambutan Dinas" :active="Request::routeIs('sambutan*')" href="{{ route('sambutan.index') }}" />
+                <x-nav-item icon="article" label="Berita Dinas" :active="Request::routeIs('berita*')" href="{{ route('berita.index') }}" />
+                <x-nav-item icon="computer" label="CBT Global" :active="Request::routeIs('cbt*')" href="{{ route('cbt.index') }}" />
+                <x-nav-item icon="calendar_today" label="Agenda Global" :active="Request::routeIs('calendar*')" href="{{ route('calendar.index') }}" />
+                <x-nav-item icon="settings" label="Pengaturan Aplikasi" :active="Request::routeIs('dinas.settings*')" href="{{ route('dinas.settings') }}" />
             @endif
 
             {{-- Guru Role --}}

@@ -31,11 +31,66 @@
         </div>
     </div>
 
-    <!-- Filter Tabs -->
-    <div class="flex p-2 bg-slate-100 rounded-3xl w-fit mb-8 gap-2">
-        <a href="{{ route('dinas.index') }}" class="{{ !$status ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50' }} px-8 py-3 rounded-2xl text-sm font-black transition-all">Semua</a>
-        <a href="{{ route('dinas.index', ['status' => 'pending']) }}" class="{{ $status === 'pending' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50' }} px-8 py-3 rounded-2xl text-sm font-black transition-all">Menunggu ({{ $pendingCount }})</a>
-        <a href="{{ route('dinas.index', ['status' => 'approved']) }}" class="{{ $status === 'approved' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50' }} px-8 py-3 rounded-2xl text-sm font-black transition-all">Disetujui</a>
+    <!-- Filters & Search -->
+    <div class="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm mb-10">
+        <form action="{{ route('dinas.index') }}" method="GET" class="space-y-6">
+            <input type="hidden" name="status" value="{{ $status }}">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Search -->
+                <div class="space-y-2 lg:col-span-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Cari Sekolah</label>
+                    <div class="relative">
+                        <i class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">search</i>
+                        <input 
+                            type="text" 
+                            name="search" 
+                            value="{{ request('search') }}"
+                            placeholder="Nama Sekolah atau NPSN..." 
+                            class="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-6 py-3.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all outline-none"
+                        >
+                    </div>
+                </div>
+
+                <!-- Jenjang -->
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Jenjang</label>
+                    <select name="jenjang" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all outline-none appearance-none cursor-pointer">
+                        <option value="">Semua Jenjang</option>
+                        <option value="sd" {{ request('jenjang') == 'sd' ? 'selected' : '' }}>SD</option>
+                        <option value="smp" {{ request('jenjang') == 'smp' ? 'selected' : '' }}>SMP</option>
+                        <option value="sma_smk" {{ request('jenjang') == 'sma_smk' ? 'selected' : '' }}>SMA/SMK</option>
+                    </select>
+                </div>
+
+                <!-- Kabupaten -->
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Wilayah (Kab/Kota)</label>
+                    <select name="kabupaten" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all outline-none appearance-none cursor-pointer">
+                        <option value="">Semua Wilayah</option>
+                        @foreach($kabupatens as $kab)
+                            <option value="{{ $kab }}" {{ request('kabupaten') == $kab ? 'selected' : '' }}>{{ $kab }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-50">
+                <div class="flex p-1.5 bg-slate-100 rounded-2xl gap-1">
+                    <a href="{{ route('dinas.index', array_merge(request()->except('status'), ['status' => ''])) }}" class="{{ !$status ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50' }} px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Semua</a>
+                    <a href="{{ route('dinas.index', array_merge(request()->except('status'), ['status' => 'pending'])) }}" class="{{ $status === 'pending' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50' }} px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Menunggu ({{ $pendingCount }})</a>
+                    <a href="{{ route('dinas.index', array_merge(request()->except('status'), ['status' => 'approved'])) }}" class="{{ $status === 'approved' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50' }} px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Disetujui</a>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{{ route('dinas.index') }}" class="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-400 rounded-2xl font-bold text-sm hover:bg-slate-100 hover:text-slate-600 transition-all">
+                        <i class="material-icons text-[20px]">refresh</i> Reset
+                    </a>
+                    <button type="submit" class="flex items-center gap-2 px-8 py-3 bg-pink-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-pink-100 hover:bg-pink-700 transition-all">
+                        <i class="material-icons text-[20px]">filter_alt</i> Terapkan Filter
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
     <!-- School Grid -->

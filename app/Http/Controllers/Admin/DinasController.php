@@ -64,11 +64,33 @@ class DinasController extends Controller
             $query->where('status', $status);
         }
 
+        // Search by Nama Sekolah or NPSN
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_sekolah', 'like', "%{$search}%")
+                  ->orWhere('npsn', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by Kabupaten/Kota
+        if ($request->filled('kabupaten')) {
+            $query->where('kabupaten_kota', $request->kabupaten);
+        }
+
+        // Filter by Jenjang
+        if ($request->filled('jenjang')) {
+            $query->where('jenjang', $request->jenjang);
+        }
+
         $schools = $query->paginate(12)->withQueryString();
         $totalCount = School::count();
         $pendingCount = School::where('status', 'pending')->count();
+        
+        // Get unique kabupaten for filter dropdown
+        $kabupatens = School::select('kabupaten_kota')->distinct()->whereNotNull('kabupaten_kota')->orderBy('kabupaten_kota')->pluck('kabupaten_kota');
 
-        return view('admin.dinas.index', compact('schools', 'totalCount', 'pendingCount', 'status'));
+        return view('admin.dinas.index', compact('schools', 'totalCount', 'pendingCount', 'status', 'kabupatens'));
     }
 
     public function show(School $school)
