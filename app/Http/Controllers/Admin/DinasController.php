@@ -138,11 +138,26 @@ class DinasController extends Controller
     {
         $query = School::query();
         
-        if ($request->has('status')) {
-            $query->where('status_sekolah', $request->status); // Negeri/Swasta
+        // Filter by Status (Negeri/Swasta)
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status_sekolah', $request->status);
         }
 
-        $schools = $query->latest()->paginate(20);
+        // Filter by Jenjang
+        if ($request->has('jenjang') && $request->jenjang != '') {
+            $query->where('jenjang', $request->jenjang);
+        }
+
+        // Search by Nama Sekolah or NPSN
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_sekolah', 'like', "%{$search}%")
+                  ->orWhere('npsn', 'like', "%{$search}%");
+            });
+        }
+
+        $schools = $query->latest()->paginate(20)->withQueryString();
         
         // Count schools without admin accounts
         $schoolsWithoutAccount = School::whereDoesntHave('users', function($q) {

@@ -15,29 +15,69 @@
             </div>
         </div>
         
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-            <div class="flex flex-wrap gap-3">
-                <a href="{{ route('dinas.schools', ['status' => 'Negeri']) }}" class="px-6 py-2.5 bg-white text-slate-600 text-sm font-bold rounded-xl border border-slate-100 hover:bg-slate-50 transition-all">Negeri</a>
-                <a href="{{ route('dinas.schools', ['status' => 'Swasta']) }}" class="px-6 py-2.5 bg-white text-slate-600 text-sm font-bold rounded-xl border border-slate-100 hover:bg-slate-50 transition-all">Swasta</a>
-                <a href="{{ route('dinas.schools') }}" class="px-6 py-2.5 bg-indigo-500 text-white text-sm font-bold rounded-xl shadow-md hover:bg-indigo-600 transition-all">Semua</a>
-            </div>
-            <div class="flex flex-wrap gap-3">
-                <a href="{{ route('dinas.schools.download-template') }}" class="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                    <i class="material-icons text-[20px]">file_download</i> Template
-                </a>
-                <button @click="openImportModal = true" class="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                    <i class="material-icons text-[20px]">file_upload</i> Import
-                </button>
-                @if($schoolsWithoutAccount > 0)
-                <button @click="generateAccounts()" class="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-md hover:bg-emerald-600 transition-all">
-                    <i class="material-icons text-[20px]">group_add</i> Generate Akun ({{ $schoolsWithoutAccount }})
-                </button>
-                @endif
-                <button @click="openCreateModal = true" class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                    <i class="material-icons text-[20px]">add_circle</i> Tambah Sekolah
-                </button>
-            </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ route('dinas.schools.download-template') }}" class="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                <i class="material-icons text-[20px]">file_download</i> Template
+            </a>
+            <button @click="openImportModal = true" class="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                <i class="material-icons text-[20px]">file_upload</i> Import
+            </button>
+            @if($schoolsWithoutAccount > 0)
+            <button @click="generateAccounts()" class="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-bold shadow-md hover:bg-emerald-600 transition-all">
+                <i class="material-icons text-[20px]">group_add</i> Generate Akun ({{ $schoolsWithoutAccount }})
+            </button>
+            @endif
+            <button @click="openCreateModal = true" class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <i class="material-icons text-[20px]">add_circle</i> Tambah Sekolah
+            </button>
         </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
+        <form action="{{ route('dinas.schools') }}" method="GET" class="flex flex-col lg:flex-row items-end gap-6">
+            <div class="w-full lg:w-1/3 space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Cari Sekolah</label>
+                <div class="relative">
+                    <i class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">search</i>
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ request('search') }}"
+                        placeholder="Nama Sekolah atau NPSN..." 
+                        class="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-6 py-3.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-100 transition-all outline-none"
+                    >
+                </div>
+            </div>
+
+            <div class="w-full lg:w-1/4 space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Jenjang</label>
+                <select name="jenjang" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-100 transition-all outline-none appearance-none">
+                    <option value="">Semua Jenjang</option>
+                    <option value="sd" {{ request('jenjang') == 'sd' ? 'selected' : '' }}>SD</option>
+                    <option value="smp" {{ request('jenjang') == 'smp' ? 'selected' : '' }}>SMP</option>
+                    <option value="sma_smk" {{ request('jenjang') == 'sma_smk' ? 'selected' : '' }}>SMA/SMK</option>
+                </select>
+            </div>
+
+            <div class="w-full lg:w-1/4 space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Status</label>
+                <select name="status" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-100 transition-all outline-none appearance-none">
+                    <option value="">Semua Status</option>
+                    <option value="Negeri" {{ request('status') == 'Negeri' ? 'selected' : '' }}>Negeri</option>
+                    <option value="Swasta" {{ request('status') == 'Swasta' ? 'selected' : '' }}>Swasta</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" class="p-3.5 bg-indigo-500 text-white rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-600 transition-all">
+                    <i class="material-icons">filter_list</i>
+                </button>
+                <a href="{{ route('dinas.schools') }}" class="p-3.5 bg-slate-100 text-slate-400 rounded-2xl hover:bg-slate-200 hover:text-slate-600 transition-all" title="Reset Filter">
+                    <i class="material-icons">refresh</i>
+                </a>
+            </div>
+        </form>
     </div>
 
     <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
