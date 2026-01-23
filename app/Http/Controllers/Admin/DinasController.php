@@ -53,10 +53,20 @@ class DinasController extends Controller
 
         return back()->with('success', 'Pengaturan aplikasi berhasil diperbarui.');
     }
-    public function index()
+    public function index(Request $request)
     {
-        $schools = School::orderBy('created_at', 'desc')->get();
-        return view('admin.dinas.index', compact('schools'));
+        $status = $request->get('status');
+        $query = School::orderBy('created_at', 'desc');
+
+        if ($status && in_array($status, ['pending', 'approved', 'rejected'])) {
+            $query->where('status', $status);
+        }
+
+        $schools = $query->paginate(12)->withQueryString();
+        $totalCount = School::count();
+        $pendingCount = School::where('status', 'pending')->count();
+
+        return view('admin.dinas.index', compact('schools', 'totalCount', 'pendingCount', 'status'));
     }
 
     public function show(School $school)
