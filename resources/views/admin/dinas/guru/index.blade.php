@@ -36,16 +36,80 @@
                         placeholder="Nama, NIK, NIP, atau Sekolah...">
                 </div>
             </div>
-            <div>
+            <div x-data="{ 
+                showSchools: false, 
+                searchSchool: '',
+                schools: @js($schools),
+                get filteredSchools() {
+                    return this.schools.filter(s => s.tempat_tugas.toLowerCase().includes(this.searchSchool.toLowerCase()) || (s.npsn && s.npsn.includes(this.searchSchool)));
+                }
+            }">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Sekolah (Tempat Tugas)</label>
-                <select name="npsn" class="w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 py-2">
-                    <option value="">Semua Sekolah</option>
-                    @foreach($schools as $school)
-                        <option value="{{ $school->npsn }}" {{ request('npsn') == $school->npsn ? 'selected' : '' }}>
-                            {{ $school->tempat_tugas }} ({{ $school->npsn }})
-                        </option>
-                    @endforeach
-                </select>
+                <div class="relative">
+                    <input type="hidden" name="npsn" :value="searchSchool"> <!-- This is tricky because we need the value and the display -->
+                    
+                    <button 
+                        @click="showSchools = !showSchools"
+                        type="button"
+                        class="w-full bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-700 text-left flex justify-between items-center focus:ring-2 focus:ring-blue-500 transition-all"
+                    >
+                        @php
+                            $selectedNpsn = request('npsn');
+                            $currentSchool = $schools->firstWhere('npsn', $selectedNpsn);
+                        @endphp
+                        <span>{{ $currentSchool ? $currentSchool->tempat_tugas : '-- Semua Sekolah --' }}</span>
+                        <i class="material-icons text-gray-400" :class="showSchools ? 'rotate-180' : ''">expand_more</i>
+                    </button>
+
+                    <!-- Dropdown Panel -->
+                    <div 
+                        x-show="showSchools" 
+                        @click.away="showSchools = false"
+                        x-cloak
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        class="absolute left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden"
+                    >
+                        <div class="p-3 border-b border-gray-50">
+                            <div class="relative">
+                                <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-sm">search</i>
+                                <input 
+                                    type="text" 
+                                    x-model="searchSchool"
+                                    placeholder="Cari sekolah atau NPSN..." 
+                                    class="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-100"
+                                    @click.stop
+                                >
+                            </div>
+                        </div>
+                        <div class="max-h-60 overflow-y-auto">
+                            <button 
+                                type="button"
+                                @click="window.location.href = '{{ route('dinas.master-guru.index') }}' + (window.location.search.replace(/npsn=[^&]*/, '').replace(/&&+/, '&'))"
+                                class="w-full text-left px-4 py-3 text-xs font-bold transition-all hover:bg-gray-50 flex items-center justify-between text-gray-600"
+                            >
+                                <span>-- Semua Sekolah --</span>
+                            </button>
+                            <template x-for="school in filteredSchools" :key="school.npsn">
+                                <button 
+                                    type="button"
+                                    @click="window.location.href = `{{ route('dinas.master-guru.index') }}?npsn=${school.npsn}&search={{ request('search') }}`"
+                                    class="w-full text-left px-4 py-3 text-xs font-bold transition-all hover:bg-gray-50 flex items-center justify-between"
+                                    :class="school.npsn == '{{ request('npsn') }}' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'"
+                                >
+                                    <div>
+                                        <div x-text="school.tempat_tugas"></div>
+                                        <div class="text-[10px] text-gray-400 font-medium" x-text="'NPSN: ' + school.npsn"></div>
+                                    </div>
+                                </button>
+                            </template>
+                            <div x-show="filteredSchools.length === 0" class="p-4 text-center text-gray-400 text-xs italic">
+                                Sekolah tidak ditemukan
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="flex items-end">
                 <button type="submit" class="bg-gray-800 text-white px-6 py-2 rounded-lg hover:bg-gray-900 transition-all w-full md:w-auto">

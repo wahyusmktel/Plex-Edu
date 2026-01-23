@@ -15,22 +15,74 @@
             <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center mr-2 text-[10px]">1</span>
             Pilih Sekolah Tujuan
         </h3>
-        <form action="{{ route('dinas.master-guru.sync') }}" method="GET" class="flex gap-4 items-end">
-            <div class="flex-1">
+        <div class="flex gap-4 items-end" x-data="{ 
+            showSchools: false, 
+            searchSchool: '',
+            schools: @js($schools),
+            get filteredSchools() {
+                return this.schools.filter(s => s.nama_sekolah.toLowerCase().includes(this.searchSchool.toLowerCase()) || (s.npsn && s.npsn.includes(this.searchSchool)));
+            }
+        }">
+            <div class="flex-1 relative">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Sekolah Terdaftar</label>
-                <select name="school_id" class="w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 py-2">
-                    <option value="">-- Pilih Sekolah --</option>
-                    @foreach($schools as $school)
-                        <option value="{{ $school->id }}" {{ request('school_id') == $school->id ? 'selected' : '' }}>
-                            {{ $school->nama_sekolah }} ({{ $school->npsn }})
-                        </option>
-                    @endforeach
-                </select>
+                <div class="relative">
+                    <button 
+                        @click="showSchools = !showSchools"
+                        type="button"
+                        class="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm font-bold text-gray-700 text-left flex justify-between items-center focus:ring-2 focus:ring-blue-500 transition-all"
+                    >
+                        @php
+                            $selectedSchoolId = request('school_id');
+                            $currentSchool = $schools->firstWhere('id', $selectedSchoolId);
+                        @endphp
+                        <span>{{ $currentSchool ? $currentSchool->nama_sekolah : '-- Pilih Sekolah --' }}</span>
+                        <i class="material-icons text-gray-400" :class="showSchools ? 'rotate-180' : ''">expand_more</i>
+                    </button>
+
+                    <!-- Dropdown Panel -->
+                    <div 
+                        x-show="showSchools" 
+                        @click.away="showSchools = false"
+                        x-cloak
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        class="absolute left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden"
+                    >
+                        <div class="p-3 border-b border-gray-50">
+                            <div class="relative">
+                                <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-sm">search</i>
+                                <input 
+                                    type="text" 
+                                    x-model="searchSchool"
+                                    placeholder="Cari sekolah atau NPSN..." 
+                                    class="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-100"
+                                    @click.stop
+                                >
+                            </div>
+                        </div>
+                        <div class="max-h-60 overflow-y-auto">
+                            <template x-for="school in filteredSchools" :key="school.id">
+                                <button 
+                                    type="button"
+                                    @click="window.location.href = `{{ route('dinas.master-guru.sync') }}?school_id=${school.id}`"
+                                    class="w-full text-left px-4 py-4 text-xs font-bold transition-all hover:bg-gray-50 flex items-center justify-between"
+                                    :class="school.id == '{{ $selectedSchoolId }}' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'"
+                                >
+                                    <div>
+                                        <div x-text="school.nama_sekolah"></div>
+                                        <div class="text-[10px] text-gray-400 font-medium" x-text="'NPSN: ' + school.npsn"></div>
+                                    </div>
+                                </button>
+                            </template>
+                            <div x-show="filteredSchools.length === 0" class="p-4 text-center text-gray-400 text-xs italic">
+                                Sekolah tidak ditemukan
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all">
-                Cari Data di Master
-            </button>
-        </form>
+        </div>
     </div>
 
     @if($selectedSchool)
