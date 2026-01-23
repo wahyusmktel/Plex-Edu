@@ -338,6 +338,7 @@ Route::middleware(['auth'])->group(function () {
         // Guru Dinas Routes
         Route::prefix('master-guru')->name('master-guru.')->group(function () {
             Route::get('/', [GuruDinasController::class, 'index'])->name('index');
+            Route::get('/{id}', [GuruDinasController::class, 'show'])->name('show');
             Route::post('/import', [GuruDinasController::class, 'import'])->name('import');
             Route::delete('/{id}', [GuruDinasController::class, 'destroy'])->name('destroy');
             Route::post('/clear', [GuruDinasController::class, 'clear'])->name('clear');

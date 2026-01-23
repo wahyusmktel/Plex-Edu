@@ -36,6 +36,12 @@ class GuruDinasController extends Controller
         return view('admin.dinas.guru.index', compact('gurus', 'schools'));
     }
 
+    public function show($id)
+    {
+        $guru = MasterGuruDinas::findOrFail($id);
+        return view('admin.dinas.guru.show', compact('guru'));
+    }
+
     public function import(Request $request)
     {
         $request->validate([

@@ -96,6 +96,9 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex justify-center items-center gap-2">
+                                <a href="{{ route('dinas.master-guru.show', $guru->id) }}" class="p-2 text-blue-400 hover:text-blue-600 transition-colors" title="Detail Guru">
+                                    <i class="fas fa-eye text-sm"></i>
+                                </a>
                                 <form action="{{ route('dinas.master-guru.destroy', $guru->id) }}" method="POST" onsubmit="return confirm('Hapus data guru ini?')">
                                     @csrf
                                     @method('DELETE')
