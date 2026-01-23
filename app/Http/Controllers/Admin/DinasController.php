@@ -12,6 +12,8 @@ use App\Imports\SchoolImport;
 use App\Imports\SiswaImport;
 use App\Exports\SchoolTemplateExport;
 use App\Models\AppSetting;
+use App\Models\LibraryItem;
+use App\Models\LibraryLoan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -362,6 +364,72 @@ class DinasController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
         }
+    }
+
+    public function library(Request $request)
+    {
+        $selectedJenjang = $request->get('jenjang');
+        $selectedSchoolId = $request->get('school_id');
+        $selectedCategory = $request->get('category');
+        $search = $request->get('search');
+
+        $query = LibraryItem::withoutGlobalScopes()->with('school');
+
+        if ($selectedJenjang) {
+            $query->whereHas('school', function ($q) use ($selectedJenjang) {
+                $q->where('jenjang', $selectedJenjang);
+            });
+        }
+
+        if ($selectedSchoolId) {
+            $query->where('school_id', $selectedSchoolId);
+        }
+
+        if ($selectedCategory) {
+            $query->where('category', $selectedCategory);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('author', 'like', "%{$search}%");
+            });
+        }
+
+        $items = $query->latest()->paginate(20)->withQueryString();
+
+        // Stats for Dinas
+        $totalItems = LibraryItem::withoutGlobalScopes()->count();
+        $typeStatsRaw = LibraryItem::withoutGlobalScopes()
+            ->select('category', DB::raw('count(*) as total'))
+            ->groupBy('category')
+            ->get();
+            
+        $typeStats = [
+            'book' => $typeStatsRaw->firstWhere('category', 'book')->total ?? 0,
+            'audio' => $typeStatsRaw->firstWhere('category', 'audio')->total ?? 0,
+            'video' => $typeStatsRaw->firstWhere('category', 'video')->total ?? 0,
+        ];
+
+        $schoolStats = School::select('schools.id', 'schools.nama_sekolah', 'schools.jenjang', DB::raw('count(library_items.id) as total_items'))
+            ->leftJoin('library_items', 'schools.id', '=', 'library_items.school_id')
+            ->groupBy('schools.id', 'schools.nama_sekolah', 'schools.jenjang')
+            ->orderBy('nama_sekolah', 'asc')
+            ->get();
+
+        $schools = $schoolStats; // Reuse schoolStats for the dropdown to have counts
+
+        return view('admin.dinas.library', compact(
+            'items', 
+            'totalItems', 
+            'typeStats', 
+            'schoolStats', 
+            'schools',
+            'selectedJenjang',
+            'selectedSchoolId',
+            'selectedCategory',
+            'search'
+        ));
     }
 }
 
