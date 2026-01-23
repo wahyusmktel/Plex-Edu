@@ -35,7 +35,10 @@
         selectedJenjang: '{{ $selectedJenjang ?? "" }}',
         schools: @js($schools),
         get filteredSchools() {
-            return this.schools.filter(s => s.nama_sekolah.toLowerCase().includes(this.searchSchool.toLowerCase()));
+            return this.schools.filter(s => 
+                s.nama_sekolah.toLowerCase().includes(this.searchSchool.toLowerCase()) || 
+                (s.npsn && s.npsn.includes(this.searchSchool))
+            );
         }
     }">
         <div class="flex flex-col lg:flex-row items-end gap-6">
@@ -99,7 +102,10 @@
                                     class="w-full text-left px-6 py-4 text-sm font-bold transition-all hover:bg-slate-50 flex items-center justify-between"
                                     :class="school.id == '{{ $selectedSchoolId }}' ? 'bg-pink-50 text-[#d90d8b]' : 'text-slate-600'"
                                 >
-                                    <span x-text="school.nama_sekolah"></span>
+                                    <div>
+                                        <div x-text="school.nama_sekolah"></div>
+                                        <div class="text-[10px] text-slate-400 font-medium" x-text="'NPSN: ' + school.npsn"></div>
+                                    </div>
                                     <div class="flex items-center gap-2">
                                         <span class="text-[10px] uppercase px-2 py-0.5 rounded-full" 
                                               :class="school.siswa_count > 0 ? 'bg-pink-100 text-[#d90d8b]' : 'bg-slate-100 text-slate-400'"
