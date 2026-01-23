@@ -22,12 +22,14 @@ use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\GuruDinasController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    $news = \App\Models\Berita::latest()->take(3)->get();
-    return view('welcome', compact('news'));
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/privacy-policy', [HomeController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
+Route::get('/tentang-kami', [HomeController::class, 'about'])->name('about');
+Route::get('/berita-publik/{id}', [HomeController::class, 'newsShow'])->name('public.berita.show');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);

@@ -72,7 +72,7 @@
             <div class="hidden md:flex items-center gap-8">
                 <a href="#features" class="text-sm font-bold text-slate-500 hover:text-pink-600 transition-colors">Fitur</a>
                 <a href="#news" class="text-sm font-bold text-slate-500 hover:text-pink-600 transition-colors">Berita</a>
-                <a href="#about" class="text-sm font-bold text-slate-500 hover:text-pink-600 transition-colors">Tentang</a>
+                <a href="{{ route('about') }}" class="text-sm font-bold text-slate-500 hover:text-pink-600 transition-colors">Tentang Kami</a>
             </div>
 
             <div class="flex items-center gap-3">
@@ -208,6 +208,47 @@
         </div>
     </section>
 
+    <!-- Stats Widget Section -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-slate-900 -skew-y-2 origin-center scale-110 -z-10"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- School Stat -->
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-pink-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-pink-600 transition-colors">
+                        <i class="material-icons text-pink-600 group-hover:text-white">school</i>
+                    </div>
+                    <div class="text-4xl lg:text-5xl font-black text-white mb-2 font-outfit">{{ number_format($stats['schools']) }}</div>
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Total Sekolah</p>
+                </div>
+                <!-- Siswa Stat -->
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-purple-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-600 transition-colors">
+                        <i class="material-icons text-purple-600 group-hover:text-white">groups</i>
+                    </div>
+                    <div class="text-4xl lg:text-5xl font-black text-white mb-2 font-outfit">{{ number_format($stats['students']) }}</div>
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Total Siswa</p>
+                </div>
+                <!-- Guru Stat -->
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 transition-colors">
+                        <i class="material-icons text-blue-600 group-hover:text-white">person</i>
+                    </div>
+                    <div class="text-4xl lg:text-5xl font-black text-white mb-2 font-outfit">{{ number_format($stats['teachers']) }}</div>
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Total Guru</p>
+                </div>
+                <!-- Pegawai Stat -->
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-amber-600 transition-colors">
+                        <i class="material-icons text-amber-600 group-hover:text-white">badge</i>
+                    </div>
+                    <div class="text-4xl lg:text-5xl font-black text-white mb-2 font-outfit">{{ number_format($stats['staff']) }}</div>
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Total Pegawai</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- News Section -->
     <section id="news" class="py-32 px-6 bg-slate-100">
         <div class="max-w-7xl mx-auto">
@@ -239,7 +280,7 @@
                             <p class="text-slate-500 text-sm font-medium mb-8 line-clamp-2">
                                 {{ Str::limit(strip_tags($item->deskripsi), 120) }}
                             </p>
-                            <a href="{{ route('berita.show', $item->id) }}" class="text-sm font-black text-slate-800 flex items-center gap-2 group-hover:underline">Baca Selengkapnya <i class="material-icons text-pink-600">east</i></a>
+                            <a href="{{ route('public.berita.show', $item->id) }}" class="text-sm font-black text-slate-800 flex items-center gap-2 group-hover:underline">Baca Selengkapnya <i class="material-icons text-pink-600">east</i></a>
                         </div>
                     </div>
                 @empty
@@ -294,7 +335,7 @@
                     <ul class="space-y-4 text-slate-400 font-bold text-sm">
                         <li><a href="#features" class="hover:text-white transition-colors">Fitur</a></li>
                         <li><a href="#news" class="hover:text-white transition-colors">Berita</a></li>
-                        <li><a href="#about" class="hover:text-white transition-colors">Tentang Kami</a></li>
+                        <li><a href="{{ route('about') }}" class="hover:text-white transition-colors">Tentang Kami</a></li>
                     </ul>
                 </div>
 
@@ -308,11 +349,15 @@
                 </div>
 
                 <div>
-                    <h4 class="text-xl font-black mb-8 font-outfit">Hubungi Kami</h4>
+                    <h4 class="text-xl font-black mb-8 font-outfit">Customer Service</h4>
                     <ul class="space-y-4 text-slate-400 font-bold text-sm">
-                        <li class="flex items-start gap-3"><i class="material-icons text-pink-600">location_on</i> Jl. Pendidikan No. 123, Jakarta</li>
-                        <li class="flex items-center gap-3"><i class="material-icons text-pink-600">phone</i> +62 21 1234 5678</li>
-                        <li class="flex items-center gap-3"><i class="material-icons text-pink-600">email</i> info@plexedu.id</li>
+                        <li class="flex items-start gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 group hover:border-pink-500/50 transition-all">
+                            <i class="fa-brands fa-whatsapp text-2xl text-pink-600"></i>
+                            <div>
+                                <p class="text-[10px] items-center uppercase tracking-widest text-slate-500 mb-1">WhatsApp Business</p>
+                                <a href="https://wa.me/6282185903635" target="_blank" class="text-base font-black text-white hover:text-pink-500 transition-colors">+62 821-8590-3635</a>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -320,11 +365,13 @@
             <div class="pt-10 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
                 <p class="text-slate-500 text-xs font-black uppercase tracking-widest">&copy; 2026 {{ $app_settings->app_name }}. All rights reserved.</p>
                 <div class="flex items-center gap-10 text-xs font-black uppercase tracking-widest text-slate-500">
-                    <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
-                    <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+                    <a href="{{ route('privacy') }}" class="hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="{{ route('terms') }}" class="hover:text-white transition-colors">Terms of Service</a>
                 </div>
             </div>
         </div>
     </footer>
+
+    @include('cookie-consent::index')
 </body>
 </html>
