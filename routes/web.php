@@ -21,6 +21,7 @@ use App\Http\Controllers\TeacherCertificateController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\GuruDinasController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -333,6 +334,14 @@ Route::middleware(['auth'])->group(function () {
         // App Settings
         Route::get('/settings', [App\Http\Controllers\Admin\DinasController::class, 'settings'])->name('settings');
         Route::post('/settings', [App\Http\Controllers\Admin\DinasController::class, 'updateSettings'])->name('settings.update');
+
+        // Guru Dinas Routes
+        Route::prefix('master-guru')->name('master-guru.')->group(function () {
+            Route::get('/', [GuruDinasController::class, 'index'])->name('index');
+            Route::post('/import', [GuruDinasController::class, 'import'])->name('import');
+            Route::delete('/{id}', [GuruDinasController::class, 'destroy'])->name('destroy');
+            Route::post('/clear', [GuruDinasController::class, 'clear'])->name('clear');
+        });
     });
 
     // Profile Routes
