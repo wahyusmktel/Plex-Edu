@@ -74,6 +74,7 @@
                 <x-nav-item icon="computer" label="CBT Global" :active="Request::routeIs('cbt*')" href="{{ route('cbt.index') }}" />
                 <x-nav-item icon="calendar_today" label="Agenda Global" :active="Request::routeIs('calendar*')" href="{{ route('calendar.index') }}" />
                 <x-nav-item icon="settings" label="Pengaturan Aplikasi" :active="Request::routeIs('dinas.settings*')" href="{{ route('dinas.settings') }}" />
+                <x-nav-item icon="help_outline" label="Dokumentasi" :active="Request::routeIs('dinas.docs')" href="{{ route('dinas.docs') }}" />
             @endif
 
             {{-- Guru Role --}}

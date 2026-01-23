@@ -345,6 +345,9 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{id}', [GuruDinasController::class, 'destroy'])->name('destroy');
             Route::post('/clear', [GuruDinasController::class, 'clear'])->name('clear');
         });
+
+        // Documentation
+        Route::get('/docs', [App\Http\Controllers\Admin\DinasController::class, 'docs'])->name('docs');
     });
 
     // Profile Routes

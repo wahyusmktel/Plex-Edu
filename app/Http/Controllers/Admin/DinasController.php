@@ -161,17 +161,27 @@ class DinasController extends Controller
         $query = School::query();
         
         // Filter by Status (Negeri/Swasta)
-        if ($request->has('status') && $request->status != '') {
+        if ($request->filled('status')) {
             $query->where('status_sekolah', $request->status);
         }
 
+        // Filter by Approval Status (Pending/Approved/Rejected)
+        if ($request->filled('approval_status')) {
+            $query->where('status', $request->approval_status);
+        }
+
+        // Filter by Kabupaten/Kota
+        if ($request->filled('kabupaten')) {
+            $query->where('kabupaten_kota', $request->kabupaten);
+        }
+
         // Filter by Jenjang
-        if ($request->has('jenjang') && $request->jenjang != '') {
+        if ($request->filled('jenjang')) {
             $query->where('jenjang', $request->jenjang);
         }
 
         // Search by Nama Sekolah or NPSN
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_sekolah', 'like', "%{$search}%")
@@ -181,12 +191,20 @@ class DinasController extends Controller
 
         $schools = $query->latest()->paginate(20)->withQueryString();
         
+        // Get unique kabupaten for filter dropdown
+        $kabupatens = School::select('kabupaten_kota')->distinct()->whereNotNull('kabupaten_kota')->orderBy('kabupaten_kota')->pluck('kabupaten_kota');
+        
         // Count schools without admin accounts
         $schoolsWithoutAccount = School::whereDoesntHave('users', function($q) {
             $q->where('role', 'admin');
         })->count();
         
-        return view('admin.dinas.school_data', compact('schools', 'schoolsWithoutAccount'));
+        return view('admin.dinas.school_data', compact('schools', 'schoolsWithoutAccount', 'kabupatens'));
+    }
+
+    public function docs()
+    {
+        return view('admin.dinas.docs');
     }
 
     public function storeSchool(Request $request)
