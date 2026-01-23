@@ -11,12 +11,12 @@
         </div>
         <div class="flex gap-2">
             <button @click="showImportModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-all">
-                <i class="fas fa-file-import mr-2"></i> Import Excel
+                <i class="material-icons mr-2">upload_file</i> Import Excel
             </button>
             <form action="{{ route('dinas.master-guru.clear') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus SEMUA data master guru?')">
                 @csrf
                 <button type="submit" class="bg-red-100 text-red-600 hover:bg-red-200 px-4 py-2 rounded-lg flex items-center transition-all">
-                    <i class="fas fa-trash-alt mr-2"></i> Kosongkan Data
+                    <i class="material-icons mr-2">delete_sweep</i> Kosongkan Data
                 </button>
             </form>
         </div>
@@ -29,7 +29,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Cari Guru</label>
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                        <i class="fas fa-search text-xs"></i>
+                        <i class="material-icons text-sm">search</i>
                     </span>
                     <input type="text" name="search" value="{{ request('search') }}" 
                         class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -53,7 +53,7 @@
                 </button>
                 @if(request()->anyFilled(['search', 'npsn']))
                     <a href="{{ route('dinas.master-guru.index') }}" class="ml-2 text-gray-500 hover:text-gray-700 flex items-center py-2">
-                        <i class="fas fa-times-circle mr-1"></i> Reset
+                        <i class="material-icons mr-1">cancel</i> Reset
                     </a>
                 @endif
             </div>
@@ -97,13 +97,13 @@
                         <td class="px-6 py-4">
                             <div class="flex justify-center items-center gap-2">
                                 <a href="{{ route('dinas.master-guru.show', $guru->id) }}" class="p-2 text-blue-400 hover:text-blue-600 transition-colors" title="Detail Guru">
-                                    <i class="fas fa-eye text-sm"></i>
+                                    <i class="material-icons text-lg">visibility</i>
                                 </a>
                                 <form action="{{ route('dinas.master-guru.destroy', $guru->id) }}" method="POST" onsubmit="return confirm('Hapus data guru ini?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="p-2 text-red-400 hover:text-red-600 transition-colors">
-                                        <i class="fas fa-trash-alt text-sm"></i>
+                                        <i class="material-icons text-lg">delete</i>
                                     </button>
                                 </form>
                             </div>
@@ -113,7 +113,7 @@
                     <tr>
                         <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center">
-                                <i class="fas fa-users-slash text-4xl mb-4 text-gray-200"></i>
+                                <i class="material-icons text-5xl mb-4 text-gray-200">group_off</i>
                                 <p>Belum ada data guru dinas yang diimport.</p>
                             </div>
                         </td>
@@ -152,7 +152,7 @@
 
                 <form @submit.prevent="submitImport">
                     <div class="mb-6 px-4 py-3 bg-blue-50 rounded-lg flex items-start">
-                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3 text-sm"></i>
+                        <i class="material-icons text-blue-500 mt-1 mr-3">info</i>
                         <p class="text-sm text-blue-700">Gunakan file Excel dari Dinas Pendidikan. Sistem akan membaca mulai dari baris 6 dan memetakan kolom B sampai AE secara otomatis.</p>
                     </div>
 
@@ -161,7 +161,7 @@
                         <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl transition-all"
                             :class="isDragging ? 'border-blue-400 bg-blue-50' : 'hover:border-blue-400'">
                             <div class="space-y-1 text-center">
-                                <i class="fas fa-file-excel text-4xl text-gray-400 mb-3" :class="file ? 'text-blue-500' : ''"></i>
+                                <i class="material-icons text-5xl text-gray-400 mb-3" :class="file ? 'text-blue-500' : ''">description</i>
                                 <div class="flex text-sm text-gray-600">
                                     <label class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                                         <span x-text="file ? file.name : 'Pilih file'"></span>
@@ -182,7 +182,7 @@
                             class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center"
                             :disabled="!file || uploading">
                             <span x-show="uploading" class="mr-2">
-                                <i class="fas fa-spinner fa-spin"></i>
+                                <i class="material-icons animate-spin">sync</i>
                             </span>
                             <span x-text="uploading ? 'Mengimport...' : 'Mulai Import'"></span>
                         </button>

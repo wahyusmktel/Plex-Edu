@@ -6,8 +6,8 @@
 <div class="p-6">
     <div class="flex justify-between items-center mb-6">
         <div class="flex items-center gap-4">
-            <a href="{{ route('dinas.master-guru.index') }}" class="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-gray-600 transition-all shadow-sm">
-                <i class="fas fa-arrow-left"></i>
+            <a href="{{ route('dinas.master-guru.index') }}" class="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-gray-600 transition-all shadow-sm flex items-center justify-center">
+                <i class="material-icons">arrow_back</i>
             </a>
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">{{ $guru->nama }}</h2>
@@ -19,7 +19,7 @@
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg flex items-center transition-all">
-                    <i class="fas fa-trash-alt mr-2"></i> Hapus Data
+                    <i class="material-icons mr-2">delete</i> Hapus Data
                 </button>
             </form>
         </div>
@@ -29,8 +29,8 @@
         <!-- Profile Overview -->
         <div class="lg:col-span-1 space-y-6">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
-                <div class="w-24 h-24 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-user-tie text-4xl text-blue-500"></i>
+                <div class="w-24 h-24 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-500">
+                    <i class="material-icons text-5xl">person</i>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900">{{ $guru->nama }}</h3>
                 <p class="text-sm text-gray-500 mb-4">{{ $guru->nuptk ? 'NUPTK: ' . $guru->nuptk : 'Belum ada NUPTK' }}</p>
@@ -44,7 +44,7 @@
                 <div class="space-y-4">
                     <div class="flex items-start gap-3">
                         <div class="p-2 bg-gray-50 rounded-lg text-gray-400">
-                            <i class="fas fa-phone-alt text-xs"></i>
+                            <i class="material-icons text-sm">phone</i>
                         </div>
                         <div>
                             <p class="text-xs text-gray-400 block">Nomor HP</p>
@@ -53,7 +53,7 @@
                     </div>
                     <div class="flex items-start gap-3">
                         <div class="p-2 bg-gray-50 rounded-lg text-gray-400">
-                            <i class="fas fa-map-marker-alt text-xs"></i>
+                            <i class="material-icons text-sm">place</i>
                         </div>
                         <div>
                             <p class="text-xs text-gray-400 block">Domisili (Kecamatan)</p>
