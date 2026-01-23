@@ -32,7 +32,7 @@ class DashboardController extends Controller
             // Aggregated counts across all schools
             // We use withoutGlobalScopes() to get total numbers across all tenants
             $totalSiswaAcrossSchools = Siswa::withoutGlobalScopes()->count();
-            $totalGuruAcrossSchools = User::withoutGlobalScopes()->where('role', 'guru')->count();
+            $totalGuruAcrossSchools = \App\Models\Fungsionaris::withoutGlobalScopes()->where('jabatan', 'guru')->count();
             
             // Latest registrations for quick look
             $latestRegistrations = \App\Models\School::latest()->take(5)->get();
@@ -61,8 +61,8 @@ class DashboardController extends Controller
 
         // User stats
         $siswaCount = Siswa::count();
-        $guruCount = User::where('role', 'guru')->count();
-        $pegawaiCount = User::whereIn('role', ['pegawai', 'admin', 'staff'])->count();
+        $guruCount = \App\Models\Fungsionaris::where('jabatan', 'guru')->count();
+        $pegawaiCount = \App\Models\Fungsionaris::where('jabatan', 'pegawai')->count();
 
         // Today's attendance
         $today = Carbon::today();
