@@ -159,11 +159,11 @@ class SiswaImport implements ToModel, WithStartRow
             // Super Upsert: Find by NISN OR by NIS (Scoped to school now)
             $existingSiswa = null;
 
-            if ($nisn) {
+            if ($nisn && $nisn != '-' && $nisn != '?') {
                 $existingSiswa = Siswa::withoutGlobalScopes()->where('school_id', $this->schoolId)->where('nisn', $nisn)->first();
             }
 
-            if (!$existingSiswa && $computedNis) {
+            if (!$existingSiswa && $computedNis && $computedNis != '-' && $computedNis != '?') {
                 $existingSiswa = Siswa::withoutGlobalScopes()->where('school_id', $this->schoolId)->where('nis', $computedNis)->first();
             }
 
@@ -172,15 +172,15 @@ class SiswaImport implements ToModel, WithStartRow
                 $existingSiswa->update($siswaData);
                 
                 // Track as processed in this session
-                if ($nisn) $this->processedNisn[] = $nisn;
-                if ($computedNis) $this->processedNis[] = $computedNis;
+                if ($nisn && $nisn != '-' && $nisn != '?') $this->processedNisn[] = $nisn;
+                if ($computedNis && $computedNis != '-' && $computedNis != '?') $this->processedNis[] = $computedNis;
                 
                 return null;
             }
 
             // Track as processed in this session before returning new model
-            if ($nisn) $this->processedNisn[] = $nisn;
-            if ($computedNis) $this->processedNis[] = $computedNis;
+            if ($nisn && $nisn != '-' && $nisn != '?') $this->processedNisn[] = $nisn;
+            if ($computedNis && $computedNis != '-' && $computedNis != '?') $this->processedNis[] = $computedNis;
 
             return new Siswa($siswaData);
         } catch (\Exception $e) {
