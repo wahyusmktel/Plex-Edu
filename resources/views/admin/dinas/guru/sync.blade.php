@@ -39,7 +39,7 @@
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
             <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center">
                 <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center mr-2 text-[10px]">2</span>
-                Data Ditemukan di Master (NPSN: {{ $selectedSchool->npsn }})
+                Data Ditemukan di Master: {{ $selectedSchool->nama_sekolah }} (NPSN: {{ $selectedSchool->npsn }})
             </h3>
             <div class="flex gap-2">
                 <span class="text-sm text-gray-500 mr-4 mt-2" x-text="'Terpilih: ' + selectedIds.length + ' / {{ $previewData->count() }}'"></span>
@@ -63,13 +63,18 @@
                         <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">NIK / NIP</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Jabatan Master</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status Sync</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($previewData as $item)
-                    <tr class="hover:bg-gray-50 transition-colors">
+                    <tr class="hover:bg-gray-50 transition-colors {{ $item->is_synced ? 'bg-gray-50 opacity-75' : '' }}">
                         <td class="px-6 py-4 text-center">
-                            <input type="checkbox" x-model="selectedIds" value="{{ $item->id }}" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            @if(!$item->is_synced)
+                                <input type="checkbox" x-model="selectedIds" value="{{ $item->id }}" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            @else
+                                <i class="material-icons text-green-500 text-sm">check_circle</i>
+                            @endif
                         </td>
                         <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $item->nama }}</td>
                         <td class="px-6 py-4">
@@ -77,6 +82,17 @@
                             <div class="text-xs text-blue-600">NIP: {{ $item->nip ?: '-' }}</div>
                         </td>
                         <td class="px-6 py-4 text-xs text-gray-600">{{ $item->jenis_ptk }}</td>
+                        <td class="px-6 py-4">
+                            @if($item->is_synced)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="material-icons text-[10px] mr-1">done_all</i> Terintegrasi
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                    <i class="material-icons text-[10px] mr-1">hourglass_empty</i> Belum Sync
+                                </span>
+                            @endif
+                        </td>
                     </tr>
                     @empty
                     <tr>
@@ -105,7 +121,7 @@
             
             toggleAll(e) {
                 if (e.target.checked) {
-                    this.selectedIds = {!! json_encode($previewData->pluck('id')) !!};
+                    this.selectedIds = {!! json_encode($previewData->where('is_synced', false)->pluck('id')) !!};
                 } else {
                     this.selectedIds = [];
                 }

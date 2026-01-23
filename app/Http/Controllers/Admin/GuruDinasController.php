@@ -45,6 +45,16 @@ class GuruDinasController extends Controller
         if ($request->filled('school_id')) {
             $selectedSchool = School::findOrFail($request->school_id);
             $previewData = MasterGuruDinas::where('npsn', $selectedSchool->npsn)->get();
+
+            // Add sync status flag
+            $previewData->transform(function ($item) use ($selectedSchool) {
+                $item->is_synced = \App\Models\Fungsionaris::where('school_id', $selectedSchool->id)
+                    ->where(function ($q) use ($item) {
+                        if ($item->nik) $q->orWhere('nik', $item->nik);
+                        if ($item->nip) $q->orWhere('nip', $item->nip);
+                    })->exists();
+                return $item;
+            });
         }
 
         return view('admin.dinas.guru.sync', compact('schools', 'selectedSchool', 'previewData'));
