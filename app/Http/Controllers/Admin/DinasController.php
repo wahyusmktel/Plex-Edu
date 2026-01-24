@@ -641,5 +641,30 @@ class DinasController extends Controller
             'results' => $results
         ]);
     }
+
+    public function resetSiswaForSchool($school_id)
+    {
+        try {
+            DB::transaction(function () use ($school_id) {
+                // Get all student user IDs for this school
+                $userIds = Siswa::withoutGlobalScopes()
+                    ->where('school_id', $school_id)
+                    ->whereNotNull('user_id')
+                    ->pluck('user_id');
+
+                // Delete Siswa records
+                Siswa::withoutGlobalScopes()->where('school_id', $school_id)->delete();
+
+                // Delete associated User accounts (only for those with role 'siswa')
+                if ($userIds->isNotEmpty()) {
+                    User::whereIn('id', $userIds)->where('role', 'siswa')->delete();
+                }
+            });
+
+            return response()->json(['success' => 'Seluruh data siswa dan akun terasosiasi berhasil dikosongkan.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal mengosongkan data: ' . $e->getMessage()], 500);
+        }
+    }
 }
 

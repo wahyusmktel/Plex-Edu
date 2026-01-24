@@ -21,6 +21,9 @@
         
         @if($selectedSchoolId)
         <div class="flex gap-3">
+            <button @click="resetData()" class="flex items-center gap-2 px-6 py-3.5 bg-red-50 border border-red-100 rounded-2xl text-sm font-bold text-red-600 hover:bg-red-100 transition-all shadow-sm">
+                <i class="material-icons text-[20px]">delete_sweep</i> Reset Data
+            </button>
             <button @click="openBulkImportModal = true" class="flex items-center gap-2 px-6 py-3.5 bg-slate-800 border border-slate-700 rounded-2xl text-sm font-bold text-white hover:bg-slate-900 transition-all shadow-sm">
                 <i class="material-icons text-[20px]">library_add</i> Bulk Import
             </button>
@@ -545,6 +548,43 @@
                             }
                             Swal.fire('Error Import', msg, 'error');
                         }
+                    }
+                });
+            },
+
+            resetData() {
+                Swal.fire({
+                    title: 'Apakah Anda Yakin?',
+                    text: "Seluruh data siswa dan akun terasosiasi pada sekolah ini akan dikosongkan secara permanen!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Kosongkan Data!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `{{ url('dinas/siswa/reset') }}/${this.selectedSchoolId}`,
+                            method: 'DELETE',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: (res) => {
+                                Swal.fire(
+                                    'Dikosongkan!',
+                                    res.success,
+                                    'success'
+                                ).then(() => location.reload());
+                            },
+                            error: (err) => {
+                                Swal.fire(
+                                    'Gagal!',
+                                    err.responseJSON?.message || 'Terjadi kesalahan sistem.',
+                                    'error'
+                                );
+                            }
+                        });
                     }
                 });
             },
