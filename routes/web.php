@@ -329,6 +329,7 @@ Route::middleware(['auth'])->group(function () {
         // Student Management for Dinas
         Route::get('/siswa', [App\Http\Controllers\Admin\DinasController::class, 'siswa'])->name('siswa');
         Route::post('/siswa/import/{school_id}', [App\Http\Controllers\Admin\DinasController::class, 'importSiswaForSchool'])->name('siswa.import');
+        Route::post('/siswa/bulk-import', [App\Http\Controllers\Admin\DinasController::class, 'bulkImportSiswa'])->name('siswa.bulk-import');
         
         // E-Library for Dinas
         Route::get('/library', [App\Http\Controllers\Admin\DinasController::class, 'library'])->name('library');

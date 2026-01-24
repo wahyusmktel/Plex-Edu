@@ -21,6 +21,9 @@
         
         @if($selectedSchoolId)
         <div class="flex gap-3">
+            <button @click="openBulkImportModal = true" class="flex items-center gap-2 px-6 py-3.5 bg-slate-800 border border-slate-700 rounded-2xl text-sm font-bold text-white hover:bg-slate-900 transition-all shadow-sm">
+                <i class="material-icons text-[20px]">library_add</i> Bulk Import
+            </button>
             <button @click="openImportModal = true" class="flex items-center gap-2 px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
                 <i class="material-icons text-[20px]">file_upload</i> Import Siswa
             </button>
@@ -241,6 +244,93 @@
     </div>
     @endif
 
+    <!-- Bulk Import Modal -->
+    <div x-show="openBulkImportModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto">
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="if(!importing) openBulkImportModal = false"></div>
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl p-10 relative z-10 my-auto">
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-2">Bulk Import Siswa</h3>
+            <p class="text-slate-400 font-medium text-sm mb-6">Import banyak file sekaligus. Pastikan nama file diawali dengan **NPSN Sekolah**. <br>(Contoh: 12345678 - SD Negeri X.xlsx)</p>
+            
+            <div x-show="!showBulkResults">
+                <div class="relative group">
+                    <input type="file" multiple name="files[]" class="hidden" id="bulkSiswaFiles" @change="handleBulkFileSelect($event)">
+                    <label for="bulkSiswaFiles" class="flex flex-col items-center justify-center w-full h-48 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-100 transition-all">
+                        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm mb-4">
+                            <i class="material-icons text-3xl">library_add</i>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500" x-text="bulkFiles.length > 0 ? bulkFiles.length + ' file dipilih' : 'Pilih banyak file sekaligus'"></p>
+                    </label>
+                </div>
+
+                <div x-show="importing" class="mt-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-black text-slate-600 uppercase tracking-widest">Mengupload & Memproses...</span>
+                        <span class="text-xs font-black text-[#d90d8b]" x-text="importProgress + '%'"></span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] transition-all duration-300" :style="'width: ' + importProgress + '%'"></div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-8" x-show="!importing">
+                    <button type="button" @click="openBulkImportModal = false; bulkFiles = []" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
+                    <button type="button" @click="bulkImport()" class="flex-1 py-4 bg-slate-800 text-white rounded-2xl text-sm font-bold hover:bg-slate-900 transition-all shadow-lg">Mulai Bulk Import</button>
+                </div>
+            </div>
+
+            <!-- Bulk Results View -->
+            <div x-show="showBulkResults" x-cloak class="mt-4">
+                <div class="bg-slate-50 rounded-3xl p-6 border border-slate-100 mb-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center p-4 bg-white rounded-2xl border border-slate-100">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Berhasil</div>
+                            <div class="text-2xl font-black text-emerald-500" x-text="bulkResults?.summary.success"></div>
+                        </div>
+                        <div class="text-center p-4 bg-white rounded-2xl border border-slate-100">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Gagal</div>
+                            <div class="text-2xl font-black text-red-500" x-text="bulkResults?.summary.failed"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                    <template x-for="res in bulkResults?.results" :key="res.filename">
+                        <div class="mb-3 p-4 bg-white border border-slate-100 rounded-2xl hover:shadow-sm transition-all">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-grow">
+                                    <h4 class="text-xs font-black text-slate-800" x-text="res.school_name"></h4>
+                                    <p class="text-[10px] text-slate-400 font-medium" x-text="res.filename"></p>
+                                    <div x-show="res.errors.length > 0" class="mt-2 space-y-1">
+                                        <template x-for="err in res.errors" :key="err.row + '-' + err.error">
+                                            <div class="text-[9px] text-red-500 font-bold bg-red-50 px-2 py-0.5 rounded flex items-center justify-between">
+                                                <span x-text="'Baris ' + err.row + ': ' + err.student"></span>
+                                                <span class="text-red-300" x-text="err.error"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 flex items-center gap-1">
+                                    <template x-if="res.status === 'success'">
+                                        <span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase rounded-lg border border-emerald-100 flex items-center gap-1">
+                                            <i class="material-icons text-[14px]">check_circle</i> Suksess
+                                        </span>
+                                    </template>
+                                    <template x-if="res.status === 'failed'">
+                                        <span class="px-2 py-1 bg-red-50 text-red-600 text-[9px] font-black uppercase rounded-lg border border-red-100 flex items-center gap-1">
+                                            <i class="material-icons text-[14px]">cancel</i> Gagal
+                                        </span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <button type="button" @click="location.reload()" class="w-full mt-6 py-4 bg-slate-800 text-white rounded-2xl text-sm font-bold hover:bg-slate-900 transition-all">Selesai & Refresh Halaman</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Import Modal -->
     @if($selectedSchoolId)
     <div x-show="openImportModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
@@ -338,6 +428,11 @@
         return {
             selectedSchoolId: '{{ $selectedSchoolId ?? "" }}',
             openImportModal: false,
+            openBulkImportModal: false,
+            fileName: '',
+            bulkFiles: [],
+            bulkResults: null,
+            showBulkResults: false,
             isDragging: false,
             importing: false,
             importProgress: 0,
@@ -412,6 +507,53 @@
                             }
                             Swal.fire('Error Import', msg, 'error');
                         }
+                    }
+                });
+            },
+
+            handleBulkFileSelect(e) {
+                this.bulkFiles = Array.from(e.target.files);
+            },
+
+            bulkImport() {
+                if (this.bulkFiles.length === 0) {
+                    Swal.fire('Oops!', 'Pilih setidaknya satu file Excel.', 'warning');
+                    return;
+                }
+
+                this.importing = true;
+                this.importProgress = 0;
+
+                let formData = new FormData();
+                this.bulkFiles.forEach((file, index) => {
+                    formData.append('files[]', file);
+                });
+                formData.append('_token', '{{ csrf_token() }}');
+
+                $.ajax({
+                    url: `{{ route('dinas.siswa.bulk-import') }}`,
+                    method: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    xhr: () => {
+                        const xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", (evt) => {
+                            if (evt.lengthComputable) {
+                                this.importProgress = Math.round((evt.loaded / evt.total) * 100);
+                            }
+                        }, false);
+                        return xhr;
+                    },
+                    success: (res) => {
+                        this.importing = false;
+                        this.bulkResults = res;
+                        this.showBulkResults = true;
+                        Swal.fire('Selesai!', 'Proses bulk import telah selesai.', 'success');
+                    },
+                    error: (err) => {
+                        this.importing = false;
+                        Swal.fire('Error Bulk Import', err.responseJSON?.message || 'Terjadi kesalahan sistem.', 'error');
                     }
                 });
             }

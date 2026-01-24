@@ -525,5 +525,121 @@ class DinasController extends Controller
             'search'
         ));
     }
+
+    public function bulkImportSiswa(Request $request)
+    {
+        $request->validate([
+            'files' => 'required|array',
+            'files.*' => 'required|mimes:xlsx,xls'
+        ]);
+
+        $results = [];
+        $summary = [
+            'success' => 0,
+            'failed' => 0,
+            'total_files' => count($request->file('files'))
+        ];
+
+        foreach ($request->file('files') as $file) {
+            $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            // Extract NPSN: handles files like "12345678.xlsx" or "12345678 - SD Negeri.xlsx"
+            preg_match('/^\d{8,12}/', $filename, $matches);
+            $npsn = $matches[0] ?? $filename;
+
+            $school = School::where('npsn', $npsn)->first();
+
+            if (!$school) {
+                $results[] = [
+                    'filename' => $file->getClientOriginalName(),
+                    'school_name' => 'Tidak Ditemukan',
+                    'npsn' => $npsn,
+                    'status' => 'failed',
+                    'message' => 'Sekolah dengan NPSN ini tidak ditemukan di database.',
+                    'errors' => []
+                ];
+                $summary['failed']++;
+                continue;
+            }
+
+            try {
+                $import = new SiswaImport($school->id);
+                Excel::import($import, $file);
+                
+                $importErrors = [];
+
+                // Collect Validation Failures
+                foreach ($import->failures() as $failure) {
+                    $rowValues = $failure->values();
+                    $studentName = $rowValues[1] ?? 'Unknown';
+                    
+                    foreach ($failure->errors() as $error) {
+                        $recommendation = "Periksa format data.";
+                        $attribute = $failure->attribute();
+                        
+                        if (str_contains($error, 'Lintang') || $attribute == '58') {
+                            $recommendation = "Cek Lintang (-90 s/d 90)";
+                        } elseif (str_contains($error, 'Bujur') || $attribute == '59') {
+                            $recommendation = "Cek Bujur (-180 s/d 180)";
+                        }
+
+                        $importErrors[] = [
+                            'row' => $failure->row(),
+                            'student' => $studentName,
+                            'error' => $error,
+                            'recommendation' => $recommendation
+                        ];
+                    }
+                }
+
+                // Collect System Errors
+                foreach ($import->errors() as $error) {
+                    $importErrors[] = [
+                        'row' => 'System',
+                        'student' => '-',
+                        'error' => $error->getMessage(),
+                        'recommendation' => "Gagal sistem."
+                    ];
+                }
+
+                if (count($importErrors) > 0) {
+                    $results[] = [
+                        'filename' => $file->getClientOriginalName(),
+                        'school_name' => $school->nama_sekolah,
+                        'npsn' => $npsn,
+                        'status' => 'failed',
+                        'message' => 'Ditemukan kesalahan pada isi data file.',
+                        'errors' => $importErrors
+                    ];
+                    $summary['failed']++;
+                } else {
+                    $results[] = [
+                        'filename' => $file->getClientOriginalName(),
+                        'school_name' => $school->nama_sekolah,
+                        'npsn' => $npsn,
+                        'status' => 'success',
+                        'message' => 'Data berhasil diimport.',
+                        'errors' => []
+                    ];
+                    $summary['success']++;
+                }
+
+            } catch (\Exception $e) {
+                $results[] = [
+                    'filename' => $file->getClientOriginalName(),
+                    'school_name' => $school->nama_sekolah,
+                    'npsn' => $npsn,
+                    'status' => 'failed',
+                    'message' => 'Exception: ' . $e->getMessage(),
+                    'errors' => []
+                ];
+                $summary['failed']++;
+            }
+        }
+
+        return response()->json([
+            'summary' => $summary,
+            'results' => $results
+        ]);
+    }
 }
 
