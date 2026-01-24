@@ -257,12 +257,22 @@
                 @csrf
                 <div class="relative group">
                     <input type="file" name="file" class="hidden" id="siswaFile" @change="handleFileSelect($event)">
-                    <label for="siswaFile" class="flex flex-col items-center justify-center w-full h-48 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer group-hover:bg-pink-50 group-hover:border-[#d90d8b]/30 transition-all">
-                        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm mb-4 group-hover:text-[#d90d8b]">
-                            <i class="material-icons text-3xl">cloud_upload</i>
+                    <label 
+                        for="siswaFile" 
+                        class="flex flex-col items-center justify-center w-full h-48 bg-slate-50 border-2 border-dashed rounded-3xl cursor-pointer transition-all"
+                        :class="isDragging ? 'bg-pink-100 border-[#d90d8b] scale-[1.02]' : 'border-slate-200 group-hover:bg-pink-50 group-hover:border-[#d90d8b]/30'"
+                        @dragover.prevent="isDragging = true"
+                        @dragleave.prevent="isDragging = false"
+                        @drop.prevent="handleFileDrop($event)"
+                    >
+                        <div 
+                            class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-4 transition-all"
+                            :class="isDragging ? 'text-[#d90d8b] scale-110' : 'text-slate-400 group-hover:text-[#d90d8b]'"
+                        >
+                            <i class="material-icons text-3xl" x-text="isDragging ? 'download' : 'cloud_upload'"></i>
                         </div>
-                        <p class="text-sm font-bold text-slate-500" x-text="fileName || 'Klik untuk pilih file'"></p>
-                        <p class="text-[11px] text-slate-400 font-semibold mt-2">Format .xlsx atau .xls</p>
+                        <p class="text-sm font-bold text-slate-500" x-text="isDragging ? 'Lepas file untuk import' : (fileName || 'Klik atau pindahkan file ke sini')"></p>
+                        <p class="text-[11px] text-slate-400 font-semibold mt-2" x-show="!isDragging">Format .xlsx atau .xls</p>
                     </label>
                 </div>
 
@@ -295,12 +305,22 @@
             selectedSchoolId: '{{ $selectedSchoolId ?? "" }}',
             openImportModal: false,
             fileName: '',
+            isDragging: false,
             importing: false,
             importProgress: 0,
 
             handleFileSelect(e) {
                 if (e.target.files.length > 0) {
                     this.fileName = e.target.files[0].name;
+                }
+            },
+
+            handleFileDrop(e) {
+                this.isDragging = false;
+                if (e.dataTransfer.files.length > 0) {
+                    const fileInput = document.getElementById('siswaFile');
+                    fileInput.files = e.dataTransfer.files;
+                    this.fileName = e.dataTransfer.files[0].name;
                 }
             },
 
