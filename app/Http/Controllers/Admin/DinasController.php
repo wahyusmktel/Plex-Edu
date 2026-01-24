@@ -8,9 +8,9 @@ use App\Models\User;
 use App\Models\Siswa;
 use App\Models\Fungsionaris;
 use App\Models\PelanggaranSiswa;
-use App\Imports\SchoolImport;
 use App\Imports\SiswaImport;
 use App\Exports\SchoolTemplateExport;
+use App\Exports\BulkImportLogExport;
 use App\Models\AppSetting;
 use App\Models\LibraryItem;
 use App\Models\LibraryLoan;
@@ -682,6 +682,19 @@ class DinasController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal mengosongkan seluruh data: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function exportBulkImportLog(Request $request)
+    {
+        $data = $request->input('results');
+        if (empty($data)) {
+            return back()->with('error', 'Tidak ada data log untuk diexport.');
+        }
+
+        // Decode the JSON string back into an array
+        $decodedData = json_decode($data, true);
+
+        return Excel::download(new BulkImportLogExport($decodedData), 'Bulk_Import_Siswa_Log_' . now()->format('Ymd_His') . '.xlsx');
     }
 }
 

@@ -288,7 +288,11 @@
                                 </div>
                                 <div>
                                     <p class="text-xs font-black text-slate-700" x-text="fileObj.name"></p>
-                                    <p class="text-[10px] font-bold text-slate-400" x-text="'NPSN: ' + fileObj.npsn"></p>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[10px] font-bold text-slate-400" x-text="'NPSN: ' + fileObj.npsn"></p>
+                                        <span class="w-1 h-1 rounded-full bg-slate-200"></span>
+                                        <p class="text-[10px] font-bold text-[#d90d8b]" x-text="fileObj.schoolName"></p>
+                                    </div>
                                 </div>
                             </div>
                             <div class="text-[10px] font-black uppercase tracking-widest"
@@ -367,7 +371,12 @@
                     </template>
                 </div>
 
-                <button type="button" @click="location.reload()" class="w-full mt-6 py-4 bg-slate-800 text-white rounded-2xl text-sm font-bold hover:bg-slate-900 transition-all">Selesai & Refresh Halaman</button>
+                <div class="flex gap-3 mt-6">
+                    <button type="button" @click="exportLog()" class="flex-1 py-4 bg-emerald-600 text-white rounded-2xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2">
+                        <i class="material-icons text-[20px]">file_download</i> Export Log Excel
+                    </button>
+                    <button type="button" @click="location.reload()" class="flex-1 py-4 bg-slate-800 text-white rounded-2xl text-sm font-bold hover:bg-slate-900 transition-all">Selesai & Refresh Halaman</button>
+                </div>
             </div>
         </div>
     </div>
@@ -468,6 +477,7 @@
     function dinasSiswaPage() {
         return {
             selectedSchoolId: '{{ $selectedSchoolId ?? "" }}',
+            schools: @js($schools),
             openImportModal: false,
             openBulkImportModal: false,
             fileName: '',
@@ -594,10 +604,16 @@
                 this.bulkFiles = files.map(file => {
                     const filename = file.name;
                     const npsnMatch = filename.match(/^\d{8,12}/);
+                    const npsn = npsnMatch ? npsnMatch[0] : 'Unknown';
+                    
+                    // Lookup school name from the schools list in Alpine data
+                    const school = this.schools.find(s => s.npsn === npsn);
+                    
                     return {
                         file: file,
                         name: filename,
-                        npsn: npsnMatch ? npsnMatch[0] : 'Unknown',
+                        npsn: npsn,
+                        schoolName: school ? school.nama_sekolah : 'Sekolah Tidak Ditemukan',
                         status: 'pending', // pending, processing, success, failed
                         message: '',
                         errors: []
@@ -673,6 +689,32 @@
                 this.importProgress = 100;
                 this.showBulkResults = true;
                 Swal.fire('Selesai!', 'Semua file telah selesai diproses.', 'success');
+            },
+
+            exportLog() {
+                if (!this.bulkResults || !this.bulkResults.results) return;
+
+                // Create a form to send the data as POST
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `{{ route('dinas.siswa.export-log') }}`;
+                
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = '{{ csrf_token() }}';
+                form.appendChild(csrfInput);
+
+                const logInput = document.createElement('input');
+                logInput.type = 'hidden';
+                logInput.name = 'results';
+                // Use the results array from bulkResults
+                logInput.value = JSON.stringify(this.bulkResults.results);
+                form.appendChild(logInput);
+
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
             }
         }
     }
