@@ -666,5 +666,22 @@ class DinasController extends Controller
             return response()->json(['message' => 'Gagal mengosongkan data: ' . $e->getMessage()], 500);
         }
     }
+
+    public function resetAllSiswa()
+    {
+        try {
+            DB::transaction(function () {
+                // Delete all student user accounts first
+                User::where('role', 'siswa')->delete();
+                
+                // Delete all student records (bypass global scopes to be sure)
+                Siswa::withoutGlobalScopes()->delete();
+            });
+
+            return response()->json(['success' => 'Seluruh data siswa dan akun terasosiasi pada semua sekolah berhasil dikosongkan.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal mengosongkan seluruh data: ' . $e->getMessage()], 500);
+        }
+    }
 }
 

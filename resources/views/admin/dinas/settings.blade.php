@@ -137,5 +137,103 @@
             </div>
         </form>
     </div>
+
+    <!-- Danger Zone Card -->
+    <div class="mt-12 bg-white rounded-3xl shadow-sm border border-red-100 overflow-hidden" x-data="{ 
+        openResetModal: false, 
+        confirm1: false, 
+        confirm2: false,
+        resetting: false,
+        get canReset() { return this.confirm1 && this.confirm2 && !this.resetting }
+    }">
+        <div class="p-8">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-500">
+                    <i class="material-icons">report_problem</i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-slate-800 tracking-tight">Danger Zone</h2>
+                    <p class="text-slate-400 font-medium text-sm">Aksi di bawah ini bersifat permanen dan berdampak pada seluruh sekolah.</p>
+                </div>
+            </div>
+
+            <div class="p-6 bg-red-50 rounded-2xl border border-red-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex-grow">
+                    <h3 class="text-sm font-black text-red-900 uppercase tracking-widest leading-none mb-2">Kosongkan Seluruh Data Siswa</h3>
+                    <p class="text-xs text-red-700 font-medium">Ini akan menghapus semua data siswa dan akun login siswa di **seluruh sekolah**. Pastikan Anda sudah memiliki backup file excel.</p>
+                </div>
+                <button 
+                    type="button" 
+                    @click="openResetModal = true"
+                    class="px-8 py-4 bg-red-600 text-white rounded-2xl text-sm font-extrabold hover:bg-red-700 transition-all shadow-lg shadow-red-200"
+                >
+                    Reset Seluruh Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Multi-layer Confirmation Modal -->
+        <div x-show="openResetModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto">
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md" @click="if(!resetting) openResetModal = false"></div>
+            <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-10 relative z-10 my-auto text-center border-t-8 border-red-500">
+                <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500 mx-auto mb-6">
+                    <i class="material-icons text-4xl">warning</i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-4">Konfirmasi Penghapusan Global</h3>
+                <p class="text-slate-500 font-medium text-sm mb-8">Anda akan menghapus data siswa dari seluruh sistem. Mohon berikan pernyataan kesadaran berikut:</p>
+                
+                <div class="space-y-4 mb-10 text-left">
+                    <label class="flex items-start gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-100 transition-all">
+                        <input type="checkbox" x-model="confirm1" class="mt-1 w-5 h-5 rounded-lg border-slate-300 text-red-600 focus:ring-red-500">
+                        <span class="text-sm font-bold text-slate-600">Saya menyadari bahwa aksi ini **permanen** dan data tidak dapat dikembalikan.</span>
+                    </label>
+
+                    <label class="flex items-start gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-100 transition-all">
+                        <input type="checkbox" x-model="confirm2" class="mt-1 w-5 h-5 rounded-lg border-slate-300 text-red-600 focus:ring-red-500">
+                        <span class="text-sm font-bold text-slate-600">Saya bertanggung jawab penuh atas keputusan menghapus seluruh data siswa di sistem Literasia.</span>
+                    </label>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button 
+                        type="button" 
+                        @click="
+                            Swal.fire({
+                                title: 'FINAL CONFIRMATION',
+                                text: 'DATA AKAN DIHAPUS SEKARANG JUGA!',
+                                icon: 'error',
+                                showCancelButton: true,
+                                confirmButtonText: 'YA, HAPUS SEMUA!',
+                                cancelButtonText: 'BATAL'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    resetting = true;
+                                    $.ajax({
+                                        url: '{{ route('dinas.siswa.reset-all') }}',
+                                        method: 'DELETE',
+                                        data: { _token: '{{ csrf_token() }}' },
+                                        success: (res) => {
+                                            Swal.fire('Terhapus!', res.success, 'success').then(() => location.reload());
+                                        },
+                                        error: (err) => {
+                                            resetting = false;
+                                            Swal.fire('Gagal!', err.responseJSON?.message || 'Terjadi kesalahan sistem.', 'error');
+                                        }
+                                    });
+                                }
+                            })
+                        "
+                        :disabled="!canReset"
+                        class="py-4 rounded-full text-base font-black transition-all shadow-xl"
+                        :class="canReset ? 'bg-red-600 text-white hover:bg-red-700 shadow-red-200' : 'bg-slate-100 text-slate-300 cursor-not-allowed'"
+                    >
+                        <span x-show="!resetting">KONFIRMASI RESET TOTAL</span>
+                        <span x-show="resetting">Sedang Menghapus...</span>
+                    </button>
+                    <button type="button" @click="openResetModal = false; confirm1 = false; confirm2 = false" class="py-4 text-slate-500 font-bold text-sm hover:text-slate-700 transition-all" x-show="!resetting">Batal & Kembali</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
