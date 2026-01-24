@@ -407,15 +407,54 @@ class DinasController extends Controller
         ]);
 
         try {
-            Excel::import(new SiswaImport($school_id), $request->file('file'));
-            return response()->json(['success' => 'Data siswa berhasil diimport atau diperbarui.']);
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            $failures = $e->failures();
-            $errors = [];
-            foreach ($failures as $failure) {
-                $errors[] = "Baris " . $failure->row() . ": " . implode(', ', $failure->errors());
+            $import = new SiswaImport($school_id);
+            Excel::import($import, $request->file('file'));
+            
+            $importErrors = [];
+
+            // Collect Validation Failures
+            foreach ($import->failures() as $failure) {
+                $rowValues = $failure->values();
+                $studentName = $rowValues[1] ?? 'Unknown'; // Column B
+                
+                foreach ($failure->errors() as $error) {
+                    $recommendation = "Periksa kembali format data pada kolom tersebut.";
+                    $attribute = $failure->attribute();
+                    
+                    if (str_contains($error, 'Lintang') || $attribute == '58') {
+                        $recommendation = "Pastikan nilai Lintang di antara -90 sampai 90. Contoh: -6.12345";
+                    } elseif (str_contains($error, 'Bujur') || $attribute == '59') {
+                        $recommendation = "Pastikan nilai Bujur di antara -180 sampai 180. Contoh: 106.12345";
+                    } elseif (str_contains($error, 'Nama')) {
+                        $recommendation = "Nama Lengkap tidak boleh kosong.";
+                    }
+
+                    $importErrors[] = [
+                        'row' => $failure->row(),
+                        'student' => $studentName,
+                        'attribute' => $attribute,
+                        'error' => $error,
+                        'recommendation' => $recommendation
+                    ];
+                }
             }
-            return response()->json(['errors' => $errors], 422);
+
+            // Collect General Exception Errors
+            foreach ($import->errors() as $error) {
+                $importErrors[] = [
+                    'row' => 'System',
+                    'student' => '-',
+                    'attribute' => '-',
+                    'error' => $error->getMessage(),
+                    'recommendation' => "Terjadi kesalahan sistem saat memproses data."
+                ];
+            }
+
+            if (count($importErrors) > 0) {
+                return response()->json(['import_errors' => $importErrors], 422);
+            }
+
+            return response()->json(['success' => 'Data siswa berhasil diimport atau diperbarui.']);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
         }

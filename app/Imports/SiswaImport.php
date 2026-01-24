@@ -7,9 +7,16 @@ use App\Models\Siswa;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\SkipsOnError;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsErrors;
 
-class SiswaImport implements ToModel, WithStartRow
+class SiswaImport implements ToModel, WithStartRow, WithValidation, SkipsOnFailure, SkipsOnError
 {
+    use SkipsFailures, SkipsErrors;
+
     protected $schoolId;
 
     protected $processedNis = [];
@@ -201,6 +208,35 @@ class SiswaImport implements ToModel, WithStartRow
             return $matches[0];
         }
         return '1';
+    }
+
+    public function rules(): array
+    {
+        return [
+            '58' => ['nullable', 'numeric', 'between:-90,90'], // Column BG: Lintang
+            '59' => ['nullable', 'numeric', 'between:-180,180'], // Column BH: Bujur
+            '1' => ['required'], // Column B: Nama Lengkap
+        ];
+    }
+
+    public function customValidationMessages()
+    {
+        return [
+            '58.between' => 'Nilai Lintang (Kolom BG) harus di antara -90 sampai 90.',
+            '58.numeric' => 'Nilai Lintang (Kolom BG) harus berupa angka.',
+            '59.between' => 'Nilai Bujur (Kolom BH) harus di antara -180 sampai 180.',
+            '59.numeric' => 'Nilai Bujur (Kolom BH) harus berupa angka.',
+            '1.required' => 'Nama Lengkap (Kolom B) wajib diisi.',
+        ];
+    }
+
+    public function customValidationAttributes()
+    {
+        return [
+            '58' => 'Lintang',
+            '59' => 'Bujur',
+            '1' => 'Nama Lengkap',
+        ];
     }
 
     private function formatDate($date)

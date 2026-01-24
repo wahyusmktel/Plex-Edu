@@ -287,8 +287,42 @@
                 </div>
 
                 <div class="flex gap-3 mt-8" x-show="!importing">
-                    <button type="button" @click="openImportModal = false" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
+                    <button type="button" @click="openImportModal = false; showErrorTable = false" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
                     <button type="button" @click="importData()" class="flex-1 py-4 bg-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:bg-[#ba80e8] transition-all">Import / Update</button>
+                </div>
+
+                <!-- Error Table Section -->
+                <div x-show="showErrorTable" x-cloak class="mt-8 border-t border-slate-100 pt-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div class="flex items-center gap-2 mb-4 text-red-500">
+                        <i class="material-icons">error_outline</i>
+                        <h4 class="font-black text-sm uppercase tracking-wider">Detail Kesalahan Data</h4>
+                    </div>
+                    <div class="bg-red-50 rounded-3xl border border-red-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-[11px]">
+                                <thead>
+                                    <tr class="bg-red-100/50 text-red-700 font-black uppercase tracking-widest">
+                                        <th class="px-4 py-3">Baris</th>
+                                        <th class="px-4 py-3">Nama Siswa</th>
+                                        <th class="px-4 py-3">Keterangan Error</th>
+                                        <th class="px-4 py-3">Rekomendasi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-red-100/50">
+                                    <template x-for="err in importErrors" :key="err.row + '-' + err.attribute">
+                                        <tr class="text-red-600 font-medium">
+                                            <td class="px-4 py-3 font-bold" x-text="err.row"></td>
+                                            <td class="px-4 py-3 font-bold text-slate-700" x-text="err.student"></td>
+                                            <td class="px-4 py-3 italic" x-text="err.error"></td>
+                                            <td class="px-4 py-3">
+                                                <div class="bg-white/60 rounded-lg px-2 py-1 border border-red-200 inline-block font-bold" x-text="err.recommendation"></div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -304,10 +338,11 @@
         return {
             selectedSchoolId: '{{ $selectedSchoolId ?? "" }}',
             openImportModal: false,
-            fileName: '',
             isDragging: false,
             importing: false,
             importProgress: 0,
+            importErrors: [],
+            showErrorTable: false,
 
             handleFileSelect(e) {
                 if (e.target.files.length > 0) {
@@ -353,17 +388,30 @@
                         this.importProgress = 100;
                         setTimeout(() => {
                             this.importing = false;
+                            this.showErrorTable = false;
                             Swal.fire('Berhasil!', res.success, 'success').then(() => location.reload());
                         }, 500);
                     },
                     error: (err) => {
                         clearInterval(progressInterval);
                         this.importing = false;
-                        let msg = err.responseJSON?.message || 'Gagal mengimport data.';
-                        if (err.responseJSON?.errors) {
-                            msg = err.responseJSON.errors.join('<br>');
+                        
+                        if (err.responseJSON?.import_errors) {
+                            this.importErrors = err.responseJSON.import_errors;
+                            this.showErrorTable = true;
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Data Tidak Sesuai',
+                                text: 'Beberapa baris data siswa memiliki format yang salah. Lihat tabel di bawah untuk detailnya.',
+                                confirmButtonColor: '#d90d8b'
+                            });
+                        } else {
+                            let msg = err.responseJSON?.message || 'Gagal mengimport data.';
+                            if (err.responseJSON?.errors) {
+                                msg = Array.isArray(err.responseJSON.errors) ? err.responseJSON.errors.join('<br>') : err.responseJSON.errors;
+                            }
+                            Swal.fire('Error Import', msg, 'error');
                         }
-                        Swal.fire('Error Import', msg, 'error');
                     }
                 });
             }
