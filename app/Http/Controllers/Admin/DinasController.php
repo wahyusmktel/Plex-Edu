@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Siswa;
 use App\Models\Fungsionaris;
 use App\Models\PelanggaranSiswa;
+use App\Imports\SchoolImport;
 use App\Imports\SiswaImport;
 use App\Exports\SchoolTemplateExport;
 use App\Exports\BulkImportLogExport;
