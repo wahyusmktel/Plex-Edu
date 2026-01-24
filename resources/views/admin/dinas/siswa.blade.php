@@ -252,19 +252,57 @@
             <p class="text-slate-400 font-medium text-sm mb-6">Import banyak file sekaligus. Pastikan nama file diawali dengan **NPSN Sekolah**. <br>(Contoh: 12345678 - SD Negeri X.xlsx)</p>
             
             <div x-show="!showBulkResults">
-                <div class="relative group">
+                <div class="relative group" x-show="bulkFiles.length === 0">
                     <input type="file" multiple name="files[]" class="hidden" id="bulkSiswaFiles" @change="handleBulkFileSelect($event)">
                     <label for="bulkSiswaFiles" class="flex flex-col items-center justify-center w-full h-48 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl cursor-pointer hover:bg-slate-100 transition-all">
                         <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-slate-400 shadow-sm mb-4">
                             <i class="material-icons text-3xl">library_add</i>
                         </div>
-                        <p class="text-sm font-bold text-slate-500" x-text="bulkFiles.length > 0 ? bulkFiles.length + ' file dipilih' : 'Pilih banyak file sekaligus'"></p>
+                        <p class="text-sm font-bold text-slate-500">Pilih banyak file sekaligus</p>
                     </label>
+                </div>
+
+                <!-- Live Checklist View -->
+                <div x-show="bulkFiles.length > 0" class="space-y-3 mb-6 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                    <template x-for="(fileObj, index) in bulkFiles" :key="index">
+                        <div class="p-4 bg-slate-50 rounded-2xl border flex items-center justify-between transition-all"
+                             :class="{
+                                 'border-slate-100': fileObj.status === 'pending',
+                                 'border-blue-200 bg-blue-50': fileObj.status === 'processing',
+                                 'border-emerald-100 bg-emerald-50': fileObj.status === 'success',
+                                 'border-red-100 bg-red-50': fileObj.status === 'failed'
+                             }">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                    <i class="material-icons text-sm" 
+                                       :class="{
+                                           'text-slate-300': fileObj.status === 'pending',
+                                           'text-blue-500 animate-spin': fileObj.status === 'processing',
+                                           'text-emerald-500': fileObj.status === 'success',
+                                           'text-red-500': fileObj.status === 'failed'
+                                       }"
+                                       x-text="fileObj.status === 'processing' ? 'sync' : (fileObj.status === 'success' ? 'check_circle' : (fileObj.status === 'failed' ? 'cancel' : 'description'))"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-black text-slate-700" x-text="fileObj.name"></p>
+                                    <p class="text-[10px] font-bold text-slate-400" x-text="'NPSN: ' + fileObj.npsn"></p>
+                                </div>
+                            </div>
+                            <div class="text-[10px] font-black uppercase tracking-widest"
+                                 :class="{
+                                     'text-slate-300': fileObj.status === 'pending',
+                                     'text-blue-500': fileObj.status === 'processing',
+                                     'text-emerald-500': fileObj.status === 'success',
+                                     'text-red-500': fileObj.status === 'failed'
+                                 }"
+                                 x-text="fileObj.status"></div>
+                        </div>
+                    </template>
                 </div>
 
                 <div x-show="importing" class="mt-6">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-black text-slate-600 uppercase tracking-widest">Mengupload & Memproses...</span>
+                        <span class="text-xs font-black text-slate-600 uppercase tracking-widest">Progress Keseluruhan</span>
                         <span class="text-xs font-black text-[#d90d8b]" x-text="importProgress + '%'"></span>
                     </div>
                     <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -274,7 +312,7 @@
 
                 <div class="flex gap-3 mt-8" x-show="!importing">
                     <button type="button" @click="openBulkImportModal = false; bulkFiles = []" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
-                    <button type="button" @click="bulkImport()" class="flex-1 py-4 bg-slate-800 text-white rounded-2xl text-sm font-bold hover:bg-slate-900 transition-all shadow-lg">Mulai Bulk Import</button>
+                    <button type="button" @click="bulkImport()" class="flex-1 py-4 bg-slate-800 text-white rounded-2xl text-sm font-bold hover:bg-slate-900 transition-all shadow-lg" x-text="bulkFiles.length > 0 ? 'Mulai Import ' + bulkFiles.length + ' File' : 'Mulai Bulk Import'"></button>
                 </div>
             </div>
 
@@ -512,10 +550,27 @@
             },
 
             handleBulkFileSelect(e) {
-                this.bulkFiles = Array.from(e.target.files);
+                const files = Array.from(e.target.files);
+                this.bulkFiles = files.map(file => {
+                    const filename = file.name;
+                    const npsnMatch = filename.match(/^\d{8,12}/);
+                    return {
+                        file: file,
+                        name: filename,
+                        npsn: npsnMatch ? npsnMatch[0] : 'Unknown',
+                        status: 'pending', // pending, processing, success, failed
+                        message: '',
+                        errors: []
+                    };
+                });
+                this.showBulkResults = false;
+                this.bulkResults = {
+                    summary: { success: 0, failed: 0, total_files: this.bulkFiles.length },
+                    results: []
+                };
             },
 
-            bulkImport() {
+            async bulkImport() {
                 if (this.bulkFiles.length === 0) {
                     Swal.fire('Oops!', 'Pilih setidaknya satu file Excel.', 'warning');
                     return;
@@ -523,39 +578,61 @@
 
                 this.importing = true;
                 this.importProgress = 0;
+                this.bulkResults.summary.success = 0;
+                this.bulkResults.summary.failed = 0;
+                this.bulkResults.results = [];
 
-                let formData = new FormData();
-                this.bulkFiles.forEach((file, index) => {
-                    formData.append('files[]', file);
-                });
-                formData.append('_token', '{{ csrf_token() }}');
+                for (let i = 0; i < this.bulkFiles.length; i++) {
+                    let fileObj = this.bulkFiles[i];
+                    fileObj.status = 'processing';
+                    
+                    // Update main progress bar based on file index
+                    this.importProgress = Math.round((i / this.bulkFiles.length) * 100);
 
-                $.ajax({
-                    url: `{{ route('dinas.siswa.bulk-import') }}`,
-                    method: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    xhr: () => {
-                        const xhr = new window.XMLHttpRequest();
-                        xhr.upload.addEventListener("progress", (evt) => {
-                            if (evt.lengthComputable) {
-                                this.importProgress = Math.round((evt.loaded / evt.total) * 100);
-                            }
-                        }, false);
-                        return xhr;
-                    },
-                    success: (res) => {
-                        this.importing = false;
-                        this.bulkResults = res;
-                        this.showBulkResults = true;
-                        Swal.fire('Selesai!', 'Proses bulk import telah selesai.', 'success');
-                    },
-                    error: (err) => {
-                        this.importing = false;
-                        Swal.fire('Error Bulk Import', err.responseJSON?.message || 'Terjadi kesalahan sistem.', 'error');
+                    let formData = new FormData();
+                    formData.append('files[]', fileObj.file);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    try {
+                        const res = await $.ajax({
+                            url: `{{ route('dinas.siswa.bulk-import') }}`,
+                            method: 'POST',
+                            data: formData,
+                            contentType: false,
+                            processData: false
+                        });
+
+                        const result = res.results[0]; // Each request only has 1 file now
+                        fileObj.status = result.status;
+                        fileObj.message = result.message;
+                        fileObj.errors = result.errors;
+                        fileObj.school_name = result.school_name;
+
+                        if (result.status === 'success') {
+                            this.bulkResults.summary.success++;
+                        } else {
+                            this.bulkResults.summary.failed++;
+                        }
+                        this.bulkResults.results.push(result);
+
+                    } catch (err) {
+                        fileObj.status = 'failed';
+                        fileObj.message = err.responseJSON?.message || 'Koneksi terputus.';
+                        this.bulkResults.summary.failed++;
+                        this.bulkResults.results.push({
+                            filename: fileObj.name,
+                            school_name: 'Gagal',
+                            status: 'failed',
+                            message: fileObj.message,
+                            errors: []
+                        });
                     }
-                });
+                }
+
+                this.importing = false;
+                this.importProgress = 100;
+                this.showBulkResults = true;
+                Swal.fire('Selesai!', 'Semua file telah selesai diproses.', 'success');
             }
         }
     }
