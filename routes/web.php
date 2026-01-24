@@ -316,6 +316,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/schools', [App\Http\Controllers\Admin\DinasController::class, 'schools'])->name('schools');
         Route::post('/schools/store', [App\Http\Controllers\Admin\DinasController::class, 'storeSchool'])->name('schools.store');
         Route::post('/schools/import', [App\Http\Controllers\Admin\DinasController::class, 'importSchools'])->name('schools.import');
+        Route::delete('/schools/reset-all', [App\Http\Controllers\Admin\DinasController::class, 'resetAllSchools'])->name('schools.reset-all');
         Route::get('/schools/download-template', [App\Http\Controllers\Admin\DinasController::class, 'downloadSchoolTemplate'])->name('schools.download-template');
         Route::post('/schools/generate-accounts', [App\Http\Controllers\Admin\DinasController::class, 'generateSchoolAccounts'])->name('schools.generate-accounts');
         Route::post('/schools/{school}/reset-password', [App\Http\Controllers\Admin\DinasController::class, 'resetSchoolPassword'])->name('schools.reset-password');

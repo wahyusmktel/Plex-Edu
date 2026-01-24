@@ -143,8 +143,16 @@
         openResetModal: false, 
         confirm1: false, 
         confirm2: false,
+        siswaResetPassword: '',
         resetting: false,
-        get canReset() { return this.confirm1 && this.confirm2 && !this.resetting }
+        get canReset() { return this.confirm1 && this.confirm2 && this.siswaResetPassword.length > 0 && !this.resetting },
+        
+        openSchoolResetModal: false,
+        sConfirm1: false,
+        sConfirm2: false,
+        resetPassword: '',
+        schoolResetting: false,
+        get canResetSchool() { return this.sConfirm1 && this.sConfirm2 && this.resetPassword.length > 0 && !this.schoolResetting }
     }">
         <div class="p-8">
             <div class="flex items-center gap-4 mb-6">
@@ -167,19 +175,33 @@
                     @click="openResetModal = true"
                     class="px-8 py-4 bg-red-600 text-white rounded-2xl text-sm font-extrabold hover:bg-red-700 transition-all shadow-lg shadow-red-200"
                 >
-                    Reset Seluruh Data
+                    Reset Seluruh Data Siswa
+                </button>
+            </div>
+
+            <div class="p-6 bg-red-100/50 rounded-2xl border border-red-200 flex flex-col md:flex-row items-center justify-between gap-6 mt-6">
+                <div class="flex-grow">
+                    <h3 class="text-sm font-black text-red-900 uppercase tracking-widest leading-none mb-2">Kosongkan Seluruh Data Sekolah</h3>
+                    <p class="text-xs text-red-700 font-medium font-bold">PERINGATAN KRITIS: Ini akan menghapus SEMUA sekolah, admin sekolah, fungsionaris, kelas, dan siswa di seluruh sistem.</p>
+                </div>
+                <button 
+                    type="button" 
+                    @click="openSchoolResetModal = true"
+                    class="px-8 py-4 bg-red-700 text-white rounded-2xl text-sm font-extrabold hover:bg-red-800 transition-all shadow-lg shadow-red-300"
+                >
+                    Reset Seluruh Sekolah
                 </button>
             </div>
         </div>
 
-        <!-- Multi-layer Confirmation Modal -->
+        <!-- Student Reset Modal -->
         <div x-show="openResetModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto">
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md" @click="if(!resetting) openResetModal = false"></div>
             <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-10 relative z-10 my-auto text-center border-t-8 border-red-500">
                 <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500 mx-auto mb-6">
                     <i class="material-icons text-4xl">warning</i>
                 </div>
-                <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-4">Konfirmasi Penghapusan Global</h3>
+                <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-4">Konfirmasi Penghapusan Global Siswa</h3>
                 <p class="text-slate-500 font-medium text-sm mb-8">Anda akan menghapus data siswa dari seluruh sistem. Mohon berikan pernyataan kesadaran berikut:</p>
                 
                 <div class="space-y-4 mb-10 text-left">
@@ -192,6 +214,21 @@
                         <input type="checkbox" x-model="confirm2" class="mt-1 w-5 h-5 rounded-lg border-slate-300 text-red-600 focus:ring-red-500">
                         <span class="text-sm font-bold text-slate-600">Saya bertanggung jawab penuh atas keputusan menghapus seluruh data siswa di sistem Literasia.</span>
                     </label>
+
+                    <div class="mt-4">
+                        <label for="student_confirm_password" class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Konfirmasi Password Anda</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-300">
+                                <i class="material-icons text-sm">lock</i>
+                            </div>
+                            <input 
+                                type="password" 
+                                x-model="siswaResetPassword"
+                                placeholder="Masukkan password akun Anda"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#d90d8b]/20 focus:border-[#d90d8b] transition-all outline-none"
+                            >
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex flex-col gap-3">
@@ -200,10 +237,10 @@
                         @click="
                             Swal.fire({
                                 title: 'FINAL CONFIRMATION',
-                                text: 'DATA AKAN DIHAPUS SEKARANG JUGA!',
+                                text: 'DATA SISWA AKAN DIHAPUS SEKARANG JUGA!',
                                 icon: 'error',
                                 showCancelButton: true,
-                                confirmButtonText: 'YA, HAPUS SEMUA!',
+                                confirmButtonText: 'YA, HAPUS SEMUA SISWA!',
                                 cancelButtonText: 'BATAL'
                             }).then((result) => {
                                 if (result.isConfirmed) {
@@ -211,7 +248,10 @@
                                     $.ajax({
                                         url: '{{ route('dinas.siswa.reset-all') }}',
                                         method: 'DELETE',
-                                        data: { _token: '{{ csrf_token() }}' },
+                                        data: { 
+                                            _token: '{{ csrf_token() }}',
+                                            password: siswaResetPassword
+                                        },
                                         success: (res) => {
                                             Swal.fire('Terhapus!', res.success, 'success').then(() => location.reload());
                                         },
@@ -227,10 +267,92 @@
                         class="py-4 rounded-full text-base font-black transition-all shadow-xl"
                         :class="canReset ? 'bg-red-600 text-white hover:bg-red-700 shadow-red-200' : 'bg-slate-100 text-slate-300 cursor-not-allowed'"
                     >
-                        <span x-show="!resetting">KONFIRMASI RESET TOTAL</span>
+                        <span x-show="!resetting">KONFIRMASI RESET TOTAL SISWA</span>
                         <span x-show="resetting">Sedang Menghapus...</span>
                     </button>
-                    <button type="button" @click="openResetModal = false; confirm1 = false; confirm2 = false" class="py-4 text-slate-500 font-bold text-sm hover:text-slate-700 transition-all" x-show="!resetting">Batal & Kembali</button>
+                    <button type="button" @click="openResetModal = false; confirm1 = false; confirm2 = false; siswaResetPassword = ''" class="py-4 text-slate-500 font-bold text-sm hover:text-slate-700 transition-all" x-show="!resetting">Batal & Kembali</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- School Reset Modal -->
+        <div x-show="openSchoolResetModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto">
+            <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-lg" @click="if(!schoolResetting) openSchoolResetModal = false"></div>
+            <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-10 relative z-10 my-auto text-center border-t-8 border-red-700">
+                <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center text-red-700 mx-auto mb-6">
+                    <i class="material-icons text-4xl">dangerous</i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-4 text-red-700">RESET TOTAL SISTEM</h3>
+                <p class="text-slate-500 font-medium text-sm mb-8">Ini akan menghapus **SELURUH SEKOLAH** dan data terkaitnya. Mohon berikan pernyataan kesadaran kritis berikut:</p>
+                
+                <div class="space-y-4 mb-10 text-left">
+                    <label class="flex items-start gap-4 p-4 bg-red-50 border border-red-100 rounded-2xl cursor-pointer hover:bg-red-100 transition-all">
+                        <input type="checkbox" x-model="sConfirm1" class="mt-1 w-5 h-5 rounded-lg border-red-300 text-red-700 focus:ring-red-700">
+                        <span class="text-sm font-bold text-red-900 leading-snug">Saya memahami bahwa menghapus database sekolah akan melumpuhkan sistem bagi semua pengguna (Admin, Fungsionaris, Siswa).</span>
+                    </label>
+
+                    <label class="flex items-start gap-4 p-4 bg-red-50 border border-red-100 rounded-2xl cursor-pointer hover:bg-red-100 transition-all">
+                        <input type="checkbox" x-model="sConfirm2" class="mt-1 w-5 h-5 rounded-lg border-red-300 text-red-700 focus:ring-red-700">
+                        <span class="text-sm font-bold text-red-900 leading-snug">Saya bertanggung jawab sepenuhnya atas hilangnya seluruh aset data sekolah di platform ini.</span>
+                    </label>
+
+                    <div class="mt-4">
+                        <label for="confirm_password" class="block text-xs font-black text-red-900 uppercase tracking-widest mb-2">Konfirmasi Password Anda</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-red-300">
+                                <i class="material-icons text-sm">lock</i>
+                            </div>
+                            <input 
+                                type="password" 
+                                x-model="resetPassword"
+                                placeholder="Masukkan password akun Anda"
+                                class="w-full pl-10 pr-4 py-3 bg-white border border-red-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all outline-none"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button 
+                        type="button" 
+                        @click="
+                            Swal.fire({
+                                title: 'PERINGATAN AKHIR!',
+                                text: 'SELURUH DATA SEKOLAH AKAN MUSNAH SEKARANG!',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#b91c1c',
+                                confirmButtonText: 'YA, BERSIHKAN SEMUA SEKOLAH!',
+                                cancelButtonText: 'BATAL'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    schoolResetting = true;
+                                    $.ajax({
+                                        url: '{{ route('dinas.schools.reset-all') }}',
+                                        method: 'DELETE',
+                                        data: { 
+                                            _token: '{{ csrf_token() }}',
+                                            password: resetPassword
+                                        },
+                                        success: (res) => {
+                                            Swal.fire('Sistem Bersih!', res.success, 'success').then(() => location.reload());
+                                        },
+                                        error: (err) => {
+                                            schoolResetting = false;
+                                            Swal.fire('Gagal!', err.responseJSON?.message || 'Terjadi kesalahan sistem.', 'error');
+                                        }
+                                    });
+                                }
+                            })
+                        "
+                        :disabled="!canResetSchool"
+                        class="py-4 rounded-full text-base font-black transition-all shadow-xl"
+                        :class="canResetSchool ? 'bg-red-700 text-white hover:bg-red-800 shadow-red-300' : 'bg-slate-100 text-slate-300 cursor-not-allowed'"
+                    >
+                        <span x-show="!schoolResetting">RESET SELURUH SEKOLAH</span>
+                        <span x-show="schoolResetting">Sedang Membersihkan...</span>
+                    </button>
+                    <button type="button" @click="openSchoolResetModal = false; sConfirm1 = false; sConfirm2 = false; resetPassword = ''" class="py-4 text-slate-500 font-bold text-sm hover:text-slate-700 transition-all" x-show="!schoolResetting">Batal & Kembali</button>
                 </div>
             </div>
         </div>

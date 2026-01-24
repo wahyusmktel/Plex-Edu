@@ -14,6 +14,7 @@ use App\Exports\BulkImportLogExport;
 use App\Models\AppSetting;
 use App\Models\LibraryItem;
 use App\Models\LibraryLoan;
+use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -667,9 +668,14 @@ class DinasController extends Controller
         }
     }
 
-    public function resetAllSiswa()
+    public function resetAllSiswa(Request $request)
     {
         try {
+            // Verify password
+            if (!Hash::check($request->password, auth()->user()->password)) {
+                return response()->json(['message' => 'Password yang Anda masukkan salah.'], 403);
+            }
+
             DB::transaction(function () {
                 // Delete all student user accounts first
                 User::where('role', 'siswa')->delete();
@@ -695,6 +701,36 @@ class DinasController extends Controller
         $decodedData = json_decode($data, true);
 
         return Excel::download(new BulkImportLogExport($decodedData), 'Bulk_Import_Siswa_Log_' . now()->format('Ymd_His') . '.xlsx');
+    }
+
+    public function resetAllSchools(Request $request)
+    {
+        try {
+            // Verify password
+            if (!Hash::check($request->password, auth()->user()->password)) {
+                return response()->json(['message' => 'Password yang Anda masukkan salah.'], 403);
+            }
+
+            DB::transaction(function () {
+                // Delete all students and their users
+                User::where('role', 'siswa')->delete();
+                Siswa::withoutGlobalScopes()->delete();
+
+                // Delete all school admins
+                User::where('role', 'sekolah')->delete();
+
+                // Delete fungsionaris and kelas
+                Fungsionaris::query()->delete();
+                Kelas::query()->delete();
+
+                // Finally delete all schools
+                School::query()->delete();
+            });
+
+            return response()->json(['success' => 'Seluruh data sekolah terdaftar dan data terasosiasi berhasil dikosongkan.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Gagal mengosongkan data sekolah: ' . $e->getMessage()], 500);
+        }
     }
 }
 
