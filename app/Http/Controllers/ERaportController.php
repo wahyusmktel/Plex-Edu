@@ -29,7 +29,18 @@ class ERaportController extends Controller
         $siswas = Siswa::with('kelas')->orderBy('nama_lengkap', 'asc')->get();
         $activeSetting = SchoolSetting::where('is_active', true)->first();
         
-        return view('admin.e-raport.index', compact('raports', 'siswas', 'activeSetting', 'search'));
+        // Prepare JSON-safe data for dropdown
+        $siswasJson = $siswas->map(function($s) {
+            return [
+                'id' => $s->id,
+                'nama_lengkap' => $s->nama_lengkap,
+                'nisn' => $s->nisn ?? '',
+                'nis' => $s->nis ?? '',
+                'kelas_nama' => $s->kelas->nama ?? ''
+            ];
+        })->values();
+        
+        return view('admin.e-raport.index', compact('raports', 'siswas', 'siswasJson', 'activeSetting', 'search'));
     }
 
     public function store(Request $request)

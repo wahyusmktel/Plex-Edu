@@ -11,9 +11,9 @@
             <h1 class="text-3xl font-black text-slate-800 tracking-tight">E-Raport</h1>
             <p class="text-slate-500 font-medium mt-1">Arsip Digital Dokumen Raport Siswa</p>
         </div>
-        <div class="flex flex-wrap items-center gap-3">
-            <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                <i class="material-icons text-[20px]">add_circle</i> Tambah Arsap Raport
+        <div class="flex flex-wrap items-center gap-3 relative z-10">
+            <button @click="openCreateModal()" type="button" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer">
+                <i class="material-icons text-[20px]">add_circle</i> Tambah Arsip Raport
             </button>
         </div>
     </div>
@@ -85,10 +85,10 @@
                             <p class="text-[10px] font-bold text-[#d90d8b] uppercase mt-1">Semester {{ $item->semester }}</p>
                         </td>
                         <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100">
-                            <a href="{{ Storage::url($item->file_path) }}" target="_blank" class="flex items-center gap-2 text-[#ba80e8] font-bold hover:underline">
+                            <button @click="previewFile('{{ Storage::url($item->file_path) }}', '{{ $item->file_name }}', '{{ pathinfo($item->file_name, PATHINFO_EXTENSION) }}')" class="flex items-center gap-2 text-[#ba80e8] font-bold hover:underline cursor-pointer">
                                 <i class="material-icons text-sm">visibility</i>
                                 {{ Str::limit($item->file_name, 20) }}
-                            </a>
+                            </button>
                         </td>
                         <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
                             <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -155,12 +155,61 @@
                 
                 <div class="space-y-1.5">
                     <label class="text-xs font-extrabold text-slate-400 uppercase tracking-widest ml-1">Nama Siswa</label>
-                    <select name="siswa_id" x-model="formData.siswa_id" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all">
-                        <option value="">Pilih Siswa</option>
-                        @foreach($siswas as $s)
-                            <option value="{{ $s->id }}">{{ $s->nama_lengkap }} ({{ $s->kelas->nama ?? '-' }})</option>
-                        @endforeach
-                    </select>
+                    <div class="relative">
+                        <input type="hidden" name="siswa_id" x-model="formData.siswa_id">
+                        
+                        <!-- Selected Display / Search Input -->
+                        <div 
+                            @click="siswaDropdownOpen = true; $nextTick(() => $refs.siswaSearchInput.focus())"
+                            class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus-within:ring-2 focus-within:ring-pink-100 transition-all cursor-pointer flex items-center justify-between"
+                        >
+                            <span x-show="!siswaDropdownOpen && formData.siswa_id" x-text="getSelectedSiswaName()" class="truncate"></span>
+                            <span x-show="!siswaDropdownOpen && !formData.siswa_id" class="text-slate-400">Pilih Siswa</span>
+                            <input 
+                                x-show="siswaDropdownOpen"
+                                x-ref="siswaSearchInput"
+                                type="text" 
+                                x-model="siswaSearchQuery"
+                                @click.stop
+                                @keydown.escape="siswaDropdownOpen = false; siswaSearchQuery = ''"
+                                placeholder="Cari nama atau NISN..."
+                                class="w-full bg-transparent outline-none text-slate-700"
+                            >
+                            <i class="material-icons text-slate-400 text-lg ml-2 flex-shrink-0" x-text="siswaDropdownOpen ? 'search' : 'expand_more'"></i>
+                        </div>
+                        
+                        <!-- Dropdown List -->
+                        <div 
+                            x-show="siswaDropdownOpen" 
+                            x-cloak
+                            @click.away="siswaDropdownOpen = false; siswaSearchQuery = ''"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 -translate-y-2"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            class="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl max-h-64 overflow-y-auto"
+                        >
+                            <template x-if="filteredSiswas().length === 0">
+                                <div class="px-5 py-4 text-center text-slate-400 text-sm font-medium">
+                                    <i class="material-icons text-2xl mb-1">search_off</i>
+                                    <p>Tidak ada hasil ditemukan</p>
+                                </div>
+                            </template>
+                            <template x-for="siswa in filteredSiswas()" :key="siswa.id">
+                                <div 
+                                    @click="formData.siswa_id = siswa.id; siswaDropdownOpen = false; siswaSearchQuery = ''"
+                                    class="px-5 py-3 hover:bg-pink-50 cursor-pointer transition-colors border-b border-slate-50 last:border-0"
+                                    :class="formData.siswa_id == siswa.id ? 'bg-pink-50' : ''"
+                                >
+                                    <p class="font-bold text-slate-800 text-sm" x-text="siswa.nama_lengkap"></p>
+                                    <div class="flex items-center gap-3 mt-1">
+                                        <span class="text-[10px] font-bold text-slate-400">NISN: <span x-text="siswa.nisn" class="text-slate-600"></span></span>
+                                        <span class="text-[10px] font-bold text-slate-400">NIS: <span x-text="siswa.nis" class="text-slate-600"></span></span>
+                                        <span class="text-[10px] font-bold text-[#d90d8b] uppercase" x-text="siswa.kelas_nama || '-'"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-6">
@@ -225,11 +274,67 @@
         </div>
     </div>
 
+    <!-- File Preview Modal -->
+    <div 
+        x-show="previewModal" 
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
+    >
+        <div x-show="previewModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm" @click="previewModal = false"></div>
+
+        <div 
+            x-show="previewModal" 
+            x-transition:enter="ease-out duration-300" 
+            x-transition:enter-start="opacity-0 scale-95" 
+            x-transition:enter-end="opacity-100 scale-100"
+            class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden relative z-10 flex flex-col"
+        >
+            <!-- Modal Header -->
+            <div class="px-8 py-6 flex items-center justify-between border-b border-slate-50 flex-shrink-0">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] flex items-center justify-center text-white">
+                        <i class="material-icons">description</i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800">Preview Arsip</h2>
+                        <p class="text-sm font-medium text-slate-400 truncate max-w-md" x-text="previewFileName"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a :href="previewUrl" target="_blank" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-200 transition-colors flex items-center gap-2">
+                        <i class="material-icons text-sm">open_in_new</i> Buka Tab Baru
+                    </a>
+                    <button @click="previewModal = false" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                        <i class="material-icons">close</i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Content -->
+            <div class="flex-1 overflow-auto p-6 bg-slate-50">
+                <!-- PDF Preview -->
+                <template x-if="previewType === 'pdf'">
+                    <iframe :src="previewUrl" class="w-full h-[70vh] rounded-2xl border border-slate-200 bg-white"></iframe>
+                </template>
+                
+                <!-- Image Preview -->
+                <template x-if="previewType === 'image'">
+                    <div class="flex items-center justify-center">
+                        <img :src="previewUrl" class="max-w-full max-h-[70vh] rounded-2xl shadow-lg" alt="Preview">
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
 @section('scripts')
 <script>
+    // Data siswa untuk searchable dropdown (safely encoded from controller)
+    const siswas = @json($siswasJson);
+
     function raportPage() {
         return {
             openModal: false,
@@ -237,6 +342,14 @@
             fileName: '',
             uploading: false,
             uploadProgress: 0,
+            // Searchable dropdown state
+            siswaDropdownOpen: false,
+            siswaSearchQuery: '',
+            // Preview modal state
+            previewModal: false,
+            previewUrl: '',
+            previewFileName: '',
+            previewType: '',
             formData: {
                 id: '',
                 siswa_id: '',
@@ -244,6 +357,37 @@
                 tahun_pelajaran: '{{ $activeSetting->tahun_pelajaran ?? '-' }}',
             },
             init() {},
+            // Preview file method
+            previewFile(url, filename, extension) {
+                this.previewUrl = url;
+                this.previewFileName = filename;
+                const ext = extension.toLowerCase();
+                if (ext === 'pdf') {
+                    this.previewType = 'pdf';
+                } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                    this.previewType = 'image';
+                } else {
+                    this.previewType = 'other';
+                }
+                this.previewModal = true;
+            },
+            // Searchable dropdown methods
+            filteredSiswas() {
+                if (!this.siswaSearchQuery) return siswas;
+                const query = this.siswaSearchQuery.toLowerCase();
+                return siswas.filter(s => 
+                    s.nama_lengkap.toLowerCase().includes(query) || 
+                    s.nisn.toLowerCase().includes(query) ||
+                    s.nis.toLowerCase().includes(query)
+                );
+            },
+            getSelectedSiswaName() {
+                const siswa = siswas.find(s => s.id == this.formData.siswa_id);
+                if (siswa) {
+                    return siswa.nama_lengkap + ' (' + (siswa.kelas_nama || '-') + ')';
+                }
+                return '';
+            },
             handleFileSelect(event) {
                 if (event.target.files.length > 0) {
                     this.fileName = event.target.files[0].name;
@@ -255,6 +399,8 @@
                 this.fileName = '';
                 this.uploading = false;
                 this.uploadProgress = 0;
+                this.siswaDropdownOpen = false;
+                this.siswaSearchQuery = '';
                 this.formData = {
                     id: '',
                     siswa_id: '',
