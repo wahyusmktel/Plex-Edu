@@ -154,8 +154,39 @@ class DinasController extends Controller
             ->groupBy('month')
             ->orderBy('month')
             ->get();
+        
+        // Monthly student data by gender for line chart (last 12 months)
+        $monthlyStudentData = Siswa::withoutGlobalScopes()
+            ->join('schools', 'siswas.school_id', '=', 'schools.id')
+            ->select(
+                \DB::raw('DATE_FORMAT(siswas.created_at, "%Y-%m") as month'),
+                'siswas.jenis_kelamin',
+                'schools.jenjang',
+                \DB::raw('count(*) as total')
+            )
+            ->whereRaw('siswas.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)')
+            ->groupBy('month', 'jenis_kelamin', 'jenjang')
+            ->orderBy('month')
+            ->get();
+        
+        // Get jenjang list for filter
+        $jenjangList = ['all' => 'Semua Jenjang', 'sd' => 'SD', 'smp' => 'SMP', 'sma_smk' => 'SMA/SMK'];
+        
+        // Statistics per jenjang
+        $siswaPerJenjang = Siswa::withoutGlobalScopes()
+            ->join('schools', 'siswas.school_id', '=', 'schools.id')
+            ->select('schools.jenjang', 'siswas.jenis_kelamin', \DB::raw('count(*) as total'))
+            ->groupBy('schools.jenjang', 'siswas.jenis_kelamin')
+            ->get();
 
-        return view('admin.dinas.statistics_siswa', compact('totalSiswa', 'genderStats', 'schoolGrowth'));
+        return view('admin.dinas.statistics_siswa', compact(
+            'totalSiswa', 
+            'genderStats', 
+            'schoolGrowth', 
+            'monthlyStudentData',
+            'jenjangList',
+            'siswaPerJenjang'
+        ));
     }
 
     public function schools(Request $request)
