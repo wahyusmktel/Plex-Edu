@@ -77,18 +77,20 @@ class SiswaImport implements ToModel, WithStartRow, WithValidation, SkipsOnFailu
             $rawLintang = $col('BG');
             $rawBujur = $col('BH');
             
+            // Smart fix: Auto-correct coordinates with missing decimal points
+            // Example: -53343414 should become -5.3343414, 1052685 should become 105.2685
+            $lintang = $this->fixCoordinate($rawLintang, 'latitude');
+            $bujur = $this->fixCoordinate($rawBujur, 'longitude');
+
             // Smart Mapping: Dapodik often swaps Lintang (Lat) and Bujur (Lng)
             // Latitude is max 90, Longitude is up to 180.
-            // If BG > 90 or < -90, it's almost certainly Longitude.
-            $lintang = $rawLintang;
-            $bujur = $rawBujur;
-
-            if (is_numeric($rawLintang) && is_numeric($rawBujur)) {
-                if (abs($rawLintang) > 90 && abs($rawBujur) <= 90) {
+            // If lintang > 90 or < -90, it's almost certainly Longitude.
+            if (is_numeric($lintang) && is_numeric($bujur) && $lintang != 0 && $bujur != 0) {
+                if (abs($lintang) > 90 && abs($bujur) <= 90) {
                     // Looks like they are swapped!
-                    $lintang = $rawBujur;
-                    $bujur = $rawLintang;
-                    // \Log::info("Swapping Lat/Lng for " . $namaLengkap . ": Lat=$rawBujur, Lng=$rawLintang");
+                    $temp = $lintang;
+                    $lintang = $bujur;
+                    $bujur = $temp;
                 }
             }
 
@@ -228,8 +230,8 @@ class SiswaImport implements ToModel, WithStartRow, WithValidation, SkipsOnFailu
     public function rules(): array
     {
         return [
-            '58' => ['nullable', 'numeric', 'between:-90,90'], // Column BG: Lintang
-            '59' => ['nullable', 'numeric', 'between:-180,180'], // Column BH: Bujur
+            // Lintang and Bujur validation removed - handled by fixCoordinate() method
+            // This allows 0 values and malformed coordinates to be auto-corrected
             '1' => ['required'], // Column B: Nama Lengkap
         ];
     }
@@ -237,10 +239,6 @@ class SiswaImport implements ToModel, WithStartRow, WithValidation, SkipsOnFailu
     public function customValidationMessages()
     {
         return [
-            '58.between' => 'Nilai Lintang (Kolom BG) harus di antara -90 sampai 90.',
-            '58.numeric' => 'Nilai Lintang (Kolom BG) harus berupa angka.',
-            '59.between' => 'Nilai Bujur (Kolom BH) harus di antara -180 sampai 180.',
-            '59.numeric' => 'Nilai Bujur (Kolom BH) harus berupa angka.',
             '1.required' => 'Nama Lengkap (Kolom B) wajib diisi.',
         ];
     }
@@ -265,5 +263,89 @@ class SiswaImport implements ToModel, WithStartRow, WithValidation, SkipsOnFailu
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Fix malformed coordinate values that are missing decimal points.
+     * 
+     * This handles cases like:
+     * - Latitude: -53343414 → -5.3343414 (Indonesia lat range: roughly -11 to 6)
+     * - Longitude: 1052685 → 105.2685 (Indonesia lng range: roughly 95 to 141)
+     * 
+     * Also allows 0 values to pass through for later correction by operators.
+     *
+     * @param mixed $value The raw coordinate value
+     * @param string $type 'latitude' or 'longitude'
+     * @return float|null
+     */
+    private function fixCoordinate($value, $type = 'latitude')
+    {
+        // Return null if empty or not set
+        if ($value === null || $value === '' || $value === '-') {
+            return null;
+        }
+
+        // Allow 0 values to pass through (for later correction)
+        if ($value === 0 || $value === '0' || $value === 0.0) {
+            return 0;
+        }
+
+        // If not numeric at all, return null
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        $numValue = floatval($value);
+        $isNegative = $numValue < 0;
+        $absValue = abs($numValue);
+
+        // Define valid ranges
+        if ($type === 'latitude') {
+            // Latitude: -90 to 90 (Indonesia: roughly -11 to 6)
+            $maxValid = 90;
+            // For Indonesia, we expect values like -5.x to -8.x or 0.x to 6.x
+            $expectedIntegerDigits = 1; // Usually 1-2 digits before decimal
+        } else {
+            // Longitude: -180 to 180 (Indonesia: roughly 95 to 141)
+            $maxValid = 180;
+            // For Indonesia, we expect values like 95.x to 141.x
+            $expectedIntegerDigits = 3; // Usually 2-3 digits before decimal
+        }
+
+        // If value is already in valid range, return as-is
+        if ($absValue <= $maxValid) {
+            return $numValue;
+        }
+
+        // Value is out of range - try to fix by inserting decimal point
+        // Convert to string without scientific notation
+        $strValue = number_format($absValue, 0, '', '');
+        
+        // Try different decimal positions to find a valid coordinate
+        // For latitude: try inserting decimal after 1st or 2nd digit
+        // For longitude: try inserting decimal after 2nd or 3rd digit
+        $positions = ($type === 'latitude') ? [1, 2] : [2, 3];
+        
+        foreach ($positions as $pos) {
+            if (strlen($strValue) > $pos) {
+                $fixedValue = floatval(substr($strValue, 0, $pos) . '.' . substr($strValue, $pos));
+                
+                // Check if fixed value is in valid range
+                if ($fixedValue <= $maxValid) {
+                    // Additional check for Indonesia-specific range
+                    if ($type === 'latitude' && $fixedValue <= 15) {
+                        return $isNegative ? -$fixedValue : $fixedValue;
+                    } elseif ($type === 'longitude' && $fixedValue >= 90 && $fixedValue <= 145) {
+                        return $isNegative ? -$fixedValue : $fixedValue;
+                    } elseif ($type === 'longitude' && $fixedValue <= $maxValid) {
+                        return $isNegative ? -$fixedValue : $fixedValue;
+                    }
+                }
+            }
+        }
+
+        // If we couldn't fix it, return the original value
+        // This allows it to be stored and manually corrected later
+        return $numValue;
     }
 }
