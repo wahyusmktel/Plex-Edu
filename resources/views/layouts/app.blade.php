@@ -93,8 +93,8 @@
             {{-- Admin Role (School Content Manager) --}}
             @if(Auth::user()->role === 'admin')
                 <x-nav-item icon="dashboard" label="Dashboard Sekolah" :active="Request::is('dashboard')" href="{{ route('dashboard') }}" />
-                <x-nav-item icon="school" label="Sekolah" :active="Request::is('sekolah*')" href="{{ route('sekolah.index') }}" />
                 <x-nav-item icon="people" label="Fungsionaris" :active="Request::is('fungsionaris*')" href="{{ route('fungsionaris.index') }}" />
+                <x-nav-item icon="school" label="Sekolah" :active="Request::is('sekolah*')" href="{{ route('sekolah.index') }}" />
                 <x-nav-item icon="person_outline" label="Siswa" :active="Request::is('siswa*')" href="{{ route('siswa.index') }}" />
                 <x-nav-item icon="assignment_turned_in" label="E-Raport" :active="Request::is('e-raport*')" href="{{ route('e-raport.index') }}" />
                 <x-nav-item icon="menu_book" label="Mata Pelajaran" :active="Request::is('mata-pelajaran*')" href="{{ route('mata-pelajaran.index') }}" />
