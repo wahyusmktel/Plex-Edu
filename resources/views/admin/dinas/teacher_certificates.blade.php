@@ -54,7 +54,7 @@
         <div class="flex flex-col gap-6">
             <div class="flex-1 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2.5rem] p-8 text-white shadow-lg relative overflow-hidden">
                 <div class="relative z-10">
-                    <p class="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Total Guru Nasional</p>
+                    <p class="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Total Guru</p>
                     <h2 class="text-4xl font-black mb-1">{{ number_format($totalGuru) }}</h2>
                     <p class="text-sm font-medium opacity-70">Guru terdaftar di sistem</p>
                 </div>
@@ -67,7 +67,7 @@
                         <i class="material-icons text-2xl">pending_actions</i>
                     </div>
                     <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Capaian Nasional</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Capaian</p>
                         <p class="text-xl font-black text-slate-800">{{ number_format($guruDenganSertifikat) }} Guru</p>
                     </div>
                 </div>
