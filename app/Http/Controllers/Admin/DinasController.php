@@ -733,5 +733,35 @@ class DinasController extends Controller
             return response()->json(['message' => 'Gagal mengosongkan data sekolah: ' . $e->getMessage()], 500);
         }
     }
+
+    public function emptySchools(Request $request)
+    {
+        $selectedJenjang = $request->get('jenjang');
+        $search = $request->get('search');
+        
+        $query = School::withCount('siswa')
+            ->having('siswa_count', '=', 0)
+            ->orderBy('nama_sekolah');
+        
+        if ($selectedJenjang) {
+            $query->where('jenjang', $selectedJenjang);
+        }
+        
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_sekolah', 'like', "%{$search}%")
+                  ->orWhere('npsn', 'like', "%{$search}%");
+            });
+        }
+        
+        $schools = $query->paginate(20)->withQueryString();
+        
+        // Get total empty schools count
+        $totalEmptySchools = School::withCount('siswa')
+            ->having('siswa_count', '=', 0)
+            ->count();
+        
+        return view('admin.dinas.empty_schools', compact('schools', 'selectedJenjang', 'search', 'totalEmptySchools'));
+    }
 }
 

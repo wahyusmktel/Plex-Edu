@@ -334,6 +334,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/siswa/reset/{school_id}', [App\Http\Controllers\Admin\DinasController::class, 'resetSiswaForSchool'])->name('siswa.reset');
         Route::delete('/siswa/reset-all', [App\Http\Controllers\Admin\DinasController::class, 'resetAllSiswa'])->name('siswa.reset-all');
         Route::post('/siswa/export-log', [App\Http\Controllers\Admin\DinasController::class, 'exportBulkImportLog'])->name('siswa.export-log');
+        Route::get('/siswa/empty-schools', [App\Http\Controllers\Admin\DinasController::class, 'emptySchools'])->name('siswa.empty-schools');
         
         // E-Library for Dinas
         Route::get('/library', [App\Http\Controllers\Admin\DinasController::class, 'library'])->name('library');

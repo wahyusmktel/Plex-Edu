@@ -127,7 +127,7 @@
                 </div>
             </div>
             
-            <div class="flex-grow grid grid-cols-2 gap-4 w-full lg:w-1/4">
+            <div class="flex-grow grid grid-cols-3 gap-4 w-full lg:w-1/3">
                 <div class="p-4 rounded-3xl bg-slate-50 border border-slate-100">
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Sekolah</p>
                     <p class="text-xl font-black text-slate-800 leading-none">{{ count($schools) }}</p>
@@ -136,6 +136,13 @@
                     <p class="text-[10px] font-black text-pink-400 uppercase tracking-widest leading-none mb-2">Siswa</p>
                     <p class="text-xl font-black text-slate-800 leading-none">{{ $schools->sum('siswa_count') }}</p>
                 </div>
+                <a href="{{ route('dinas.siswa.empty-schools') }}" class="p-4 rounded-3xl bg-amber-50 border border-amber-100 hover:bg-amber-100 transition-all group">
+                    <p class="text-[10px] font-black text-amber-500 uppercase tracking-widest leading-none mb-2">Tanpa Siswa</p>
+                    <div class="flex items-center justify-between">
+                        <p class="text-xl font-black text-slate-800 leading-none">{{ $schools->where('siswa_count', 0)->count() }}</p>
+                        <i class="material-icons text-amber-400 text-sm group-hover:translate-x-1 transition-transform">arrow_forward</i>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
