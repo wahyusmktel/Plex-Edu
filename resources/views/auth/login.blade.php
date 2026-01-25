@@ -12,7 +12,7 @@
         .text-fill-transparent { -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="bg-white font-['Inter'] antialiased overflow-hidden">
+<body class="bg-white font-['Inter'] antialiased overflow-hidden" x-data="{ forgotPasswordModal: false }">
     <div class="flex min-h-screen">
         <!-- Left Side: Decorative & Branding -->
         <div class="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#ba80e8] to-[#d90d8b] items-center justify-center p-12 overflow-hidden">
@@ -101,7 +101,7 @@
                                 <i class="material-icons text-lg">lock</i>
                                 Password
                             </label>
-                            <a href="#" class="text-xs font-bold text-[#d90d8b] hover:text-[#ba80e8] transition-colors tracking-wide">LUPA PASSWORD?</a>
+                            <button type="button" @click="forgotPasswordModal = true" class="text-xs font-bold text-[#d90d8b] hover:text-[#ba80e8] transition-colors tracking-wide uppercase">Lupa Password?</button>
                         </div>
                         <div class="relative group">
                             <input id="password" name="password" type="password" required
@@ -146,6 +146,47 @@
             <!-- Footer info -->
             <div class="absolute bottom-8 text-center text-xs font-bold text-slate-300 tracking-[0.3em] uppercase">
                 &copy; 2026 {{ $app_settings->app_name }} - Managed by Literasia
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div 
+        x-show="forgotPasswordModal" 
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div 
+            class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-10 relative overflow-hidden"
+            @click.away="forgotPasswordModal = false"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+        >
+            <div class="absolute top-0 right-0 w-32 h-32 bg-pink-50 rounded-full -mr-16 -mt-16 z-0"></div>
+            
+            <div class="relative z-10">
+                <div class="w-20 h-20 bg-pink-100 text-[#d90d8b] rounded-3xl flex items-center justify-center mb-8 shadow-inner">
+                    <i class="material-icons text-4xl">lock_open</i>
+                </div>
+                
+                <h3 class="text-3xl font-black text-slate-800 tracking-tight mb-4 uppercase">Lupa Password?</h3>
+                <p class="text-slate-500 font-medium text-lg leading-relaxed mb-10">
+                    Apabila Anda lupa password, silakan hubungi <span class="text-[#d90d8b] font-black italic">Admin Dinas</span> untuk mengajukan permohonan reset password akun Anda.
+                </p>
+                
+                <button 
+                    @click="forgotPasswordModal = false" 
+                    class="w-full py-4.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all duration-200 uppercase tracking-widest text-sm"
+                >
+                    Saya Mengerti
+                </button>
             </div>
         </div>
     </div>
