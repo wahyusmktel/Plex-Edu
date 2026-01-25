@@ -311,7 +311,20 @@
                 </div>
             </div>
             <h3 class="text-xl font-black text-slate-800 mb-2">Generate Akun Sekolah</h3>
-            <p class="text-slate-500 font-medium">Membuat akun admin untuk sekolah yang belum memiliki akun...</p>
+            <p class="text-slate-500 font-medium mb-4">Membuat akun admin untuk sekolah yang belum memiliki akun...</p>
+            
+            <!-- Current School Detail -->
+            <div class="bg-slate-50 rounded-2xl p-4 mb-4" x-show="currentSchool">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Sedang Memproses</p>
+                <p class="text-sm font-bold text-slate-700 truncate" x-text="currentSchool"></p>
+                <p class="text-xs font-mono text-slate-500" x-text="'NPSN: ' + currentNpsn"></p>
+            </div>
+            
+            <!-- Progress Counter -->
+            <div class="flex items-center justify-center gap-2 text-sm text-slate-500 font-medium">
+                <span x-text="generateCurrent + ' / ' + generateTotal + ' sekolah'"></span>
+            </div>
+            
             <div class="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400">
                 <i class="material-icons text-lg animate-spin">autorenew</i>
                 <span>Mohon tunggu sebentar</span>
@@ -332,6 +345,10 @@
             importProgress: 0,
             generating: false,
             generateProgress: 0,
+            generateCurrent: 0,
+            generateTotal: 0,
+            currentSchool: '',
+            currentNpsn: '',
 
             handleFileSelect(event) {
                 if (event.target.files.length > 0) {
@@ -402,44 +419,73 @@
                     if (result.isConfirmed) {
                         this.generating = true;
                         this.generateProgress = 0;
+                        this.generateCurrent = 0;
+                        this.generateTotal = 0;
+                        this.currentSchool = '';
+                        this.currentNpsn = '';
 
-                        // Animate progress
-                        const progressInterval = setInterval(() => {
-                            if (this.generateProgress < 90) {
-                                this.generateProgress += Math.random() * 10;
-                            }
-                        }, 150);
-
-                        $.ajax({
-                            url: '{{ route("dinas.schools.generate-accounts") }}',
+                        // Use fetch with streaming for real-time progress
+                        fetch('{{ route("dinas.schools.generate-accounts") }}', {
                             method: 'POST',
-                            data: { _token: '{{ csrf_token() }}' },
-                            success: (res) => {
-                                clearInterval(progressInterval);
-                                this.generateProgress = 100;
-                                
-                                setTimeout(() => {
-                                    this.generating = false;
-                                    
-                                    let message = res.message;
-                                    if (res.errors && res.errors.length > 0) {
-                                        message += '\n\nError:\n' + res.errors.join('\n');
-                                    }
-
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Selesai!',
-                                        text: message,
-                                        timer: 3000,
-                                        showConfirmButton: true
-                                    }).then(() => location.reload());
-                                }, 500);
-                            },
-                            error: (err) => {
-                                clearInterval(progressInterval);
-                                this.generating = false;
-                                Swal.fire('Gagal', 'Terjadi kesalahan saat generate akun.', 'error');
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             }
+                        }).then(response => {
+                            const reader = response.body.getReader();
+                            const decoder = new TextDecoder();
+
+                            const processStream = () => {
+                                reader.read().then(({ done, value }) => {
+                                    if (done) return;
+
+                                    const text = decoder.decode(value);
+                                    const lines = text.split('\n\n').filter(line => line.startsWith('data: '));
+
+                                    lines.forEach(line => {
+                                        try {
+                                            const jsonStr = line.replace('data: ', '');
+                                            const data = JSON.parse(jsonStr);
+
+                                            if (data.type === 'progress') {
+                                                this.generateProgress = data.progress;
+                                                this.generateCurrent = data.current;
+                                                this.generateTotal = data.total;
+                                                this.currentSchool = data.school_name;
+                                                this.currentNpsn = data.npsn;
+                                            } else if (data.type === 'complete') {
+                                                this.generateProgress = 100;
+                                                
+                                                setTimeout(() => {
+                                                    this.generating = false;
+                                                    
+                                                    let message = data.message;
+                                                    if (data.errors && data.errors.length > 0) {
+                                                        message += '\n\nError:\n' + data.errors.join('\n');
+                                                    }
+
+                                                    Swal.fire({
+                                                        icon: 'success',
+                                                        title: 'Selesai!',
+                                                        text: message,
+                                                        timer: 3000,
+                                                        showConfirmButton: true
+                                                    }).then(() => location.reload());
+                                                }, 500);
+                                            }
+                                        } catch (e) {
+                                            // Skip parsing errors
+                                        }
+                                    });
+
+                                    processStream();
+                                });
+                            };
+
+                            processStream();
+                        }).catch(err => {
+                            this.generating = false;
+                            Swal.fire('Gagal', 'Terjadi kesalahan saat generate akun.', 'error');
                         });
                     }
                 });

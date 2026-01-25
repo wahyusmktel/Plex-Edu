@@ -319,40 +319,71 @@ class DinasController extends Controller
         })->get();
 
         $total = $schools->count();
-        $generated = 0;
-        $errors = [];
 
-        foreach ($schools as $school) {
-            try {
-                $email = $school->npsn . '@admin.literasia.org';
-                
-                // Skip if email already exists
-                if (User::where('email', $email)->exists()) {
-                    $errors[] = "NPSN {$school->npsn}: Email sudah terdaftar";
-                    continue;
+        return response()->stream(function () use ($schools, $total) {
+            $generated = 0;
+            $errors = [];
+            $current = 0;
+
+            foreach ($schools as $school) {
+                $current++;
+                $progress = $total > 0 ? round(($current / $total) * 100) : 0;
+
+                // Send progress update
+                echo "data: " . json_encode([
+                    'type' => 'progress',
+                    'current' => $current,
+                    'total' => $total,
+                    'progress' => $progress,
+                    'school_name' => $school->nama_sekolah,
+                    'npsn' => $school->npsn
+                ]) . "\n\n";
+                ob_flush();
+                flush();
+
+                try {
+                    $email = $school->npsn . '@admin.literasia.org';
+                    
+                    // Skip if email already exists
+                    if (User::where('email', $email)->exists()) {
+                        $errors[] = "NPSN {$school->npsn}: Email sudah terdaftar";
+                        continue;
+                    }
+
+                    User::create([
+                        'school_id' => $school->id,
+                        'name' => $school->nama_sekolah,
+                        'email' => $email,
+                        'username' => $school->npsn,
+                        'password' => Hash::make($school->npsn),
+                        'role' => 'admin',
+                    ]);
+
+                    $generated++;
+                } catch (\Exception $e) {
+                    $errors[] = "NPSN {$school->npsn}: " . $e->getMessage();
                 }
 
-                User::create([
-                    'school_id' => $school->id,
-                    'name' => $school->nama_sekolah,
-                    'email' => $email,
-                    'username' => $school->npsn,
-                    'password' => Hash::make($school->npsn),
-                    'role' => 'admin',
-                ]);
-
-                $generated++;
-            } catch (\Exception $e) {
-                $errors[] = "NPSN {$school->npsn}: " . $e->getMessage();
+                // Small delay to prevent overwhelming
+                usleep(50000); // 50ms
             }
-        }
 
-        return response()->json([
-            'success' => true,
-            'total' => $total,
-            'generated' => $generated,
-            'errors' => $errors,
-            'message' => "{$generated} akun admin sekolah berhasil di-generate dari {$total} sekolah."
+            // Send final result
+            echo "data: " . json_encode([
+                'type' => 'complete',
+                'success' => true,
+                'total' => $total,
+                'generated' => $generated,
+                'errors' => $errors,
+                'message' => "{$generated} akun admin sekolah berhasil di-generate dari {$total} sekolah."
+            ]) . "\n\n";
+            ob_flush();
+            flush();
+        }, 200, [
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache',
+            'Connection' => 'keep-alive',
+            'X-Accel-Buffering' => 'no'
         ]);
     }
 

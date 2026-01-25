@@ -15,10 +15,21 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $request->validate([
+            'email' => ['required', 'string'],
             'password' => ['required'],
         ]);
+
+        $loginInput = $request->input('email');
+        $password = $request->input('password');
+        
+        // Determine if input is email or username
+        $fieldType = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        
+        $credentials = [
+            $fieldType => $loginInput,
+            'password' => $password,
+        ];
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $user = Auth::user();
@@ -43,7 +54,7 @@ class LoginController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => 'Email/Username atau password yang Anda masukkan salah.',
         ])->onlyInput('email');
     }
 
