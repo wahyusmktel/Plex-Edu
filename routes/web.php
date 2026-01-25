@@ -348,6 +348,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [GuruDinasController::class, 'index'])->name('index');
             Route::get('/sync', [GuruDinasController::class, 'sync'])->name('sync');
             Route::post('/sync', [GuruDinasController::class, 'processSync'])->name('sync.process');
+            Route::post('/sync/bulk', [GuruDinasController::class, 'bulkProcessSync'])->name('sync.bulk-process');
             Route::get('/{id}', [GuruDinasController::class, 'show'])->name('show');
             Route::post('/import', [GuruDinasController::class, 'import'])->name('import');
             Route::delete('/{id}', [GuruDinasController::class, 'destroy'])->name('destroy');

@@ -146,4 +146,70 @@ class GuruDinasController extends Controller
         MasterGuruDinas::truncate();
         return back()->with('success', 'Semua master data guru berhasil dikosongkan.');
     }
+
+    /**
+     * Bulk process sync - automatically syncs all matching master data to school's fungsionaris
+     * based on NPSN without requiring manual selection of individual records.
+     */
+    public function bulkProcessSync(Request $request)
+    {
+        $request->validate([
+            'school_id' => 'required|exists:schools,id',
+        ]);
+
+        $school = School::findOrFail($request->school_id);
+        
+        // Get all master data matching this school's NPSN
+        $masterData = MasterGuruDinas::where('npsn', $school->npsn)->get();
+        
+        if ($masterData->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'synced' => 0,
+                'skipped' => 0,
+                'message' => "Tidak ada data di master untuk NPSN {$school->npsn}"
+            ]);
+        }
+
+        $synced = 0;
+        $skipped = 0;
+
+        foreach ($masterData as $data) {
+            // Check if already exists in fungsionaris for THIS school
+            $exists = \App\Models\Fungsionaris::where('school_id', $school->id)
+                ->where(function($q) use ($data) {
+                    if ($data->nik) $q->orWhere('nik', $data->nik);
+                    if ($data->nip) $q->orWhere('nip', $data->nip);
+                })->exists();
+
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            \App\Models\Fungsionaris::create([
+                'school_id' => $school->id,
+                'user_id' => null,
+                'nama' => $data->nama,
+                'nik' => $data->nik,
+                'nip' => $data->nip,
+                'jenis_kelamin' => $data->jenis_kelamin,
+                'tempat_lahir' => $data->tempat_lahir,
+                'tanggal_lahir' => $data->tanggal_lahir,
+                'no_hp' => $data->no_hp,
+                'jabatan' => str_contains(strtolower($data->jenis_ptk), 'guru') ? 'guru' : 'pegawai',
+                'posisi' => $data->jabatan_ptk,
+                'status' => 'aktif',
+                'pendidikan_terakhir' => $data->pendidikan,
+            ]);
+            $synced++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'synced' => $synced,
+            'skipped' => $skipped,
+            'message' => "Berhasil menyalin {$synced} data guru ke {$school->nama_sekolah}. ({$skipped} data dilewati karena sudah ada)"
+        ]);
+    }
 }
