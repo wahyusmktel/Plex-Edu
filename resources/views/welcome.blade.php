@@ -313,7 +313,7 @@
                     
                     <p class="text-xs text-slate-400 font-bold mt-4 flex items-center gap-2 justify-center lg:justify-start">
                         <i class="material-icons text-sm">info</i>
-                        Ukuran file: ~15MB • Versi 1.0.0 • Android 5.0+
+                        Ukuran file: 62 MB • Versi 1.0.0 • Android 5.0+
                     </p>
                 </div>
 
