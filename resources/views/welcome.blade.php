@@ -72,6 +72,7 @@
             <div class="hidden md:flex items-center gap-8">
                 <a href="#features" class="text-sm font-bold text-slate-500 hover:text-pink-600 transition-colors">Fitur</a>
                 <a href="#news" class="text-sm font-bold text-slate-500 hover:text-pink-600 transition-colors">Berita</a>
+                <a href="#download-app" class="text-sm font-bold text-slate-500 hover:text-pink-600 transition-colors">Download App</a>
                 <a href="{{ route('about') }}" class="text-sm font-bold text-slate-500 hover:text-pink-600 transition-colors">Tentang Kami</a>
             </div>
 
@@ -244,6 +245,128 @@
                     </div>
                     <div class="text-4xl lg:text-5xl font-black text-white mb-2 font-outfit">{{ number_format($stats['staff']) }}</div>
                     <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Total Pegawai</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download App Section -->
+    <section id="download-app" class="py-32 px-6 bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 overflow-hidden relative">
+        <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-pink-200 rounded-full blur-[150px] opacity-40"></div>
+        <div class="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-200 rounded-full blur-[150px] opacity-40"></div>
+        
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <!-- Text Content -->
+                <div class="lg:w-1/2 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full mb-6 border border-green-100">
+                        <i class="material-icons text-green-600 text-sm">android</i>
+                        <span class="text-xs font-black text-green-600 uppercase tracking-widest">Tersedia untuk Android</span>
+                    </div>
+                    <h2 class="text-4xl lg:text-5xl font-black text-slate-800 leading-tight mb-6">
+                        Download Aplikasi <br>
+                        <span class="text-gradient">Literasia Mobile</span>
+                    </h2>
+                    <p class="text-lg text-slate-500 font-medium mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                        Akses semua fitur Literasia kapan saja dan di mana saja melalui aplikasi mobile kami. Gratis, ringan, dan mudah digunakan!
+                    </p>
+                    
+                    <!-- Features List -->
+                    <div class="grid grid-cols-2 gap-4 mb-10">
+                        <div class="flex items-center gap-3 text-sm font-bold text-slate-600">
+                            <div class="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center">
+                                <i class="material-icons text-pink-600 text-lg">speed</i>
+                            </div>
+                            <span>Ringan & Cepat</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm font-bold text-slate-600">
+                            <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <i class="material-icons text-purple-600 text-lg">notifications</i>
+                            </div>
+                            <span>Notifikasi Realtime</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm font-bold text-slate-600">
+                            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <i class="material-icons text-blue-600 text-lg">offline_bolt</i>
+                            </div>
+                            <span>Mode Offline</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm font-bold text-slate-600">
+                            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                                <i class="material-icons text-green-600 text-lg">verified_user</i>
+                            </div>
+                            <span>Aman & Terpercaya</span>
+                        </div>
+                    </div>
+
+                    <!-- Download Button -->
+                    <a href="{{ asset('assets/literasia.apk') }}" download class="inline-flex items-center gap-4 px-8 py-5 bg-slate-900 text-white rounded-[2rem] font-black text-lg shadow-2xl shadow-slate-300 hover:scale-105 transition-transform active:scale-95 group">
+                        <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                            <i class="material-icons text-2xl">android</i>
+                        </div>
+                        <div class="text-left">
+                            <span class="text-xs font-medium text-slate-400 uppercase tracking-widest block">Download APK</span>
+                            <span class="text-lg font-black">Literasia Android</span>
+                        </div>
+                        <i class="material-icons text-2xl ml-2">download</i>
+                    </a>
+                    
+                    <p class="text-xs text-slate-400 font-bold mt-4 flex items-center gap-2 justify-center lg:justify-start">
+                        <i class="material-icons text-sm">info</i>
+                        Ukuran file: ~15MB • Versi 1.0.0 • Android 5.0+
+                    </p>
+                </div>
+
+                <!-- Phone Mockups -->
+                <div class="lg:w-1/2 relative">
+                    <div class="flex items-center justify-center gap-6">
+                        <!-- Phone Mockup 1 -->
+                        <div class="relative transform -rotate-6 hover:rotate-0 transition-transform duration-500">
+                            <div class="w-[200px] md:w-[240px] bg-slate-900 rounded-[2.5rem] p-2 shadow-2xl shadow-slate-400">
+                                <!-- Notch -->
+                                <div class="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-6 bg-slate-900 rounded-full z-20"></div>
+                                <!-- Screen -->
+                                <div class="bg-white rounded-[2rem] overflow-hidden aspect-[9/19.5] relative">
+                                    <!-- Replace this with your screenshot -->
+                                    <img src="{{ asset('assets/images/app-screenshot-1.png') }}" alt="App Screenshot 1" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center\'><div class=\'text-center p-4\'><i class=\'material-icons text-pink-300 text-5xl mb-2\'>add_photo_alternate</i><p class=\'text-xs font-bold text-pink-300 uppercase tracking-widest\'>Screenshot 1</p></div></div>'">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phone Mockup 2 (Main/Center) -->
+                        <div class="relative z-10 transform scale-110 hover:scale-115 transition-transform duration-500">
+                            <div class="w-[220px] md:w-[280px] bg-slate-900 rounded-[3rem] p-2.5 shadow-2xl shadow-pink-300">
+                                <!-- Notch -->
+                                <div class="absolute top-5 left-1/2 -translate-x-1/2 w-24 h-7 bg-slate-900 rounded-full z-20"></div>
+                                <!-- Screen -->
+                                <div class="bg-white rounded-[2.5rem] overflow-hidden aspect-[9/19.5] relative">
+                                    <!-- Replace this with your screenshot -->
+                                    <img src="{{ asset('assets/images/app-screenshot-2.png') }}" alt="App Screenshot 2" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center\'><div class=\'text-center p-4\'><i class=\'material-icons text-purple-300 text-5xl mb-2\'>add_photo_alternate</i><p class=\'text-xs font-bold text-purple-300 uppercase tracking-widest\'>Screenshot 2</p></div></div>'">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phone Mockup 3 -->
+                        <div class="relative transform rotate-6 hover:rotate-0 transition-transform duration-500">
+                            <div class="w-[200px] md:w-[240px] bg-slate-900 rounded-[2.5rem] p-2 shadow-2xl shadow-slate-400">
+                                <!-- Notch -->
+                                <div class="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-6 bg-slate-900 rounded-full z-20"></div>
+                                <!-- Screen -->
+                                <div class="bg-white rounded-[2rem] overflow-hidden aspect-[9/19.5] relative">
+                                    <!-- Replace this with your screenshot -->
+                                    <img src="{{ asset('assets/images/app-screenshot-3.png') }}" alt="App Screenshot 3" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center\'><div class=\'text-center p-4\'><i class=\'material-icons text-blue-300 text-5xl mb-2\'>add_photo_alternate</i><p class=\'text-xs font-bold text-blue-300 uppercase tracking-widest\'>Screenshot 3</p></div></div>'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating Elements -->
+                    <div class="absolute -top-10 right-10 w-20 h-20 bg-gradient-main rounded-2xl flex items-center justify-center shadow-lg animate-float">
+                        <i class="material-icons text-white text-3xl">school</i>
+                    </div>
+                    <div class="absolute -bottom-5 left-10 w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg animate-float" style="animation-delay: 1s;">
+                        <i class="material-icons text-pink-600 text-2xl">star</i>
+                    </div>
                 </div>
             </div>
         </div>
