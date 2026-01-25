@@ -32,7 +32,12 @@ class DashboardController extends Controller
             // Aggregated counts across all schools
             // We use withoutGlobalScopes() to get total numbers across all tenants
             $totalSiswaAcrossSchools = Siswa::withoutGlobalScopes()->count();
-            $totalGuruAcrossSchools = \App\Models\Fungsionaris::withoutGlobalScopes()->where('jabatan', 'guru')->count();
+            $totalGuruAcrossSchools = \App\Models\Fungsionaris::withoutGlobalScopes()
+                ->where('jabatan', 'guru')
+                ->whereNotNull('nik')
+                ->where('nik', '!=', '')
+                ->distinct()
+                ->count('nik');
             
             // Latest registrations for quick look
             $latestRegistrations = \App\Models\School::latest()->take(5)->get();

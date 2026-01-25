@@ -21,7 +21,7 @@
     <x-stat-card icon="business" label="Total Sekolah" value="{{ number_format($totalSchools) }}" color="blue" />
     <x-stat-card icon="pending_actions" label="Menunggu Persetujuan" value="{{ number_format($pendingSchools) }}" color="yellow" />
     <x-stat-card icon="verified" label="Sekolah Aktif" value="{{ number_format($activeSchools) }}" color="emerald" />
-    <x-stat-card icon="groups" label="Total Siswa Nasional" value="{{ number_format($totalSiswaAcrossSchools) }}" color="pink" />
+    <x-stat-card icon="groups" label="Total Siswa" value="{{ number_format($totalSiswaAcrossSchools) }}" color="pink" />
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -85,7 +85,7 @@
                     <i class="material-icons text-white">person</i>
                 </div>
                 <div>
-                    <h4 class="text-sm font-bold opacity-80">Total Guru Nasional</h4>
+                    <h4 class="text-sm font-bold opacity-80">Total Guru</h4>
                     <p class="text-3xl font-black">{{ number_format($totalGuruAcrossSchools) }}</p>
                 </div>
             </div>
