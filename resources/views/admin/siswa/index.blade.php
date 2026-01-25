@@ -12,9 +12,9 @@
             <p class="text-slate-500 font-medium mt-1">Kelola data Peserta Didik Literasia</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-            <a href="{{ route('siswa.download-template') }}" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
-                <i class="material-icons text-[20px]">file_download</i> Template
-            </a>
+            <button @click="openTemplateModal = true" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+                <i class="material-icons text-[20px]">info</i> Template
+            </button>
             <button @click="openImportModal = true" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
                 <i class="material-icons text-[20px]">file_upload</i> Import
             </button>
@@ -347,6 +347,38 @@
         </div>
     </div>
 
+    <!-- Template Info Modal -->
+    <div x-show="openTemplateModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="openTemplateModal = false"></div>
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-10 relative z-10">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
+                <i class="material-icons text-4xl text-amber-500">warning</i>
+            </div>
+            <h3 class="text-2xl font-black text-slate-800 tracking-tight text-center mb-4">Informasi Penting!</h3>
+            
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6">
+                <p class="text-slate-700 font-medium text-sm leading-relaxed">
+                    Gunakan format Excel yang dihasilkan dari <strong class="text-amber-600">Data Peserta Didik</strong> pada aplikasi <strong class="text-amber-600">DAPODIK</strong>, dan langsung import file tersebut ke sistem ini.
+                </p>
+            </div>
+            
+            <div class="bg-red-50 border border-red-200 rounded-2xl p-6 mb-6">
+                <div class="flex items-start gap-3">
+                    <i class="material-icons text-red-500 mt-0.5">dangerous</i>
+                    <p class="text-red-700 font-bold text-sm leading-relaxed">
+                        DILARANG merubah isi data dan format file yang diunduh dari Dapodik karena dapat mengakibatkan <strong>ERROR</strong> saat proses import!
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex justify-center">
+                <button @click="openTemplateModal = false" class="px-10 py-4 rounded-2xl bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    Saya Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
@@ -356,6 +388,7 @@
         return {
             openModal: false,
             openImportModal: false,
+            openTemplateModal: false,
             editMode: false,
             formTab: 'wajib',
             fileName: '',
