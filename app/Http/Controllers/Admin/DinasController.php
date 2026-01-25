@@ -411,13 +411,81 @@ class DinasController extends Controller
         return Excel::download(new SchoolTemplateExport, 'template_import_sekolah.xlsx');
     }
 
-    public function certificates()
+    public function certificates(Request $request)
     {
-        // View for teacher certificates across all schools
-        // This might need a Certificate model if one exists, 
-        // otherwise we just list teachers with their status.
-        $teachers = User::withoutGlobalScopes()->where('role', 'guru')->with('fungsionaris')->paginate(30);
-        return view('admin.dinas.teacher_certificates', compact('teachers'));
+        $selectedSchoolId = $request->get('school_id');
+        
+        // Fetch all schools for dropdown with teacher counts
+        $schools = School::select(
+                'schools.id', 
+                'schools.nama_sekolah', 
+                'schools.npsn',
+                DB::raw('COUNT(DISTINCT u.id) as total_guru')
+            )
+            ->leftJoin('users as u', function($join) {
+                $join->on('schools.id', '=', 'u.school_id')
+                     ->where('u.role', '=', 'guru');
+            })
+            ->groupBy('schools.id', 'schools.nama_sekolah', 'schools.npsn')
+            ->orderBy('nama_sekolah')
+            ->get();
+
+        // Query teachers (users with role guru)
+        $teacherQuery = User::withoutGlobalScopes()
+            ->where('role', 'guru')
+            ->with(['fungsionaris.teacherCertificates', 'school']);
+
+        if ($selectedSchoolId) {
+            $teacherQuery->where('school_id', $selectedSchoolId);
+        }
+
+        // Search in list
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $teacherQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('school', function($sq) use ($search) {
+                      $sq->where('nama_sekolah', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $teachers = $teacherQuery->paginate(15)->withQueryString();
+
+        // Statistics for Chart: Certificates per School
+        $schoolStats = School::select(
+                'schools.id', 
+                'schools.nama_sekolah', 
+                'schools.npsn',
+                DB::raw('COUNT(DISTINCT u.id) as total_guru'),
+                DB::raw('COUNT(DISTINCT tc.teacher_id) as guru_bersertifikat')
+            )
+            ->leftJoin('users as u', function($join) {
+                $join->on('schools.id', '=', 'u.school_id')
+                     ->where('u.role', '=', 'guru');
+            })
+            ->leftJoin('fungsionaris as f', 'u.id', '=', 'f.user_id')
+            ->leftJoin('teacher_certificates as tc', 'f.id', '=', 'tc.teacher_id')
+            ->groupBy('schools.id', 'schools.nama_sekolah', 'schools.npsn')
+            ->orderBy('guru_bersertifikat', 'desc')
+            ->get();
+
+        // Overall Stats
+        $totalGuru = User::withoutGlobalScopes()->where('role', 'guru')->count();
+        $totalSertifikat = \App\Models\TeacherCertificate::withoutGlobalScopes()->count();
+        $guruDenganSertifikat = \App\Models\TeacherCertificate::withoutGlobalScopes()
+            ->distinct('teacher_id')
+            ->count('teacher_id');
+
+        return view('admin.dinas.teacher_certificates', compact(
+            'teachers', 
+            'schools', 
+            'selectedSchoolId', 
+            'schoolStats',
+            'totalGuru',
+            'totalSertifikat',
+            'guruDenganSertifikat'
+        ));
     }
 
     public function violations()
