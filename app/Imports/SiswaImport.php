@@ -12,8 +12,9 @@ use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsErrors;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 
-class SiswaImport implements ToModel, WithStartRow, WithValidation, SkipsOnFailure, SkipsOnError
+class SiswaImport implements ToModel, WithStartRow, WithValidation, SkipsOnFailure, SkipsOnError, SkipsEmptyRows
 {
     use SkipsFailures, SkipsErrors;
 
@@ -199,6 +200,20 @@ class SiswaImport implements ToModel, WithStartRow, WithValidation, SkipsOnFailu
     public function startRow(): int
     {
         return 7;
+    }
+
+    /**
+     * Define when a row is considered empty.
+     * A row is considered empty if the key field (Nama Lengkap - column B) is empty.
+     * This prevents empty rows from being imported and causing validation errors.
+     */
+    public function isEmptyWhen(array $row): bool
+    {
+        // Column B (Nama Lengkap) is at index 1
+        $namaLengkap = $row[1] ?? null;
+        
+        // Consider row empty if Nama Lengkap is null, empty string, or only whitespace
+        return empty($namaLengkap) || (is_string($namaLengkap) && trim($namaLengkap) === '');
     }
 
     private function extractTingkat($namaKelas)
