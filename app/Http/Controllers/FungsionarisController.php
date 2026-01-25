@@ -39,11 +39,12 @@ class FungsionarisController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
+            $domain = $request->jabatan === 'guru' ? 'guru.literasia.org' : 'pegawai.literasia.org';
             $user = User::create([
                 'school_id' => auth()->user()->school_id,
                 'name' => $request->nama,
                 'username' => $request->username,
-                'email' => $request->username . '@guru.literasia.org',
+                'email' => $request->username . '@' . $domain,
                 'password' => Hash::make($request->password),
                 'role' => $request->jabatan === 'guru' ? 'guru' : 'pegawai',
             ]);
@@ -84,10 +85,11 @@ class FungsionarisController extends Controller
 
         DB::transaction(function () use ($request, $fungsionaris) {
             $user = User::findOrFail($fungsionaris->user_id);
+            $domain = $request->jabatan === 'guru' ? 'guru.literasia.org' : 'pegawai.literasia.org';
             $user->update([
                 'name' => $request->nama,
                 'username' => $request->username,
-                'email' => $request->username . '@guru.literasia.org',
+                'email' => $request->username . '@' . $domain,
                 'role' => $request->jabatan === 'guru' ? 'guru' : 'pegawai',
             ]);
 
@@ -160,12 +162,13 @@ class FungsionarisController extends Controller
             try {
                 // Generate random number for email
                 $randomNumber = mt_rand(100000, 999999);
-                $email = $randomNumber . '@guru.literasia.org';
+                $domain = $fungsionaris->jabatan === 'guru' ? 'guru.literasia.org' : 'pegawai.literasia.org';
+                $email = $randomNumber . '@' . $domain;
                 
                 // Make sure email is unique
                 while (User::where('email', $email)->exists()) {
                     $randomNumber = mt_rand(100000, 999999);
-                    $email = $randomNumber . '@guru.literasia.org';
+                    $email = $randomNumber . '@' . $domain;
                 }
 
                 $user = User::create([
@@ -221,12 +224,13 @@ class FungsionarisController extends Controller
             
             // Generate random number for email
             $randomNumber = mt_rand(100000, 999999);
-            $email = $randomNumber . '@guru.literasia.org';
+            $domain = $fungsionaris->jabatan === 'guru' ? 'guru.literasia.org' : 'pegawai.literasia.org';
+            $email = $randomNumber . '@' . $domain;
             
             // Make sure email is unique
             while (User::where('email', $email)->exists()) {
                 $randomNumber = mt_rand(100000, 999999);
-                $email = $randomNumber . '@guru.literasia.org';
+                $email = $randomNumber . '@' . $domain;
             }
 
             $user = User::create([
