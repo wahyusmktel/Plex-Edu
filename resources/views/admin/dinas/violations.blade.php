@@ -10,7 +10,7 @@
         </div>
         <div>
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Ketertiban</p>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Monitoring Pelanggaran Nasional</h1>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Monitoring Pelanggaran</h1>
         </div>
     </div>
 </div>
@@ -52,7 +52,7 @@
                 @endforeach
                 @if($violations->isEmpty())
                 <tr>
-                    <td colspan="5" class="py-20 text-center text-slate-400 font-bold italic">Belum ada data pelanggaran tercatat secara nasional.</td>
+                    <td colspan="5" class="py-20 text-center text-slate-400 font-bold italic">Belum ada data pelanggaran tercatat secara.</td>
                 </tr>
                 @endif
             </tbody>

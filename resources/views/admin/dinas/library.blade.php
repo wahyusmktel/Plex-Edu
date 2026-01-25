@@ -48,7 +48,7 @@
                 @endforeach
             </div>
             <div class="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between text-slate-400">
-                <span class="text-xs font-bold uppercase tracking-widest">Total Koleksi Nasional</span>
+                <span class="text-xs font-bold uppercase tracking-widest">Total Koleksi</span>
                 <span class="text-xl font-black text-slate-800">{{ number_format($totalItems) }}</span>
             </div>
         </div>

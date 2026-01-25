@@ -123,7 +123,7 @@
     <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm" x-data="schoolMapWidget()">
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h4 class="text-xl font-extrabold text-slate-800 uppercase tracking-tight">Peta Sebaran Sekolah Nasional</h4>
+                <h4 class="text-xl font-extrabold text-slate-800 uppercase tracking-tight">Peta Sebaran Sekolah</h4>
                 <p class="text-sm font-medium text-slate-400">Monitoring distribusi sekolah berdasarkan jenjang pendidikan</p>
             </div>
             <div class="flex items-center gap-4">

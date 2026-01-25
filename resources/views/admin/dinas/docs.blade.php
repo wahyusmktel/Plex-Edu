@@ -46,7 +46,7 @@
                     <h4 class="text-lg font-bold text-slate-800 mb-4">Langkah-Langkah Penggunaan:</h4>
                     <ol class="list-decimal pl-5 space-y-4 text-slate-600 font-medium">
                         <li>Buka menu <strong>Dashboard</strong> pada sidebar kiri.</li>
-                        <li>Perhatikan panel <strong>Statistik Utama</strong> yang menampilkan jumlah total sekolah, siswa, dan guru secara nasional.</li>
+                        <li>Perhatikan panel <strong>Statistik Utama</strong> yang menampilkan jumlah total sekolah, siswa, dan guru secara.</li>
                         <li>Gunakan fitur <strong>Peta Sebaran Sekolah</strong> untuk melihat lokasi geografis sekolah. Anda dapat menggunakan filter jenjang (SD/SMP/SMA) pada peta.</li>
                         <li>Cek daftar <strong>Registrasi Sekolah Terbaru</strong> untuk memberikan respon cepat terhadap pendaftaran sekolah baru.</li>
                     </ol>

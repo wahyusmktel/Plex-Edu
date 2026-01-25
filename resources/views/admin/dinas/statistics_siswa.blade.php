@@ -10,7 +10,7 @@
         </div>
         <div>
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Monitoring Siswa</p>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Statistik Siswa Nasional</h1>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Statistik Siswa</h1>
         </div>
     </div>
 </div>
