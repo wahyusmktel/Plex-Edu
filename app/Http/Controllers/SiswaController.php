@@ -159,40 +159,71 @@ class SiswaController extends Controller
         $siswaList = Siswa::whereNull('user_id')->get();
 
         $total = $siswaList->count();
-        $generated = 0;
-        $errors = [];
 
-        foreach ($siswaList as $siswa) {
-            try {
-                $email = $siswa->nisn . '@siswa.literasia.org';
-                
-                // Skip if email already exists
-                if (User::where('email', $email)->exists()) {
-                    $errors[] = "NISN {$siswa->nisn}: Email sudah terdaftar";
-                    continue;
+        return response()->stream(function () use ($siswaList, $total) {
+            $generated = 0;
+            $errors = [];
+            $current = 0;
+
+            foreach ($siswaList as $siswa) {
+                $current++;
+                $progress = $total > 0 ? round(($current / $total) * 100) : 0;
+
+                // Send progress update
+                echo "data: " . json_encode([
+                    'type' => 'progress',
+                    'current' => $current,
+                    'total' => $total,
+                    'progress' => $progress,
+                    'student_name' => $siswa->nama_lengkap,
+                    'nisn' => $siswa->nisn
+                ]) . "\n\n";
+                ob_flush();
+                flush();
+
+                try {
+                    $email = $siswa->nisn . '@siswa.literasia.org';
+                    
+                    // Skip if email already exists
+                    if (User::where('email', $email)->exists()) {
+                        $errors[] = "NISN {$siswa->nisn}: Email sudah terdaftar";
+                        continue;
+                    }
+
+                    $user = User::create([
+                        'name' => $siswa->nama_lengkap,
+                        'username' => $siswa->nisn,
+                        'email' => $email,
+                        'password' => Hash::make($siswa->nisn), // Password is NISN
+                        'role' => 'siswa',
+                    ]);
+
+                    $siswa->update(['user_id' => $user->id]);
+                    $generated++;
+                } catch (\Exception $e) {
+                    $errors[] = "{$siswa->nama_lengkap}: " . $e->getMessage();
                 }
 
-                $user = User::create([
-                    'name' => $siswa->nama_lengkap,
-                    'username' => $siswa->nisn,
-                    'email' => $email,
-                    'password' => Hash::make($siswa->nisn), // Password is NISN
-                    'role' => 'siswa',
-                ]);
-
-                $siswa->update(['user_id' => $user->id]);
-                $generated++;
-            } catch (\Exception $e) {
-                $errors[] = "{$siswa->nama_lengkap}: " . $e->getMessage();
+                // Small delay to prevent overwhelming
+                usleep(30000); // 30ms
             }
-        }
 
-        return response()->json([
-            'success' => true,
-            'total' => $total,
-            'generated' => $generated,
-            'errors' => $errors,
-            'message' => "{$generated} akun siswa berhasil di-generate dari {$total} data."
+            // Send final result
+            echo "data: " . json_encode([
+                'type' => 'complete',
+                'success' => true,
+                'total' => $total,
+                'generated' => $generated,
+                'errors' => $errors,
+                'message' => "{$generated} akun siswa berhasil di-generate dari {$total} data."
+            ]) . "\n\n";
+            ob_flush();
+            flush();
+        }, 200, [
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache',
+            'Connection' => 'keep-alive',
+            'X-Accel-Buffering' => 'no'
         ]);
     }
 
