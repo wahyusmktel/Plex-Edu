@@ -14,13 +14,12 @@
         </div>
     </div>
 </div>
-
 <!-- Line Chart Section -->
 <div class="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm mb-8" x-data="studentChart()">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
         <div>
-            <h3 class="text-xl font-extrabold text-slate-800">Tren Registrasi Siswa</h3>
-            <p class="text-sm text-slate-400 font-medium">Statistik berdasarkan jenis kelamin (12 bulan terakhir)</p>
+            <h3 class="text-xl font-extrabold text-slate-800">Distribusi Siswa Per Sekolah</h3>
+            <p class="text-sm text-slate-400 font-medium">Statistik jumlah siswa berdasarkan jenis kelamin di setiap sekolah</p>
         </div>
         
         <!-- Jenjang Filter -->
@@ -50,7 +49,7 @@
     </div>
     
     <!-- Chart Container -->
-    <div class="relative h-[350px]">
+    <div class="relative" :style="'height: ' + Math.max(350, schoolCount * 25) + 'px'">
         <canvas id="studentLineChart"></canvas>
     </div>
     
@@ -69,8 +68,8 @@
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Keseluruhan</p>
         </div>
         <div class="text-center p-4 rounded-2xl bg-amber-50/50">
-            <p class="text-2xl font-black text-amber-600" x-text="stats.ratio">0%</p>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rasio L:P</p>
+            <p class="text-2xl font-black text-amber-600" x-text="stats.schoolCount + ' Sekolah'">0 Sekolah</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Sekolah</p>
         </div>
     </div>
 </div>
@@ -162,13 +161,14 @@ function studentChart() {
     return {
         chart: null,
         activeJenjang: 'all',
-        rawData: @json($monthlyStudentData),
+        rawData: @json($studentPerSchool),
         siswaPerJenjang: @json($siswaPerJenjang),
+        schoolCount: 0,
         stats: {
             lakiTotal: 0,
             perempuanTotal: 0,
             grandTotal: 0,
-            ratio: '0%'
+            schoolCount: 0
         },
         
         init() {
@@ -177,7 +177,7 @@ function studentChart() {
         },
         
         calculateStats() {
-            let data = this.siswaPerJenjang;
+            let data = this.rawData;
             if (this.activeJenjang !== 'all') {
                 data = data.filter(d => d.jenjang === this.activeJenjang);
             }
@@ -186,11 +186,10 @@ function studentChart() {
             this.stats.perempuanTotal = data.filter(d => d.jenis_kelamin === 'P').reduce((sum, d) => sum + d.total, 0);
             this.stats.grandTotal = this.stats.lakiTotal + this.stats.perempuanTotal;
             
-            if (this.stats.grandTotal > 0) {
-                const lakiPercent = Math.round((this.stats.lakiTotal / this.stats.grandTotal) * 100);
-                const perempuanPercent = 100 - lakiPercent;
-                this.stats.ratio = `${lakiPercent}:${perempuanPercent}`;
-            }
+            // Get unique school count
+            const uniqueSchools = [...new Set(data.map(d => d.school_id))];
+            this.stats.schoolCount = uniqueSchools.length;
+            this.schoolCount = uniqueSchools.length;
         },
         
         getChartData() {
@@ -199,25 +198,23 @@ function studentChart() {
                 filtered = filtered.filter(d => d.jenjang === this.activeJenjang);
             }
             
-            // Get unique months sorted
-            const months = [...new Set(filtered.map(d => d.month))].sort();
-            
-            // Prepare data arrays
-            const lakiData = months.map(month => {
-                const items = filtered.filter(d => d.month === month && d.jenis_kelamin === 'L');
-                return items.reduce((sum, d) => sum + d.total, 0);
+            // Get unique schools
+            const schoolMap = new Map();
+            filtered.forEach(d => {
+                if (!schoolMap.has(d.school_id)) {
+                    schoolMap.set(d.school_id, { nama: d.nama_sekolah, L: 0, P: 0 });
+                }
+                schoolMap.get(d.school_id)[d.jenis_kelamin] = d.total;
             });
             
-            const perempuanData = months.map(month => {
-                const items = filtered.filter(d => d.month === month && d.jenis_kelamin === 'P');
-                return items.reduce((sum, d) => sum + d.total, 0);
-            });
+            // Sort by total students descending
+            const schools = Array.from(schoolMap.entries())
+                .map(([id, data]) => ({ id, ...data, total: data.L + data.P }))
+                .sort((a, b) => b.total - a.total);
             
-            // Format month labels
-            const labels = months.map(m => {
-                const date = new Date(m + '-01');
-                return date.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
-            });
+            const labels = schools.map(s => s.nama.length > 25 ? s.nama.substring(0, 25) + '...' : s.nama);
+            const lakiData = schools.map(s => s.L);
+            const perempuanData = schools.map(s => s.P);
             
             return { labels, lakiData, perempuanData };
         },
@@ -230,42 +227,34 @@ function studentChart() {
                 this.chart.destroy();
             }
             
+            // Use horizontal bar chart for better readability with many schools
+            const isHorizontal = data.labels.length > 10;
+            
             this.chart = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: data.labels,
                     datasets: [
                         {
                             label: 'Laki-laki',
                             data: data.lakiData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
                             borderColor: '#3B82F6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            pointBackgroundColor: '#3B82F6',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
+                            borderWidth: 1,
+                            borderRadius: 6,
                         },
                         {
                             label: 'Perempuan',
                             data: data.perempuanData,
+                            backgroundColor: 'rgba(236, 72, 153, 0.8)',
                             borderColor: '#EC4899',
-                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            pointBackgroundColor: '#EC4899',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
+                            borderWidth: 1,
+                            borderRadius: 6,
                         }
                     ]
                 },
                 options: {
+                    indexAxis: isHorizontal ? 'y' : 'x',
                     responsive: true,
                     maintainAspectRatio: false,
                     interaction: {
@@ -285,30 +274,37 @@ function studentChart() {
                             displayColors: true,
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' siswa';
+                                    return context.dataset.label + ': ' + context.parsed[isHorizontal ? 'x' : 'y'].toLocaleString() + ' siswa';
                                 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            grid: { display: false },
+                            stacked: false,
+                            grid: { display: !isHorizontal },
                             ticks: { 
-                                font: { size: 11, weight: 'bold' },
-                                color: '#94A3B8'
+                                font: { size: 10, weight: 'bold' },
+                                color: '#94A3B8',
+                                maxRotation: isHorizontal ? 0 : 45,
+                                callback: function(value) {
+                                    return isHorizontal ? value.toLocaleString() : this.getLabelForValue(value);
+                                }
                             }
                         },
                         y: {
+                            stacked: false,
                             beginAtZero: true,
                             grid: { 
                                 color: 'rgba(148, 163, 184, 0.1)',
-                                drawBorder: false
+                                drawBorder: false,
+                                display: isHorizontal
                             },
                             ticks: { 
-                                font: { size: 11, weight: 'bold' },
+                                font: { size: 10, weight: 'bold' },
                                 color: '#94A3B8',
                                 callback: function(value) {
-                                    return value.toLocaleString();
+                                    return isHorizontal ? this.getLabelForValue(value) : value.toLocaleString();
                                 }
                             }
                         }

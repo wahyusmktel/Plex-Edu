@@ -155,18 +155,18 @@ class DinasController extends Controller
             ->orderBy('month')
             ->get();
         
-        // Monthly student data by gender for line chart (last 12 months)
-        $monthlyStudentData = Siswa::withoutGlobalScopes()
+        // Student data per school by gender for line chart
+        $studentPerSchool = Siswa::withoutGlobalScopes()
             ->join('schools', 'siswas.school_id', '=', 'schools.id')
             ->select(
-                \DB::raw('DATE_FORMAT(siswas.created_at, "%Y-%m") as month'),
-                'siswas.jenis_kelamin',
+                'schools.id as school_id',
+                'schools.nama_sekolah',
                 'schools.jenjang',
+                'siswas.jenis_kelamin',
                 \DB::raw('count(*) as total')
             )
-            ->whereRaw('siswas.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)')
-            ->groupBy('month', 'jenis_kelamin', 'jenjang')
-            ->orderBy('month')
+            ->groupBy('schools.id', 'schools.nama_sekolah', 'schools.jenjang', 'siswas.jenis_kelamin')
+            ->orderBy('schools.nama_sekolah')
             ->get();
         
         // Get jenjang list for filter
@@ -183,7 +183,7 @@ class DinasController extends Controller
             'totalSiswa', 
             'genderStats', 
             'schoolGrowth', 
-            'monthlyStudentData',
+            'studentPerSchool',
             'jenjangList',
             'siswaPerJenjang'
         ));
