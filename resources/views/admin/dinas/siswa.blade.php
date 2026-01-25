@@ -291,7 +291,20 @@
                                     <div class="flex items-center gap-2">
                                         <p class="text-[10px] font-bold text-slate-400" x-text="'NPSN: ' + fileObj.npsn"></p>
                                         <span class="w-1 h-1 rounded-full bg-slate-200"></span>
-                                        <p class="text-[10px] font-bold text-[#d90d8b]" x-text="fileObj.schoolName"></p>
+                                        <template x-if="fileObj.matchingSchools.length <= 1">
+                                            <p class="text-[10px] font-bold text-[#d90d8b]" x-text="fileObj.schoolName"></p>
+                                        </template>
+                                        <template x-if="fileObj.matchingSchools.length > 1">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-black uppercase rounded border border-red-200">Konflik NPSN Sekolah</span>
+                                                <p class="text-[10px] font-bold text-slate-400 italic">Milik beberapa sekolah</p>
+                                            </div>
+                                        </template>
+                                        <template x-if="bulkFiles.filter(f => f.npsn === fileObj.npsn && f.npsn !== 'Unknown').length > 1">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="px-1.5 py-0.5 bg-amber-100 text-amber-600 text-[8px] font-black uppercase rounded border border-amber-200">NPSN Duplikat (File)</span>
+                                            </div>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
@@ -316,10 +329,53 @@
                         <div class="h-full bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] transition-all duration-300" :style="'width: ' + importProgress + '%'"></div>
                     </div>
                 </div>
+                <div x-show="hasNpsnConflict" class="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-4">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-red-500 shadow-sm shrink-0">
+                        <i class="material-icons text-xl">error_outline</i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-red-900 uppercase tracking-widest leading-none mb-1">Terdeteksi Konflik Data</h4>
+                        <p class="text-[11px] text-red-700 font-medium">Terdapat masalah pada NPSN file yang Anda pilih. Mohon periksa kembali:</p>
+                        
+                        <!-- File Duplicate Error -->
+                        <template x-if="duplicateNpsnsInFiles.length > 0">
+                            <div class="mt-2 space-y-1">
+                                <p class="text-[10px] font-black text-red-800 uppercase tracking-tighter">File Duplikat untuk NPSN sama:</p>
+                                <template x-for="npsn in duplicateNpsnsInFiles" :key="npsn">
+                                    <div class="text-[9px] font-bold text-red-600 bg-white/50 px-2 py-1 rounded flex items-center gap-2">
+                                        <span x-text="'NPSN ' + npsn"></span> 
+                                        <span>&rarr;</span>
+                                        <span class="italic text-[8px]" x-text="bulkFiles.filter(f => f.npsn === npsn).map(f => f.name).join(', ')"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- DB Conflict Error -->
+                        <template x-if="bulkFiles.some(f => f.matchingSchools.length > 1)">
+                            <div class="mt-3 space-y-1">
+                                <p class="text-[10px] font-black text-red-800 uppercase tracking-tighter">NPSN Terdaftar di Banyak Sekolah:</p>
+                                <template x-for="file in bulkFiles.filter(f => f.matchingSchools.length > 1)" :key="file.name">
+                                    <div class="text-[9px] font-bold text-red-500 bg-white/50 px-2 py-1 rounded">
+                                        <span x-text="file.npsn"></span>: 
+                                        <template x-for="(s, i) in file.matchingSchools" :key="s.id">
+                                            <span x-text="s.nama_sekolah + (i < file.matchingSchools.length - 1 ? ', ' : '')"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
 
                 <div class="flex gap-3 mt-8" x-show="!importing">
                     <button type="button" @click="openBulkImportModal = false; bulkFiles = []" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
-                    <button type="button" @click="bulkImport()" class="flex-1 py-4 bg-slate-800 text-white rounded-2xl text-sm font-bold hover:bg-slate-900 transition-all shadow-lg" x-text="bulkFiles.length > 0 ? 'Mulai Import ' + bulkFiles.length + ' File' : 'Mulai Bulk Import'"></button>
+                    <button type="button" 
+                            @click="bulkImport()" 
+                            :disabled="hasNpsnConflict"
+                            class="flex-1 py-4 rounded-2xl text-sm font-bold transition-all shadow-lg"
+                            :class="hasNpsnConflict ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-800 text-white hover:bg-slate-900'"
+                            x-text="bulkFiles.length > 0 ? 'Mulai Import ' + bulkFiles.length + ' File' : 'Mulai Bulk Import'"></button>
                 </div>
             </div>
 
@@ -490,6 +546,22 @@
             importErrors: [],
             showErrorTable: false,
 
+            get hasNpsnConflict() {
+                // Check if any NPSN exists in multiple schools (database conflict)
+                const dbConflict = this.bulkFiles.some(file => file.matchingSchools.length > 1);
+                
+                // Check if any NPSN is repeated across selected files (file conflict)
+                const npsns = this.bulkFiles.map(f => f.npsn);
+                const fileConflict = npsns.some((npsn, index) => npsn !== 'Unknown' && npsns.indexOf(npsn) !== index);
+                
+                return dbConflict || fileConflict;
+            },
+
+            get duplicateNpsnsInFiles() {
+                const npsns = this.bulkFiles.map(f => f.npsn);
+                return [...new Set(npsns.filter((npsn, index) => npsn !== 'Unknown' && npsns.indexOf(npsn) !== index))];
+            },
+
             handleFileSelect(e) {
                 if (e.target.files.length > 0) {
                     this.fileName = e.target.files[0].name;
@@ -606,14 +678,15 @@
                     const npsnMatch = filename.match(/^\d{8,12}/);
                     const npsn = npsnMatch ? npsnMatch[0] : 'Unknown';
                     
-                    // Lookup school name from the schools list in Alpine data
-                    const school = this.schools.find(s => s.npsn === npsn);
+                    // Find all schools that share this NPSN
+                    const matchingSchools = this.schools.filter(s => s.npsn === npsn);
                     
                     return {
                         file: file,
                         name: filename,
                         npsn: npsn,
-                        schoolName: school ? school.nama_sekolah : 'Sekolah Tidak Ditemukan',
+                        schoolName: matchingSchools.length > 0 ? matchingSchools[0].nama_sekolah : 'Sekolah Tidak Ditemukan',
+                        matchingSchools: matchingSchools, // Store all matches for conflict detection
                         status: 'pending', // pending, processing, success, failed
                         message: '',
                         errors: []
