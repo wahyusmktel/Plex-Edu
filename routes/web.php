@@ -56,8 +56,11 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/destroy/{id}', [FungsionarisController::class, 'destroy'])->name('destroy');
         Route::post('/import', [FungsionarisController::class, 'import'])->name('import');
         Route::get('/download-template', [FungsionarisController::class, 'downloadTemplate'])->name('download-template');
+        Route::get('/pending-accounts', [FungsionarisController::class, 'getPendingAccounts'])->name('pending-accounts');
+        Route::post('/generate-single', [FungsionarisController::class, 'generateSingleAccount'])->name('generate-single');
         Route::post('/generate-accounts', [FungsionarisController::class, 'generateAccounts'])->name('generate-accounts');
         Route::post('/{id}/reset-password', [FungsionarisController::class, 'resetPassword'])->name('reset-password');
+        Route::get('/export', [FungsionarisController::class, 'export'])->name('export');
     });
 
     // Siswa Routes

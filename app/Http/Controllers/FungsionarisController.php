@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\FungsionarisImport;
 use App\Exports\FungsionarisTemplateExport;
+use App\Exports\FungsionarisExport;
 
 class FungsionarisController extends Controller
 {
@@ -192,6 +193,59 @@ class FungsionarisController extends Controller
         ]);
     }
 
+    public function getPendingAccounts()
+    {
+        $schoolId = auth()->user()->school_id;
+        $pending = Fungsionaris::where('school_id', $schoolId)
+            ->whereNull('user_id')
+            ->select('id', 'nama')
+            ->get();
+            
+        return response()->json($pending);
+    }
+
+    public function generateSingleAccount(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:fungsionaris,id'
+        ]);
+
+        $fungsionaris = Fungsionaris::findOrFail($request->id);
+        
+        if ($fungsionaris->user_id) {
+            return response()->json(['success' => false, 'message' => 'Akun sudah ada.'], 400);
+        }
+
+        try {
+            $schoolId = auth()->user()->school_id;
+            
+            // Generate random number for email
+            $randomNumber = mt_rand(100000, 999999);
+            $email = $randomNumber . '@guru.literasia.org';
+            
+            // Make sure email is unique
+            while (User::where('email', $email)->exists()) {
+                $randomNumber = mt_rand(100000, 999999);
+                $email = $randomNumber . '@guru.literasia.org';
+            }
+
+            $user = User::create([
+                'school_id' => $schoolId,
+                'name' => $fungsionaris->nama,
+                'username' => (string)$randomNumber,
+                'email' => $email,
+                'password' => Hash::make('literasia'),
+                'role' => $fungsionaris->jabatan,
+            ]);
+
+            $fungsionaris->update(['user_id' => $user->id]);
+            
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function resetPassword($id)
     {
         $fungsionaris = Fungsionaris::findOrFail($id);
@@ -224,6 +278,15 @@ class FungsionarisController extends Controller
     {
         $fungsionaris = Fungsionaris::with('user')->findOrFail($id);
         return response()->json($fungsionaris);
+    }
+
+    public function export(Request $request)
+    {
+        $jabatan = $request->query('jabatan');
+        $filename = $jabatan ? "data_{$jabatan}_" : "data_fungsionaris_";
+        $filename .= date('Y-m-d') . '.xlsx';
+        
+        return Excel::download(new FungsionarisExport($jabatan), $filename);
     }
 }
 

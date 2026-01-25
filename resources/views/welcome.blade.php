@@ -289,7 +289,7 @@
                             <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
                                 <i class="material-icons text-blue-600 text-lg">offline_bolt</i>
                             </div>
-                            <span>Mode Offline</span>
+                            <span>Akses Dimana Saja</span>
                         </div>
                         <div class="flex items-center gap-3 text-sm font-bold text-slate-600">
                             <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">

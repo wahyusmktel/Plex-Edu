@@ -26,6 +26,10 @@
             <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <i class="material-icons text-[20px]">add_circle</i> Tambah Fungsionaris
             </button>
+            <a :href="'{{ route('fungsionaris.export') }}?jabatan=' + activeTab" class="flex items-center justify-center gap-2.5 px-6 py-3.5 bg-emerald-600 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <i class="material-icons text-[20px]">file_download</i>
+                <span>Export Excel</span>
+            </a>
         </div>
     </div>
 
@@ -56,11 +60,11 @@
                 <table class="w-full text-left border-separate border-spacing-y-3">
                     <thead>
                         <tr class="text-slate-400 text-[11px] uppercase font-black tracking-widest">
-                            <th class="px-6 py-3">Nama Lengkap</th>
-                            <th class="px-6 py-3">NIP / NIK</th>
+                            <th class="px-6 py-3">Fungsionaris</th>
                             <th class="px-6 py-3">Posisi</th>
+                            <th class="px-6 py-3">Akun Login</th>
+                            <th class="px-6 py-3 text-center">Password</th>
                             <th class="px-6 py-3 text-center">Status</th>
-                            <th class="px-6 py-3 text-center">Akun</th>
                             <th class="px-6 py-3 text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -68,57 +72,86 @@
                         @forelse($guru as $item)
                         <tr class="group hover:scale-[1.005] transition-transform duration-200">
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-l border-transparent group-hover:border-slate-100 first:rounded-l-2xl">
-                                <div class="flex items-center gap-3">
-                                    <img class="w-9 h-9 rounded-xl border-2 border-white shadow-sm" src="https://ui-avatars.com/api/?name={{ urlencode($item->nama) }}&background=fdf2f8&color=d90d8b" alt="">
+                                <div class="flex items-center gap-4">
+                                    <div class="relative">
+                                        <img class="w-12 h-12 rounded-2xl border-2 border-white shadow-md" src="https://ui-avatars.com/api/?name={{ urlencode($item->nama) }}&background=fdf2f8&color=d90d8b" alt="">
+                                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-pink-500 rounded-full border-2 border-white flex items-center justify-center">
+                                            <i class="material-icons text-white text-[10px]">school</i>
+                                        </div>
+                                    </div>
                                     <div>
-                                        <p class="font-bold text-slate-800 leading-none">{{ $item->nama }}</p>
-                                        <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase">{{ $item->user->username ?? '-' }}</p>
+                                        <p class="font-black text-slate-800 text-base leading-tight">{{ $item->nama }}</p>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">NIP: {{ $item->nip }}</span>
+                                            <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">NIK: {{ $item->nik }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100">
-                                <p class="font-bold text-slate-700 leading-none">{{ $item->nip }}</p>
-                                <p class="text-[10px] font-medium text-slate-400 mt-1">{{ $item->nik }}</p>
+                                <div class="flex flex-col gap-1">
+                                    <span class="px-3 py-1 bg-white border border-slate-200 rounded-xl text-[11px] font-black text-slate-600 truncate inline-block max-w-[150px]">
+                                        {{ $item->posisi }}
+                                    </span>
+                                    <span class="text-[10px] font-bold text-pink-600 uppercase ml-1 tracking-widest">Guru</span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100">
-                                <span class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 truncate inline-block max-w-[150px]">
-                                    {{ $item->posisi }}
-                                </span>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <i class="material-icons text-slate-400 text-sm">alternate_email</i>
+                                        <span class="font-bold text-slate-700 leading-none">{{ $item->user->email ?? '-' }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-1.5">
+                                        <i class="material-icons text-slate-400 text-sm">person_outline</i>
+                                        <span class="text-[11px] font-black text-pink-500 uppercase tracking-widest leading-none">{{ $item->user->username ?? '-' }}</span>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center">
-                                @if($item->status === 'aktif')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase tracking-widest border border-emerald-200">
-                                        Active
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 uppercase tracking-widest border border-slate-200">
-                                        Inactive
-                                    </span>
-                                @endif
+                                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-[1.25rem] shadow-sm">
+                                    <code class="text-xs font-black text-[#d90d8b] tracking-widest">literasia</code>
+                                    <button onclick="navigator.clipboard.writeText('literasia'); Swal.fire({title: 'Copied!', text: 'Password copied to clipboard', icon: 'success', timer: 1000, showConfirmButton: false})" class="text-slate-300 hover:text-pink-500 transition-colors">
+                                        <i class="material-icons text-sm">content_copy</i>
+                                    </button>
+                                </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center">
-                                @if($item->user_id)
-                                    <span class="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-black uppercase">
-                                        <i class="material-icons text-sm">check_circle</i> Ada
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 text-amber-500 text-[10px] font-black uppercase">
-                                        <i class="material-icons text-sm">warning</i> Belum
-                                    </span>
-                                @endif
+                                <div class="flex flex-col items-center gap-2">
+                                    @if($item->status === 'aktif')
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 uppercase tracking-widest border border-emerald-100">
+                                            Active
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-400 uppercase tracking-widest border border-slate-200">
+                                            Inactive
+                                        </span>
+                                    @endif
+                                    
+                                    @if($item->user_id)
+                                        <span class="text-[9px] font-black text-emerald-500 uppercase flex items-center gap-0.5">
+                                            <i class="material-icons text-[10px]">verified</i> Akun Ready
+                                        </span>
+                                    @else
+                                        <span class="text-[9px] font-black text-amber-500 uppercase flex items-center gap-0.5">
+                                            <i class="material-icons text-[10px]">error_outline</i> Akun Belum
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
                                 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     @if($item->user_id)
-                                    <button @click="resetPassword('{{ $item->id }}', '{{ $item->nama }}')" class="p-2 text-amber-500 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors cursor-pointer" title="Reset Password">
-                                        <i class="material-icons text-lg">lock_reset</i>
+                                    <button @click="resetPassword('{{ $item->id }}', '{{ $item->nama }}')" class="w-10 h-10 flex items-center justify-center text-amber-500 bg-amber-50 hover:bg-amber-100 rounded-xl transition-all cursor-pointer group/btn" title="Reset Password">
+                                        <i class="material-icons text-xl group-hover/btn:rotate-180 transition-transform duration-500">lock_reset</i>
                                     </button>
                                     @endif
-                                    <button @click="editData('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
-                                        <i class="material-icons text-lg">edit</i>
+                                    <button @click="editData('{{ $item->id }}')" class="w-10 h-10 flex items-center justify-center text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all cursor-pointer">
+                                        <i class="material-icons text-xl">edit</i>
                                     </button>
-                                    <button @click="deleteData('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer">
-                                        <i class="material-icons text-lg">delete</i>
+                                    <button @click="deleteData('{{ $item->id }}')" class="w-10 h-10 flex items-center justify-center text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all cursor-pointer">
+                                        <i class="material-icons text-xl">delete</i>
                                     </button>
                                 </div>
                             </td>
@@ -127,10 +160,10 @@
                         <tr>
                             <td colspan="6" class="py-20 text-center">
                                 <div class="flex flex-col items-center">
-                                    <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
-                                        <i class="material-icons text-4xl">inventory_2</i>
+                                    <div class="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-300 mb-4 shadow-inner">
+                                        <i class="material-icons text-5xl">inventory_2</i>
                                     </div>
-                                    <p class="text-sm font-bold text-slate-400">Belum ada data guru</p>
+                                    <p class="text-sm font-black text-slate-400 uppercase tracking-widest">Belum ada data guru</p>
                                 </div>
                             </td>
                         </tr>
@@ -144,11 +177,11 @@
                 <table class="w-full text-left border-separate border-spacing-y-3">
                     <thead>
                         <tr class="text-slate-400 text-[11px] uppercase font-black tracking-widest">
-                            <th class="px-6 py-3">Nama Lengkap</th>
-                            <th class="px-6 py-3">NIP / NIK</th>
+                            <th class="px-6 py-3">Fungsionaris</th>
                             <th class="px-6 py-3">Posisi</th>
+                            <th class="px-6 py-3">Akun Login</th>
+                            <th class="px-6 py-3 text-center">Password</th>
                             <th class="px-6 py-3 text-center">Status</th>
-                            <th class="px-6 py-3 text-center">Akun</th>
                             <th class="px-6 py-3 text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -156,57 +189,86 @@
                         @forelse($pegawai as $item)
                         <tr class="group hover:scale-[1.005] transition-transform duration-200">
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-l border-transparent group-hover:border-slate-100 first:rounded-l-2xl">
-                                <div class="flex items-center gap-3">
-                                    <img class="w-9 h-9 rounded-xl border-2 border-white shadow-sm" src="https://ui-avatars.com/api/?name={{ urlencode($item->nama) }}&background=eff6ff&color=2563eb" alt="">
+                                <div class="flex items-center gap-4">
+                                    <div class="relative">
+                                        <img class="w-12 h-12 rounded-2xl border-2 border-white shadow-md" src="https://ui-avatars.com/api/?name={{ urlencode($item->nama) }}&background=eff6ff&color=2563eb" alt="">
+                                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
+                                            <i class="material-icons text-white text-[10px]">badge</i>
+                                        </div>
+                                    </div>
                                     <div>
-                                        <p class="font-bold text-slate-800 leading-none">{{ $item->nama }}</p>
-                                        <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase">{{ $item->user->username ?? '-' }}</p>
+                                        <p class="font-black text-slate-800 text-base leading-tight">{{ $item->nama }}</p>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">NIP: {{ $item->nip }}</span>
+                                            <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">NIK: {{ $item->nik }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100">
-                                <p class="font-bold text-slate-700 leading-none">{{ $item->nip }}</p>
-                                <p class="text-[10px] font-medium text-slate-400 mt-1">{{ $item->nik }}</p>
+                                <div class="flex flex-col gap-1">
+                                    <span class="px-3 py-1 bg-white border border-slate-200 rounded-xl text-[11px] font-black text-slate-600 truncate inline-block max-w-[150px]">
+                                        {{ $item->posisi }}
+                                    </span>
+                                    <span class="text-[10px] font-bold text-blue-600 uppercase ml-1 tracking-widest">Staf Pegawai</span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100">
-                                <span class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 truncate inline-block max-w-[150px]">
-                                    {{ $item->posisi }}
-                                </span>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <i class="material-icons text-slate-400 text-sm">alternate_email</i>
+                                        <span class="font-bold text-slate-700 leading-none">{{ $item->user->email ?? '-' }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-1.5">
+                                        <i class="material-icons text-slate-400 text-sm">person_outline</i>
+                                        <span class="text-[11px] font-black text-blue-500 uppercase tracking-widest leading-none">{{ $item->user->username ?? '-' }}</span>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center">
-                                @if($item->status === 'aktif')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase tracking-widest border border-emerald-200">
-                                        Active
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 uppercase tracking-widest border border-slate-200">
-                                        Inactive
-                                    </span>
-                                @endif
+                                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-[1.25rem] shadow-sm">
+                                    <code class="text-xs font-black text-blue-600 tracking-widest">literasia</code>
+                                    <button onclick="navigator.clipboard.writeText('literasia'); Swal.fire({title: 'Copied!', text: 'Password copied to clipboard', icon: 'success', timer: 1000, showConfirmButton: false})" class="text-slate-300 hover:text-blue-500 transition-colors">
+                                        <i class="material-icons text-sm">content_copy</i>
+                                    </button>
+                                </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center">
-                                @if($item->user_id)
-                                    <span class="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-black uppercase">
-                                        <i class="material-icons text-sm">check_circle</i> Ada
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 text-amber-500 text-[10px] font-black uppercase">
-                                        <i class="material-icons text-sm">warning</i> Belum
-                                    </span>
-                                @endif
+                                <div class="flex flex-col items-center gap-2">
+                                    @if($item->status === 'aktif')
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 uppercase tracking-widest border border-emerald-100">
+                                            Active
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-400 uppercase tracking-widest border border-slate-200">
+                                            Inactive
+                                        </span>
+                                    @endif
+                                    
+                                    @if($item->user_id)
+                                        <span class="text-[9px] font-black text-emerald-500 uppercase flex items-center gap-0.5">
+                                            <i class="material-icons text-[10px]">verified</i> Akun Ready
+                                        </span>
+                                    @else
+                                        <span class="text-[9px] font-black text-amber-500 uppercase flex items-center gap-0.5">
+                                            <i class="material-icons text-[10px]">error_outline</i> Akun Belum
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
                                 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     @if($item->user_id)
-                                    <button @click="resetPassword('{{ $item->id }}', '{{ $item->nama }}')" class="p-2 text-amber-500 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors cursor-pointer" title="Reset Password">
-                                        <i class="material-icons text-lg">lock_reset</i>
+                                    <button @click="resetPassword('{{ $item->id }}', '{{ $item->nama }}')" class="w-10 h-10 flex items-center justify-center text-amber-500 bg-amber-50 hover:bg-amber-100 rounded-xl transition-all cursor-pointer group/btn" title="Reset Password">
+                                        <i class="material-icons text-xl group-hover/btn:rotate-180 transition-transform duration-500">lock_reset</i>
                                     </button>
                                     @endif
-                                    <button @click="editData('{{ $item->id }}')" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
-                                        <i class="material-icons text-lg">edit</i>
+                                    <button @click="editData('{{ $item->id }}')" class="w-10 h-10 flex items-center justify-center text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all cursor-pointer">
+                                        <i class="material-icons text-xl">edit</i>
                                     </button>
-                                    <button @click="deleteData('{{ $item->id }}')" class="p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer">
-                                        <i class="material-icons text-lg">delete</i>
+                                    <button @click="deleteData('{{ $item->id }}')" class="w-10 h-10 flex items-center justify-center text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all cursor-pointer">
+                                        <i class="material-icons text-xl">delete</i>
                                     </button>
                                 </div>
                             </td>
@@ -215,10 +277,10 @@
                         <tr>
                             <td colspan="6" class="py-20 text-center">
                                 <div class="flex flex-col items-center">
-                                    <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
-                                        <i class="material-icons text-4xl">inventory_2</i>
+                                    <div class="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-300 mb-4 shadow-inner">
+                                        <i class="material-icons text-5xl">inventory_2</i>
                                     </div>
-                                    <p class="text-sm font-bold text-slate-400">Belum ada data pegawai</p>
+                                    <p class="text-sm font-black text-slate-400 uppercase tracking-widest">Belum ada data pegawai</p>
                                 </div>
                             </td>
                         </tr>
@@ -406,11 +468,19 @@
                           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
                 </svg>
                 <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="text-2xl font-black text-emerald-600" x-text="generateProgress + '%'"></span>
+                    <span class="text-2xl font-black text-emerald-600" x-text="Math.round(generateProgress) + '%'"></span>
                 </div>
             </div>
             <h3 class="text-xl font-black text-slate-800 mb-2">Generate Akun</h3>
-            <p class="text-slate-500 font-medium">Membuat akun untuk guru/pegawai yang belum memiliki akun...</p>
+            <p class="text-slate-500 font-medium mb-4">Membuat akun untuk guru/pegawai secara massal...</p>
+            
+            <div class="bg-slate-50 rounded-2xl p-4 flex items-center justify-center gap-3">
+                <div class="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin"></div>
+                <div class="text-left">
+                    <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Memproses</p>
+                    <p class="text-sm font-bold text-slate-700" x-text="currentGenerateName || 'Inisialisasi...'"></p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -432,6 +502,7 @@
             importProgress: 0,
             generating: false,
             generateProgress: 0,
+            currentGenerateName: '',
             formData: {
                 id: '',
                 nama: '',
@@ -579,42 +650,57 @@
                     confirmButtonColor: '#10b981',
                     confirmButtonText: 'Ya, Generate',
                     cancelButtonText: 'Batal'
-                }).then((result) => {
+                }).then(async (result) => {
                     if (result.isConfirmed) {
                         this.generating = true;
                         this.generateProgress = 0;
+                        this.currentGenerateName = 'Mengambil data...';
 
-                        const progressInterval = setInterval(() => {
-                            if (this.generateProgress < 90) {
-                                this.generateProgress += Math.random() * 10;
-                            }
-                        }, 150);
-
-                        $.ajax({
-                            url: '{{ route("fungsionaris.generate-accounts") }}',
-                            method: 'POST',
-                            data: { _token: '{{ csrf_token() }}' },
-                            success: (res) => {
-                                clearInterval(progressInterval);
-                                this.generateProgress = 100;
-                                
-                                setTimeout(() => {
-                                    this.generating = false;
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Selesai!',
-                                        text: res.message,
-                                        timer: 3000,
-                                        showConfirmButton: true
-                                    }).then(() => location.reload());
-                                }, 500);
-                            },
-                            error: () => {
-                                clearInterval(progressInterval);
+                        try {
+                            // Fetch pending fungsionaris
+                            const response = await fetch('{{ route("fungsionaris.pending-accounts") }}');
+                            const pendingList = await response.json();
+                            
+                            if (pendingList.length === 0) {
                                 this.generating = false;
-                                Swal.fire('Gagal', 'Terjadi kesalahan saat generate akun.', 'error');
+                                Swal.fire('Informasi', 'Tidak ada data fungsionaris yang perlu di-generate akunya.', 'info');
+                                return;
                             }
-                        });
+
+                            let generatedCount = 0;
+                            const total = pendingList.length;
+
+                            for (const s of pendingList) {
+                                this.currentGenerateName = s.nama;
+                                
+                                await $.ajax({
+                                    url: '{{ route("fungsionaris.generate-single") }}',
+                                    method: 'POST',
+                                    data: { 
+                                        _token: '{{ csrf_token() }}',
+                                        id: s.id
+                                    }
+                                });
+
+                                generatedCount++;
+                                this.generateProgress = (generatedCount / total) * 100;
+                            }
+
+                            setTimeout(() => {
+                                this.generating = false;
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Selesai!',
+                                    text: `${generatedCount} akun berhasil di-generate.`,
+                                    timer: 3000,
+                                    showConfirmButton: true
+                                }).then(() => location.reload());
+                            }, 500);
+
+                        } catch (error) {
+                            this.generating = false;
+                            Swal.fire('Gagal', 'Terjadi kesalahan saat generate akun sistem.', 'error');
+                        }
                     }
                 });
             },
