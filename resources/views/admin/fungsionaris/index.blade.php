@@ -26,9 +26,9 @@
             <button @click="openCreateModal()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl text-sm font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <i class="material-icons text-[20px]">add_circle</i> Tambah Fungsionaris
             </button>
-            <a :href="'{{ route('fungsionaris.export') }}?jabatan=' + activeTab" class="flex items-center justify-center gap-2.5 px-6 py-3.5 bg-emerald-600 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
+            <a href="{{ route('fungsionaris.export') }}" class="flex items-center justify-center gap-2.5 px-6 py-3.5 bg-emerald-600 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <i class="material-icons text-[20px]">file_download</i>
-                <span>Export Excel</span>
+                <span>Export Semua</span>
             </a>
         </div>
     </div>
