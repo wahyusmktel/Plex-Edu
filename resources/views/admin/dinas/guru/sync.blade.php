@@ -447,6 +447,9 @@
                 }
                 
                 this.bulkSyncing = false;
+                
+                // Explicitly show results after loop completes
+                this.showBulkResults();
             },
             
             showBulkResults() {

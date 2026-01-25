@@ -175,34 +175,57 @@ class GuruDinasController extends Controller
         $skipped = 0;
 
         foreach ($masterData as $data) {
-            // Check if already exists in fungsionaris for THIS school
-            $exists = \App\Models\Fungsionaris::where('school_id', $school->id)
-                ->where(function($q) use ($data) {
-                    if ($data->nik) $q->orWhere('nik', $data->nik);
-                    if ($data->nip) $q->orWhere('nip', $data->nip);
-                })->exists();
+            try {
+                // Build existence check query - only check if we have NIK or NIP
+                $existsQuery = \App\Models\Fungsionaris::where('school_id', $school->id);
+                
+                $hasIdentifier = false;
+                if (!empty($data->nik)) {
+                    $existsQuery->where(function($q) use ($data) {
+                        $q->where('nik', $data->nik);
+                    });
+                    $hasIdentifier = true;
+                } elseif (!empty($data->nip)) {
+                    $existsQuery->where(function($q) use ($data) {
+                        $q->where('nip', $data->nip);
+                    });
+                    $hasIdentifier = true;
+                } elseif (!empty($data->nama)) {
+                    // Fallback to name check if no NIK/NIP
+                    $existsQuery->where('nama', $data->nama);
+                    $hasIdentifier = true;
+                }
+                
+                if ($hasIdentifier && $existsQuery->exists()) {
+                    $skipped++;
+                    continue;
+                }
 
-            if ($exists) {
-                $skipped++;
-                continue;
+                \App\Models\Fungsionaris::create([
+                    'school_id' => $school->id,
+                    'user_id' => null,
+                    'nama' => $data->nama,
+                    'nik' => $data->nik ?: null,
+                    'nip' => $data->nip ?: null,
+                    'jenis_kelamin' => $data->jenis_kelamin,
+                    'tempat_lahir' => $data->tempat_lahir,
+                    'tanggal_lahir' => $data->tanggal_lahir,
+                    'no_hp' => $data->no_hp,
+                    'jabatan' => str_contains(strtolower($data->jenis_ptk ?? ''), 'guru') ? 'guru' : 'pegawai',
+                    'posisi' => $data->jabatan_ptk,
+                    'status' => 'aktif',
+                    'pendidikan_terakhir' => $data->pendidikan,
+                ]);
+                $synced++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Handle duplicate entry errors gracefully
+                if ($e->errorInfo[1] == 1062) {
+                    $skipped++;
+                } else {
+                    \Log::error("Bulk sync error for {$data->nama}: " . $e->getMessage());
+                    $skipped++;
+                }
             }
-
-            \App\Models\Fungsionaris::create([
-                'school_id' => $school->id,
-                'user_id' => null,
-                'nama' => $data->nama,
-                'nik' => $data->nik,
-                'nip' => $data->nip,
-                'jenis_kelamin' => $data->jenis_kelamin,
-                'tempat_lahir' => $data->tempat_lahir,
-                'tanggal_lahir' => $data->tanggal_lahir,
-                'no_hp' => $data->no_hp,
-                'jabatan' => str_contains(strtolower($data->jenis_ptk), 'guru') ? 'guru' : 'pegawai',
-                'posisi' => $data->jabatan_ptk,
-                'status' => 'aktif',
-                'pendidikan_terakhir' => $data->pendidikan,
-            ]);
-            $synced++;
         }
 
         return response()->json([
