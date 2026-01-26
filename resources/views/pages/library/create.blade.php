@@ -175,42 +175,74 @@
                         }
                     });
 
-                    const uploadUrl = signedResponse.url;
-                    const filePath = signedResponse.path;
+                    // Check if signed URL is supported by the storage driver
+                    if (signedResponse.supported) {
+                        const uploadUrl = signedResponse.url;
+                        const filePath = signedResponse.path;
 
-                    // 2. Direct Upload to Cloud Storage using XMLHttpRequest (to track progress)
-                    await new Promise((resolve, reject) => {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('PUT', uploadUrl, true);
-                        xhr.setRequestHeader('Content-Type', digitalFile.type);
-                        
-                        xhr.upload.onprogress = (e) => {
-                            if (e.lengthComputable) {
-                                this.uploadProgress = (e.loaded / e.total) * 100;
-                            }
-                        };
-                        
-                        xhr.onload = () => {
-                            if (xhr.status === 200 || xhr.status === 201) resolve();
-                            else reject(new Error('Gagal mengunggah file ke cloud storage.'));
-                        };
-                        
-                        xhr.onerror = () => reject(new Error('Kesalahan jaringan saat mengunggah ke cloud.'));
-                        xhr.send(digitalFile);
-                    });
+                        // 2. Direct Upload to Cloud Storage using XMLHttpRequest (to track progress)
+                        await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('PUT', uploadUrl, true);
+                            xhr.setRequestHeader('Content-Type', digitalFile.type);
+                            
+                            xhr.upload.onprogress = (e) => {
+                                if (e.lengthComputable) {
+                                    this.uploadProgress = (e.loaded / e.total) * 100;
+                                }
+                            };
+                            
+                            xhr.onload = () => {
+                                if (xhr.status === 200 || xhr.status === 201) resolve();
+                                else reject(new Error('Gagal mengunggah file ke cloud storage.'));
+                            };
+                            
+                            xhr.onerror = () => reject(new Error('Kesalahan jaringan saat mengunggah ke cloud.'));
+                            xhr.send(digitalFile);
+                        });
 
-                    // 3. Complete the process by saving metadata to Laravel
-                    const formData = new FormData(form);
-                    formData.append('file_path', filePath);
-                    formData.delete('file'); // Don't send the heavy file to Laravel
+                        // 3. Complete the process by saving metadata to Laravel
+                        const formData = new FormData(form);
+                        formData.append('file_path', filePath);
+                        formData.delete('file'); // Don't send the heavy file to Laravel
 
-                    await $.ajax({
-                        url: form.action,
-                        method: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false
-                    });
+                        await $.ajax({
+                            url: form.action,
+                            method: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false
+                        });
+                    } else {
+                        // FALLBACK: Traditional multipart upload to Laravel
+                        const formData = new FormData(form);
+                        
+                        await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', form.action, true);
+                            
+                            xhr.upload.onprogress = (e) => {
+                                if (e.lengthComputable) {
+                                    this.uploadProgress = (e.loaded / e.total) * 100;
+                                }
+                            };
+                            
+                            xhr.onload = () => {
+                                if (xhr.status === 200 || xhr.status === 302) resolve();
+                                else {
+                                    try {
+                                        const err = JSON.parse(xhr.responseText);
+                                        reject(new Error(err.message || 'Gagal menyimpan data ke server.'));
+                                    } catch(e) {
+                                        reject(new Error('Gagal menyimpan data ke server.'));
+                                    }
+                                }
+                            };
+                            
+                            xhr.onerror = () => reject(new Error('Kesalahan jaringan saat mengunggah.'));
+                            xhr.send(formData);
+                        });
+                    }
 
                     this.uploading = false;
                     Swal.fire({

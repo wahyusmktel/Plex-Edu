@@ -70,15 +70,23 @@ class LibraryController extends Controller
             'category' => 'required|in:book,audio,video',
         ]);
 
+        $diskName = config('filesystems.default');
+        
+        // Local/Public disks do not support temporaryUploadUrl
+        if ($diskName === 'local' || $diskName === 'public') {
+            return response()->json([
+                'supported' => false,
+                'message' => 'Local storage tidak mendukung Signed URL. Menggunakan upload standar.'
+            ]);
+        }
+
         $extension = pathinfo($request->file_name, PATHINFO_EXTENSION);
         $fileName = Str::uuid() . '.' . $extension;
         $path = 'library/' . $request->category . '/' . $fileName;
 
-        $diskName = config('filesystems.default') === 's3' ? 's3' : 'public';
         $disk = Storage::disk($diskName);
 
         try {
-            // Generates a Signed URL for PUT request
             $url = $disk->temporaryUploadUrl(
                 $path, now()->addMinutes(30), [
                     'ContentType' => $request->file_type
@@ -86,11 +94,15 @@ class LibraryController extends Controller
             );
 
             return response()->json([
+                'supported' => true,
                 'url' => $url,
                 'path' => $path
             ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Driver storage tidak mendukung Signed URL: ' . $e->getMessage()], 500);
+            return response()->json([
+                'supported' => false,
+                'message' => 'Driver storage ini tidak mendukung Signed URL: ' . $e->getMessage()
+            ]);
         }
     }
 
