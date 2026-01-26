@@ -322,6 +322,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/schools/reset-all', [App\Http\Controllers\Admin\DinasController::class, 'resetAllSchools'])->name('schools.reset-all');
         Route::get('/schools/download-template', [App\Http\Controllers\Admin\DinasController::class, 'downloadSchoolTemplate'])->name('schools.download-template');
         Route::post('/schools/generate-accounts', [App\Http\Controllers\Admin\DinasController::class, 'generateSchoolAccounts'])->name('schools.generate-accounts');
+        Route::get('/schools/generate-accounts/progress/{tracking_id}', [App\Http\Controllers\Admin\DinasController::class, 'getSchoolAccountsProgress'])->name('schools.generate-accounts.progress');
         Route::post('/schools/{school}/reset-password', [App\Http\Controllers\Admin\DinasController::class, 'resetSchoolPassword'])->name('schools.reset-password');
         Route::get('/certificates', [App\Http\Controllers\Admin\DinasController::class, 'certificates'])->name('certificates');
         Route::get('/violations', [App\Http\Controllers\Admin\DinasController::class, 'violations'])->name('violations');

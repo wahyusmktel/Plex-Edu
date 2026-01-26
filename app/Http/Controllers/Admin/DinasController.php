@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
@@ -318,73 +319,48 @@ class DinasController extends Controller
             $q->where('role', 'admin');
         })->get();
 
-        $total = $schools->count();
-
-        return response()->stream(function () use ($schools, $total) {
-            $generated = 0;
-            $errors = [];
-            $current = 0;
-
-            foreach ($schools as $school) {
-                $current++;
-                $progress = $total > 0 ? round(($current / $total) * 100) : 0;
-
-                // Send progress update
-                echo "data: " . json_encode([
-                    'type' => 'progress',
-                    'current' => $current,
-                    'total' => $total,
-                    'progress' => $progress,
-                    'school_name' => $school->nama_sekolah,
-                    'npsn' => $school->npsn
-                ]) . "\n\n";
-                ob_flush();
-                flush();
-
-                try {
-                    $email = $school->npsn . '@admin.literasia.org';
-                    
-                    // Skip if email already exists
-                    if (User::where('email', $email)->exists()) {
-                        $errors[] = "NPSN {$school->npsn}: Email sudah terdaftar";
-                        continue;
-                    }
-
-                    User::create([
-                        'school_id' => $school->id,
-                        'name' => $school->nama_sekolah,
-                        'email' => $email,
-                        'username' => $school->npsn,
-                        'password' => Hash::make($school->npsn),
-                        'role' => 'admin',
-                    ]);
-
-                    $generated++;
-                } catch (\Exception $e) {
-                    $errors[] = "NPSN {$school->npsn}: " . $e->getMessage();
-                }
-
-                // Small delay to prevent overwhelming
-                usleep(50000); // 50ms
-            }
-
-            // Send final result
-            echo "data: " . json_encode([
-                'type' => 'complete',
+        if ($schools->isEmpty()) {
+            return response()->json([
                 'success' => true,
-                'total' => $total,
-                'generated' => $generated,
-                'errors' => $errors,
-                'message' => "{$generated} akun admin sekolah berhasil di-generate dari {$total} sekolah."
-            ]) . "\n\n";
-            ob_flush();
-            flush();
-        }, 200, [
-            'Content-Type' => 'text/event-stream',
-            'Cache-Control' => 'no-cache',
-            'Connection' => 'keep-alive',
-            'X-Accel-Buffering' => 'no'
+                'message' => 'Semua sekolah sudah memiliki akun admin.'
+            ]);
+        }
+
+        $schoolIds = $schools->pluck('id')->toArray();
+        $trackingId = uniqid('gen_');
+
+        // Initial progress state
+        Cache::put("account_gen_progress_{$trackingId}", [
+            'type' => 'progress',
+            'current' => 0,
+            'total' => count($schoolIds),
+            'progress' => 0,
+            'status' => 'queued',
+            'message' => 'Menyiapkan proses generate akun...'
+        ], now()->addHours(1));
+
+        // Dispatch Job
+        \App\Jobs\GenerateSchoolAccountsJob::dispatch($schoolIds, $trackingId);
+
+        return response()->json([
+            'success' => true,
+            'tracking_id' => $trackingId,
+            'total' => count($schoolIds)
         ]);
+    }
+
+    public function getSchoolAccountsProgress($trackingId)
+    {
+        $progress = Cache::get("account_gen_progress_{$trackingId}");
+
+        if (!$progress) {
+            return response()->json([
+                'type' => 'error',
+                'message' => 'Data progres tidak ditemukan atau sudah kadaluarsa.'
+            ], 404);
+        }
+
+        return response()->json($progress);
     }
 
     public function resetSchoolPassword(School $school)

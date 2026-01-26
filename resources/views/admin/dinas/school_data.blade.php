@@ -424,71 +424,75 @@
                         this.currentSchool = '';
                         this.currentNpsn = '';
 
-                        // Use fetch with streaming for real-time progress
-                        fetch('{{ route("dinas.schools.generate-accounts") }}', {
+                        // Use polling for real-time progress
+                        $.ajax({
+                            url: '{{ route("dinas.schools.generate-accounts") }}',
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: (res) => {
+                                if (res.tracking_id) {
+                                    this.pollProgress(res.tracking_id);
+                                } else {
+                                    this.generating = false;
+                                    Swal.fire('Selesai', res.message, 'success').then(() => location.reload());
+                                }
+                            },
+                            error: (err) => {
+                                this.generating = false;
+                                let msg = err.responseJSON?.message || 'Terjadi kesalahan saat memulai generate akun.';
+                                Swal.fire('Gagal', msg, 'error');
                             }
-                        }).then(response => {
-                            const reader = response.body.getReader();
-                            const decoder = new TextDecoder();
-
-                            const processStream = () => {
-                                reader.read().then(({ done, value }) => {
-                                    if (done) return;
-
-                                    const text = decoder.decode(value);
-                                    const lines = text.split('\n\n').filter(line => line.startsWith('data: '));
-
-                                    lines.forEach(line => {
-                                        try {
-                                            const jsonStr = line.replace('data: ', '');
-                                            const data = JSON.parse(jsonStr);
-
-                                            if (data.type === 'progress') {
-                                                this.generateProgress = data.progress;
-                                                this.generateCurrent = data.current;
-                                                this.generateTotal = data.total;
-                                                this.currentSchool = data.school_name;
-                                                this.currentNpsn = data.npsn;
-                                            } else if (data.type === 'complete') {
-                                                this.generateProgress = 100;
-                                                
-                                                setTimeout(() => {
-                                                    this.generating = false;
-                                                    
-                                                    let message = data.message;
-                                                    if (data.errors && data.errors.length > 0) {
-                                                        message += '\n\nError:\n' + data.errors.join('\n');
-                                                    }
-
-                                                    Swal.fire({
-                                                        icon: 'success',
-                                                        title: 'Selesai!',
-                                                        text: message,
-                                                        timer: 3000,
-                                                        showConfirmButton: true
-                                                    }).then(() => location.reload());
-                                                }, 500);
-                                            }
-                                        } catch (e) {
-                                            // Skip parsing errors
-                                        }
-                                    });
-
-                                    processStream();
-                                });
-                            };
-
-                            processStream();
-                        }).catch(err => {
-                            this.generating = false;
-                            Swal.fire('Gagal', 'Terjadi kesalahan saat generate akun.', 'error');
                         });
                     }
                 });
+            },
+
+            pollProgress(trackingId) {
+                const interval = setInterval(() => {
+                    $.ajax({
+                        url: `/dinas/schools/generate-accounts/progress/${trackingId}`,
+                        method: 'GET',
+                        success: (data) => {
+                            if (data.type === 'progress') {
+                                this.generateProgress = data.progress;
+                                this.generateCurrent = data.current;
+                                this.generateTotal = data.total;
+                                this.currentSchool = data.school_name;
+                                this.currentNpsn = data.npsn;
+                            } else if (data.type === 'complete') {
+                                clearInterval(interval);
+                                this.generateProgress = 100;
+                                
+                                setTimeout(() => {
+                                    this.generating = false;
+                                    
+                                    let message = data.message;
+                                    if (data.errors && data.errors.length > 0) {
+                                        message += '\n\n' + data.errors.length + ' sekolah gagal diproses.';
+                                    }
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Selesai!',
+                                        text: message,
+                                        footer: data.errors.length > 0 ? '<div class="text-xs text-red-500 max-h-40 overflow-y-auto text-left">' + data.errors.join('<br>') + '</div>' : '',
+                                        showConfirmButton: true
+                                    }).then(() => location.reload());
+                                }, 500);
+                            } else if (data.type === 'error') {
+                                clearInterval(interval);
+                                this.generating = false;
+                                Swal.fire('Gagal', data.message, 'error');
+                            }
+                        },
+                        error: (err) => {
+                            clearInterval(interval);
+                            this.generating = false;
+                            // Silently fail or show error if polling fails consistently
+                            console.error('Polling failed', err);
+                        }
+                    });
+                }, 2000); // Poll every 2 seconds
             },
 
             resetPassword(schoolId, schoolName) {
