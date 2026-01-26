@@ -8,6 +8,7 @@ use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\SiswaImport;
 use App\Exports\SiswaTemplateExport;
@@ -158,73 +159,48 @@ class SiswaController extends Controller
         // Get siswa without user account
         $siswaList = Siswa::whereNull('user_id')->get();
 
-        $total = $siswaList->count();
-
-        return response()->stream(function () use ($siswaList, $total) {
-            $generated = 0;
-            $errors = [];
-            $current = 0;
-
-            foreach ($siswaList as $siswa) {
-                $current++;
-                $progress = $total > 0 ? round(($current / $total) * 100) : 0;
-
-                // Send progress update
-                echo "data: " . json_encode([
-                    'type' => 'progress',
-                    'current' => $current,
-                    'total' => $total,
-                    'progress' => $progress,
-                    'student_name' => $siswa->nama_lengkap,
-                    'nisn' => $siswa->nisn
-                ]) . "\n\n";
-                ob_flush();
-                flush();
-
-                try {
-                    $email = $siswa->nisn . '@siswa.literasia.org';
-                    
-                    // Skip if email already exists
-                    if (User::where('email', $email)->exists()) {
-                        $errors[] = "NISN {$siswa->nisn}: Email sudah terdaftar";
-                        continue;
-                    }
-
-                    $user = User::create([
-                        'name' => $siswa->nama_lengkap,
-                        'username' => $siswa->nisn,
-                        'email' => $email,
-                        'password' => Hash::make($siswa->nisn), // Password is NISN
-                        'role' => 'siswa',
-                    ]);
-
-                    $siswa->update(['user_id' => $user->id]);
-                    $generated++;
-                } catch (\Exception $e) {
-                    $errors[] = "{$siswa->nama_lengkap}: " . $e->getMessage();
-                }
-
-                // Small delay to prevent overwhelming
-                usleep(30000); // 30ms
-            }
-
-            // Send final result
-            echo "data: " . json_encode([
-                'type' => 'complete',
+        if ($siswaList->isEmpty()) {
+            return response()->json([
                 'success' => true,
-                'total' => $total,
-                'generated' => $generated,
-                'errors' => $errors,
-                'message' => "{$generated} akun siswa berhasil di-generate dari {$total} data."
-            ]) . "\n\n";
-            ob_flush();
-            flush();
-        }, 200, [
-            'Content-Type' => 'text/event-stream',
-            'Cache-Control' => 'no-cache',
-            'Connection' => 'keep-alive',
-            'X-Accel-Buffering' => 'no'
+                'message' => 'Semua siswa sudah memiliki akun.'
+            ]);
+        }
+
+        $studentIds = $siswaList->pluck('id')->toArray();
+        $trackingId = uniqid('stu_');
+
+        // Initial progress state
+        Cache::put("account_gen_progress_{$trackingId}", [
+            'type' => 'progress',
+            'current' => 0,
+            'total' => count($studentIds),
+            'progress' => 0,
+            'status' => 'queued',
+            'message' => 'Menyiapkan proses generate akun siswa...'
+        ], now()->addHours(1));
+
+        // Dispatch Job
+        \App\Jobs\GenerateStudentAccountsJob::dispatch($studentIds, $trackingId);
+
+        return response()->json([
+            'success' => true,
+            'tracking_id' => $trackingId,
+            'total' => count($studentIds)
         ]);
+    }
+
+    public function getGenerateProgress($trackingId)
+    {
+        $progress = Cache::get("account_gen_progress_{$trackingId}");
+
+        if (!$progress) {
+            return response()->json([
+                'type' => 'error',
+                'message' => 'Data progres tidak ditemukan atau sudah kadaluarsa.'
+            ], 404);
+        }
+
+        return response()->json($progress);
     }
 
     public function resetPassword($id)

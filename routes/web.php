@@ -74,6 +74,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/import', [SiswaController::class, 'import'])->name('import');
         Route::get('/download-template', [SiswaController::class, 'downloadTemplate'])->name('download-template');
         Route::post('/generate-accounts', [SiswaController::class, 'generateAccounts'])->name('generate-accounts');
+        Route::get('/generate-accounts/progress/{tracking_id}', [SiswaController::class, 'getGenerateProgress'])->name('generate-accounts.progress');
         Route::post('/{id}/reset-password', [SiswaController::class, 'resetPassword'])->name('reset-password');
     });
 
