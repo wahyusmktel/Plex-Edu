@@ -149,6 +149,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('sambutan', SambutanController::class);
     Route::resource('e-voting', EVotingController::class);
     Route::get('absensi', [AbsensiController::class, 'index'])->name('absensi.index');
+    Route::get('absensi/create', [AbsensiController::class, 'create'])->name('absensi.create');
+    Route::post('absensi/store', [AbsensiController::class, 'store'])->name('absensi.store');
+    Route::get('absensi/get-students', [AbsensiController::class, 'getStudents'])->name('absensi.get-students');
     Route::get('absensi/export/class', [AbsensiController::class, 'exportClass'])->name('absensi.export.class');
     Route::get('absensi/export/all', [AbsensiController::class, 'exportAll'])->name('absensi.export.all');
     Route::get('absensi/export/student/{id}', [AbsensiController::class, 'exportStudent'])->name('absensi.export.student');

@@ -80,7 +80,8 @@
             {{-- Guru Role --}}
             @if(Auth::user()->role === 'guru')
                 <x-nav-item icon="dashboard" label="Dashboard" :active="Request::is('dashboard')" href="{{ route('dashboard') }}" />
-                <x-nav-item icon="assignment_ind" label="Absensi" :active="Request::is('absensi*')" href="{{ route('absensi.index') }}" />
+                <x-nav-item icon="add_reaction" label="Input Absensi" :active="Request::routeIs('absensi.create')" href="{{ route('absensi.create') }}" />
+                <x-nav-item icon="assignment_ind" label="Rekap Absensi" :active="Request::is('absensi.index') || Request::is('absensi')" href="{{ route('absensi.index') }}" />
                 <x-nav-item icon="computer" label="CBT" :active="Request::is('cbt*')" href="{{ route('cbt.index') }}" />
                 <x-nav-item icon="calendar_today" label="Kalender" :active="Request::is('calendar*')" href="{{ route('calendar.index') }}" />
                 <x-nav-item icon="forum" label="Forum Diskusi" :active="Request::is('forum*')" href="{{ route('forum.index') }}" />

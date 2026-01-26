@@ -188,4 +188,70 @@ class AbsensiController extends Controller
         $pdf = Pdf::loadView('admin.absensi.export_student_pdf', $data);
         return $pdf->download('Absensi_' . $siswa->nama_lengkap . ($subject ? '_' . $subject->nama_pelajaran : '') . '.pdf');
     }
+
+    public function create()
+    {
+        $classes = Kelas::orderBy('nama')->get();
+        
+        $subjectsQuery = Subject::with('guru')->orderBy('nama_pelajaran');
+        if (auth()->user()->role === 'guru') {
+            $guruId = auth()->user()->fungsionaris->id ?? null;
+            $subjectsQuery->where('guru_id', $guruId);
+        }
+        $subjects = $subjectsQuery->get();
+
+        return view('admin.absensi.create', compact('classes', 'subjects'));
+    }
+
+    public function getStudents(Request $request)
+    {
+        $kelasId = $request->kelas_id;
+        $tanggal = $request->tanggal;
+        $subjectId = $request->subject_id;
+
+        $students = Siswa::where('kelas_id', $kelasId)->orderBy('nama_lengkap')->get();
+        
+        // Get existing attendance for this day/subject/class
+        $existingAttendance = Absensi::where('tanggal', $tanggal)
+            ->where('subject_id', $subjectId)
+            ->whereIn('siswa_id', $students->pluck('id'))
+            ->get()
+            ->keyBy('siswa_id');
+
+        return response()->json([
+            'students' => $students,
+            'existing' => $existingAttendance
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'kelas_id' => 'required|exists:kelas,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'tanggal' => 'required|date',
+            'attendance' => 'required|array',
+            'attendance.*.status' => 'required|in:H,A,S,I',
+            'attendance.*.keterangan' => 'nullable|string',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            foreach ($request->attendance as $siswaId => $data) {
+                Absensi::updateOrCreate(
+                    [
+                        'siswa_id' => $siswaId,
+                        'subject_id' => $request->subject_id,
+                        'tanggal' => $request->tanggal,
+                    ],
+                    [
+                        'school_id' => auth()->user()->school_id,
+                        'status' => $data['status'],
+                        'keterangan' => $data['keterangan'] ?? null,
+                    ]
+                );
+            }
+        });
+
+        return response()->json(['success' => 'Data absensi berhasil disimpan.']);
+    }
 }
