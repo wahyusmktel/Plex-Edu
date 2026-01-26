@@ -102,7 +102,7 @@
                     <div class="group bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md transition-all">
                         <div class="aspect-[3/4] bg-slate-200 relative">
                             @if($book->cover_image)
-                                <img src="{{ asset('storage/' . $book->cover_image) }}" alt="{{ $book->title }}" class="w-full h-full object-cover">
+                                <img src="{{ Storage::url($book->cover_image) }}" alt="{{ $book->title }}" class="w-full h-full object-cover">
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-slate-400">
                                     <i class="material-icons text-5xl">book</i>
@@ -113,7 +113,7 @@
                                 @php $isBorrowed = array_key_exists($book->id, $borrowedItems) || auth()->user()->role !== 'siswa'; @endphp
                                 <button type="button" 
                                     @if($isBorrowed)
-                                        @click="$store.reader.openModal('{{ addslashes($book->title) }}', '{{ asset('storage/' . $book->file_path) }}')" 
+                                        @click="$store.reader.openModal('{{ addslashes($book->title) }}', '{{ Storage::url($book->file_path) }}')" 
                                     @else
                                         @click="$dispatch('open-modal', 'borrow-item-{{ $book->id }}')"
                                     @endif
@@ -190,7 +190,7 @@
                         <div class="flex items-center gap-3">
                             @php $isBorrowed = array_key_exists($audio->id, $borrowedItems) || auth()->user()->role !== 'siswa'; @endphp
                             @if($isBorrowed)
-                                <audio src="{{ asset('storage/' . $audio->file_path) }}" controls class="h-8 max-w-[200px]"></audio>
+                                <audio src="{{ Storage::url($audio->file_path) }}" controls class="h-8 max-w-[200px]"></audio>
                             @else
                                 <button type="button" @click="$dispatch('open-modal', 'borrow-item-{{ $audio->id }}')" class="flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-orange-100 transition-all cursor-pointer">
                                     <i class="material-icons text-sm">lock</i> Pinjam Sekarang
@@ -221,7 +221,7 @@
                                 @php $isBorrowed = array_key_exists($video->id, $borrowedItems) || auth()->user()->role !== 'siswa'; @endphp
                                 <button type="button" 
                                     @if($isBorrowed)
-                                        @click="$store.videoPlayer.openModal('{{ addslashes($video->title) }}', '{{ asset('storage/' . $video->file_path) }}')"
+                                        @click="$store.videoPlayer.openModal('{{ addslashes($video->title) }}', '{{ Storage::url($video->file_path) }}')"
                                     @else
                                         @click="$dispatch('open-modal', 'borrow-item-{{ $video->id }}')"
                                     @endif
@@ -378,7 +378,7 @@
                     <div class="flex items-start gap-6">
                         <div class="w-24 h-32 rounded-xl bg-slate-100 flex-shrink-0 overflow-hidden shadow-sm">
                             @if($item->cover_image)
-                                <img src="{{ asset('storage/' . $item->cover_image) }}" class="w-full h-full object-cover">
+                                <img src="{{ Storage::url($item->cover_image) }}" class="w-full h-full object-cover">
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-slate-300">
                                     <i class="material-icons text-3xl">library_books</i>
@@ -465,6 +465,11 @@
 
 <script>
     function initLibraryReader() {
+        // Non-reactive storage for heavy objects to avoid Alpine Proxy issues
+        let pdfDoc = null;
+        let renderedPages = [];
+        let pageFlipInstance = null;
+
         const storeData = {
             open: false,
             title: '',
@@ -472,90 +477,71 @@
             loading: false,
             totalPages: 0,
             currentPage: 0,
-            pageFlip: null,
             zoom: 1,
             fullscreen: false,
 
             async openModal(title, url) {
-                console.log('Reader: Opening', title, url);
                 this.title = title;
                 this.url = url;
                 this.open = true;
                 this.loading = true;
                 this.currentPage = 0;
-                
-                // Allow modal to show before heavy PDF processing
                 setTimeout(() => this.initReader(), 300);
             },
 
             async initReader() {
-                console.log('Reader: Starting initialization...');
                 const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
                 if (!pdfjsLib) {
-                    console.error('Reader: pdf.js not found');
                     this.loading = false;
                     return;
                 }
-                
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
                 try {
                     const loadingTask = pdfjsLib.getDocument(this.url);
                     const pdf = await loadingTask.promise;
                     this.totalPages = pdf.numPages;
-                    console.log('Reader: PDF loaded, pages:', this.totalPages);
+                    pdfDoc = pdf;
+                    renderedPages = new Array(this.totalPages + 1).fill(false);
 
                     const rootContainer = document.getElementById('book-container');
                     if (!rootContainer) {
                         this.loading = false;
                         return;
                     }
-                    
-                    // Always start with a clean root
                     rootContainer.innerHTML = '';
-                    rootContainer.style.opacity = '1';
                     
-                    // Create a fresh flipbook element
                     const flipbook = document.createElement('div');
                     flipbook.style.width = '600px';
                     flipbook.style.height = '800px';
                     rootContainer.appendChild(flipbook);
 
-                    console.log('Reader: Rendering pages...');
+                    // Pre-create all page containers
                     for (let n = 1; n <= this.totalPages; n++) {
-                        const page = await pdf.getPage(n);
-                        const scale = 2; // Higher quality
-                        const viewport = page.getViewport({ scale });
-
-                        const canvas = document.createElement('canvas');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        canvas.classList.add('page-content');
-
-                        await page.render({
-                            canvasContext: canvas.getContext('2d'),
-                            viewport: viewport
-                        }).promise;
-
                         const pageDiv = document.createElement('div');
                         pageDiv.classList.add('page');
-                        pageDiv.appendChild(canvas);
-                        flipbook.appendChild(pageDiv);
+                        pageDiv.id = `pdf-page-${n}`;
                         
-                        page.cleanup();
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'flex flex-col items-center justify-center h-full bg-slate-50 text-slate-300';
+                        placeholder.innerHTML = `
+                            <i class="material-icons text-4xl mb-2 animate-pulse">menu_book</i>
+                            <span class="text-xs font-bold uppercase tracking-widest">Memuat Halaman ${n}...</span>
+                        `;
+                        pageDiv.appendChild(placeholder);
+                        flipbook.appendChild(pageDiv);
                     }
 
-                    console.log('Reader: DOM ready, starting PageFlip');
-
-                    if (this.pageFlip) {
-                        try { this.pageFlip.destroy(); } catch(e) {}
-                        this.pageFlip = null;
+                    if (pageFlipInstance) {
+                        try { pageFlipInstance.destroy(); } catch(e) {}
+                        pageFlipInstance = null;
                     }
 
-                    // Give browser time to recognize new DOM nodes and their sizes
+                    await this.renderPageRange(1, Math.min(3, this.totalPages));
+
                     setTimeout(() => {
                         try {
-                            this.pageFlip = new St.PageFlip(flipbook, {
+                            pageFlipInstance = new St.PageFlip(flipbook, {
                                 width: 600,
                                 height: 800,
                                 size: "stretch",
@@ -566,54 +552,82 @@
                                 maxShadowOpacity: 0.5,
                                 showCover: true,
                                 mobileScrollSupport: false,
-                                usePortrait: false, // Force spread if possible
+                                usePortrait: false,
                                 startPage: 0
                             });
 
-                            this.pageFlip.loadFromHTML(flipbook.querySelectorAll('.page'));
-                            
-                            this.pageFlip.on('flip', (e) => {
+                            pageFlipInstance.loadFromHTML(flipbook.querySelectorAll('.page'));
+                            pageFlipInstance.on('flip', (e) => { 
                                 this.currentPage = e.data;
+                                const current = e.data + 1;
+                                this.renderPageRange(Math.max(1, current - 2), Math.min(this.totalPages, current + 3));
                             });
-
                             this.loading = false;
-                            console.log('Reader: Initialization complete');
                         } catch (err) {
                             console.error('PageFlip Error:', err);
                             this.loading = false;
-                            alert('Gagal menginisialisasi efek buku.');
                         }
                     }, 300);
                 } catch (error) {
                     console.error('Reader Error:', error);
                     this.loading = false;
-                    alert('Gagal memuat buku. Pastikan file PDF valid.');
                     this.closeModal();
                 }
             },
 
-            next() { if (this.pageFlip) this.pageFlip.flipNext(); },
-            prev() { if (this.pageFlip) this.pageFlip.flipPrev(); },
+            async renderPageRange(start, end) {
+                for (let i = start; i <= end; i++) {
+                    await this.renderSinglePage(i);
+                }
+            },
 
-            zoomIn() { 
-                if (this.zoom < 2) this.zoom = Math.min(2, this.zoom + 0.1); 
+            async renderSinglePage(pageNum) {
+                if (!pdfDoc || renderedPages[pageNum]) return;
+                
+                try {
+                    const page = await pdfDoc.getPage(pageNum);
+                    const scale = 2;
+                    const viewport = page.getViewport({ scale });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    canvas.classList.add('page-content');
+
+                    const context = canvas.getContext('2d');
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+
+                    const container = document.getElementById(`pdf-page-${pageNum}`);
+                    if (container) {
+                        container.innerHTML = '';
+                        container.appendChild(canvas);
+                        renderedPages[pageNum] = true;
+                    }
+                    page.cleanup();
+                } catch (err) {
+                    console.error(`Error rendering page ${pageNum}:`, err);
+                }
             },
-            zoomOut() { 
-                if (this.zoom > 0.5) this.zoom = Math.max(0.5, this.zoom - 0.1); 
-            },
+
+            next() { if (pageFlipInstance) pageFlipInstance.flipNext(); },
+            prev() { if (pageFlipInstance) pageFlipInstance.flipPrev(); },
+            zoomIn() { if (this.zoom < 2) this.zoom = Math.min(2, this.zoom + 0.1); },
+            zoomOut() { if (this.zoom > 0.5) this.zoom = Math.max(0.5, this.zoom - 0.1); },
 
             closeModal() {
-                console.log('Reader: Closing');
                 this.open = false;
                 this.loading = false;
                 this.zoom = 1;
                 this.fullscreen = false;
-                if (this.pageFlip) {
-                    try {
-                        this.pageFlip.destroy();
-                    } catch(e) { console.warn('PageFlip destroy error', e); }
-                    this.pageFlip = null;
+                if (pageFlipInstance) {
+                    try { pageFlipInstance.destroy(); } catch(e) {}
+                    pageFlipInstance = null;
                 }
+                pdfDoc = null;
+                renderedPages = [];
                 const container = document.getElementById('book-container');
                 if (container) container.innerHTML = '';
             }
