@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\SiswaImport;
 use App\Exports\SiswaTemplateExport;
+use App\Exports\SiswaExport;
 
 class SiswaController extends Controller
 {
@@ -230,6 +231,28 @@ class SiswaController extends Controller
     public function downloadTemplate()
     {
         return Excel::download(new SiswaTemplateExport, 'template_import_siswa.xlsx');
+    }
+
+    public function export(Request $request)
+    {
+        $query = Siswa::with(['user', 'kelas']);
+
+        // Search
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Kelas
+        if ($request->has('kelas') && $request->kelas != '') {
+            $query->where('kelas_id', $request->kelas);
+        }
+
+        return Excel::download(new SiswaExport($query), 'data_siswa_' . date('Ymd_His') . '.xlsx');
     }
 
     public function show($id)

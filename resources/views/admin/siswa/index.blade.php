@@ -18,6 +18,9 @@
             <button @click="openImportModal = true" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
                 <i class="material-icons text-[20px]">file_upload</i> Import
             </button>
+            <a href="{{ route('siswa.export', request()->all()) }}" class="flex items-center gap-2 px-6 py-3 bg-emerald-50 border border-emerald-100 rounded-2xl text-sm font-bold text-emerald-600 hover:bg-emerald-100 transition-all shadow-sm">
+                <i class="material-icons text-[20px]">file_download</i> Export Excel
+            </a>
             @if($withoutAccount > 0)
             <button @click="generateAccounts()" class="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-2xl text-sm font-bold shadow-md hover:bg-emerald-600 transition-all">
                 <i class="material-icons text-[20px]">group_add</i> Generate Akun ({{ $withoutAccount }})
