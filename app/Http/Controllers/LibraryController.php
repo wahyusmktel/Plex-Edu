@@ -58,22 +58,72 @@ class LibraryController extends Controller
         return view('pages.library.create');
     }
 
+    public function getSignedUrl(Request $request)
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $request->validate([
+            'file_name' => 'required',
+            'file_type' => 'required',
+            'category' => 'required|in:book,audio,video',
+        ]);
+
+        $extension = pathinfo($request->file_name, PATHINFO_EXTENSION);
+        $fileName = Str::uuid() . '.' . $extension;
+        $path = 'library/' . $request->category . '/' . $fileName;
+
+        $diskName = config('filesystems.default') === 's3' ? 's3' : 'public';
+        $disk = Storage::disk($diskName);
+
+        try {
+            // Generates a Signed URL for PUT request
+            $url = $disk->temporaryUploadUrl(
+                $path, now()->addMinutes(30), [
+                    'ContentType' => $request->file_type
+                ]
+            );
+
+            return response()->json([
+                'url' => $url,
+                'path' => $path
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Driver storage tidak mendukung Signed URL: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         if (auth()->user()->role !== 'admin') {
             abort(403, 'Akses dilarang.');
         }
-        $request->validate([
+
+        $rules = [
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'category' => 'required|in:book,audio,video',
             'kategori' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'file' => 'required|file|max:512000', // 500MB max
             'cover_image' => 'nullable|image|max:2048',
-        ]);
+        ];
 
-        $file_path = $request->file('file')->store('library/' . $request->category, 'public');
+        // If file_path is provided, it means it was uploaded via Signed URL
+        if ($request->has('file_path')) {
+            $rules['file_path'] = 'required|string';
+        } else {
+            $rules['file'] = 'required|file|max:512000';
+        }
+
+        $request->validate($rules);
+
+        if ($request->has('file_path')) {
+            $file_path = $request->file_path;
+        } else {
+            $file_path = $request->file('file')->store('library/' . $request->category, 'public');
+        }
+
         $cover_image = null;
         if ($request->hasFile('cover_image')) {
             $cover_image = $request->file('cover_image')->store('library/covers', 'public');
@@ -88,6 +138,10 @@ class LibraryController extends Controller
             'file_path' => $file_path,
             'cover_image' => $cover_image,
         ]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('library.index')->with('success', 'Item perpustakaan berhasil ditambahkan.');
     }

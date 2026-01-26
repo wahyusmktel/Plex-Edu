@@ -239,6 +239,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('library')->name('library.')->group(function () {
         Route::get('/', [LibraryController::class, 'index'])->name('index');
         Route::get('/create', [LibraryController::class, 'create'])->name('create');
+        Route::post('/signed-url', [LibraryController::class, 'getSignedUrl'])->name('signed-url');
         Route::post('/store', [LibraryController::class, 'store'])->name('store');
         Route::delete('/{id}', [LibraryController::class, 'destroy'])->name('destroy');
         

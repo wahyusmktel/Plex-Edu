@@ -149,50 +149,91 @@
                 }
             },
 
-            submitForm() {
+            async submitForm() {
                 const form = document.getElementById('libraryForm');
-                const formData = new FormData(form);
+                const digitalFile = document.getElementById('digitalFile').files[0];
                 
+                // For new items, file is required
+                if (!digitalFile) {
+                    Swal.fire('Oops...', 'Silakan pilih fail digital.', 'error');
+                    return;
+                }
+
                 this.uploading = true;
                 this.uploadProgress = 0;
 
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', form.action, true);
-                
-                xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        this.uploadProgress = (e.loaded / e.total) * 100;
-                    }
-                };
-                
-                xhr.onload = () => {
+                try {
+                    // 1. Get Signed URL from Backend
+                    const signedResponse = await $.ajax({
+                        url: '{{ route("library.signed-url") }}',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            file_name: digitalFile.name,
+                            file_type: digitalFile.type,
+                            category: form.category.value
+                        }
+                    });
+
+                    const uploadUrl = signedResponse.url;
+                    const filePath = signedResponse.path;
+
+                    // 2. Direct Upload to Cloud Storage using XMLHttpRequest (to track progress)
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('PUT', uploadUrl, true);
+                        xhr.setRequestHeader('Content-Type', digitalFile.type);
+                        
+                        xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable) {
+                                this.uploadProgress = (e.loaded / e.total) * 100;
+                            }
+                        };
+                        
+                        xhr.onload = () => {
+                            if (xhr.status === 200 || xhr.status === 201) resolve();
+                            else reject(new Error('Gagal mengunggah file ke cloud storage.'));
+                        };
+                        
+                        xhr.onerror = () => reject(new Error('Kesalahan jaringan saat mengunggah ke cloud.'));
+                        xhr.send(digitalFile);
+                    });
+
+                    // 3. Complete the process by saving metadata to Laravel
+                    const formData = new FormData(form);
+                    formData.append('file_path', filePath);
+                    formData.delete('file'); // Don't send the heavy file to Laravel
+
+                    await $.ajax({
+                        url: form.action,
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false
+                    });
+
                     this.uploading = false;
-                    if (xhr.status === 200 || xhr.status === 302) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: 'Koleksi berhasil ditambahkan.',
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = '{{ route("library.index") }}';
-                        });
-                    } else {
-                        let msg = 'Terjadi kesalahan saat menyimpan.';
-                        try {
-                            const err = JSON.parse(xhr.responseText);
-                            msg = err.message || Object.values(err.errors || {}).flat().join('<br>');
-                        } catch(e) {}
-                        Swal.fire('Oops...', msg, 'error');
-                    }
-                };
-                
-                xhr.onerror = () => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Koleksi berhasil ditambahkan.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '{{ route("library.index") }}';
+                    });
+
+                } catch (err) {
                     this.uploading = false;
-                    Swal.fire('Oops...', 'Terjadi kesalahan jaringan.', 'error');
-                };
-                
-                xhr.send(formData);
+                    let msg = err.message || 'Terjadi kesalahan.';
+                    if (err.responseJSON?.message) msg = err.responseJSON.message;
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: msg
+                    });
+                }
             }
         }
     }
