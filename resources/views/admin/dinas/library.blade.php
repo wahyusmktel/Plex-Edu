@@ -3,21 +3,6 @@
 @section('title', 'E-Library Global - Literasia')
 
 @section('content')
-@php
-    $getSafeUrl = function($path) {
-        if (!$path) return null;
-        try {
-            // Try temporaryUrl first if on GCS
-            if (config('filesystems.default') === 'gcs' || strpos($path, 'http') === false) {
-                return Storage::temporaryUrl($path, now()->addHours(1));
-            }
-            return Storage::url($path);
-        } catch (\Exception $e) {
-            // Fallback to plain URL if temporaryUrl fails (e.g. missing JSON key)
-            return Storage::url($path);
-        }
-    };
-@endphp
 <div class="space-y-8" x-data="{ tab: '{{ $selectedCategory ?? 'all' }}' }">
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -279,7 +264,7 @@
             <div class="group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 flex flex-col">
                 <div class="aspect-[3/4] bg-slate-100 relative overflow-hidden">
                     @if($item->cover_image)
-                        <img src="{{ $getSafeUrl($item->cover_image) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <img src="{{ Storage::url($item->cover_image) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     @else
                         <div class="w-full h-full flex items-center justify-center text-slate-300">
                             <i class="material-icons text-6xl">@php
@@ -304,18 +289,18 @@
                     <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
                         @if($item->category === 'book')
                         <button type="button" 
-                            @click="$store.reader.openModal('{{ addslashes($item->title) }}', '{{ $getSafeUrl($item->file_path) }}')" 
+                            @click="$store.reader.openModal('{{ addslashes($item->title) }}', '{{ Storage::url($item->file_path) }}')" 
                             class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-pink-500 hover:text-white transition-all cursor-pointer shadow-xl">
                             <i class="material-icons">visibility</i>
                         </button>
                         @elseif($item->category === 'video')
                         <button type="button" 
-                            @click="$store.videoPlayer.openModal('{{ addslashes($item->title) }}', '{{ $getSafeUrl($item->file_path) }}')"
+                            @click="$store.videoPlayer.openModal('{{ addslashes($item->title) }}', '{{ Storage::url($item->file_path) }}')"
                             class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-pink-500 hover:text-white transition-all shadow-xl cursor-pointer">
                             <i class="material-icons text-3xl">play_arrow</i>
                         </button>
                         @elseif($item->category === 'audio')
-                        <button @click="playAudio('{{ $getSafeUrl($item->file_path) }}', '{{ addslashes($item->title) }}')" class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all shadow-xl cursor-pointer">
+                        <button @click="playAudio('{{ Storage::url($item->file_path) }}', '{{ addslashes($item->title) }}')" class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all shadow-xl cursor-pointer">
                             <i class="material-icons">play_arrow</i>
                         </button>
                         @endif
