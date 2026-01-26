@@ -71,11 +71,11 @@ class LibraryItem extends Model
 
     public function getCoverUrlAttribute()
     {
-        return $this->cover_image ? asset('storage/' . $this->cover_image) : null;
+        return $this->cover_image ? \Illuminate\Support\Facades\Storage::url($this->cover_image) : null;
     }
 
     public function getFileUrlAttribute()
     {
-        return $this->file_path ? asset('storage/' . $this->file_path) : null;
+        return $this->file_path ? \Illuminate\Support\Facades\Storage::url($this->file_path) : null;
     }
 }

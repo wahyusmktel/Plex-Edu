@@ -257,13 +257,18 @@
 
                 } catch (err) {
                     this.uploading = false;
-                    let msg = err.message || 'Terjadi kesalahan.';
+                    console.error('Upload Error:', err);
+                    
+                    let msg = 'Terjadi kesalahan saat mengunggah.';
+                    if (err.message) msg = err.message;
                     if (err.responseJSON?.message) msg = err.responseJSON.message;
+                    if (err.statusText) msg += ' (' + err.statusText + ')';
                     
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
-                        text: msg
+                        text: msg,
+                        footer: '<p class="text-xs text-slate-400 text-center">Bagi admin: Cek Console (F12) untuk detail teknis atau pastikan konfigurasi CORS di bucket GCS sudah benar.</p>'
                     });
                 }
             }

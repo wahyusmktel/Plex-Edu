@@ -133,12 +133,12 @@ class LibraryController extends Controller
         if ($request->has('file_path')) {
             $file_path = $request->file_path;
         } else {
-            $file_path = $request->file('file')->store('library/' . $request->category, 'public');
+            $file_path = $request->file('file')->store('library/' . $request->category, config('filesystems.default'));
         }
 
         $cover_image = null;
         if ($request->hasFile('cover_image')) {
-            $cover_image = $request->file('cover_image')->store('library/covers', 'public');
+            $cover_image = $request->file('cover_image')->store('library/covers', config('filesystems.default'));
         }
 
         LibraryItem::create([
@@ -164,9 +164,10 @@ class LibraryController extends Controller
             abort(403, 'Akses dilarang.');
         }
         $item = LibraryItem::findOrFail($id);
-        Storage::disk('public')->delete($item->file_path);
+        $disk = Storage::disk(config('filesystems.default'));
+        $disk->delete($item->file_path);
         if ($item->cover_image) {
-            Storage::disk('public')->delete($item->cover_image);
+            $disk->delete($item->cover_image);
         }
         $item->delete();
 
