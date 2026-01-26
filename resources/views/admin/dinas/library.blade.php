@@ -264,7 +264,7 @@
             <div class="group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 flex flex-col">
                 <div class="aspect-[3/4] bg-slate-100 relative overflow-hidden">
                     @if($item->cover_image)
-                        <img src="{{ asset('storage/' . $item->cover_image) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <img src="{{ Storage::url($item->cover_image) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     @else
                         <div class="w-full h-full flex items-center justify-center text-slate-300">
                             <i class="material-icons text-6xl">@php
@@ -289,18 +289,18 @@
                     <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
                         @if($item->category === 'book')
                         <button type="button" 
-                            @click="$store.reader.openModal('{{ addslashes($item->title) }}', '{{ asset('storage/' . $item->file_path) }}')" 
+                            @click="$store.reader.openModal('{{ addslashes($item->title) }}', '{{ Storage::url($item->file_path) }}')" 
                             class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-pink-500 hover:text-white transition-all cursor-pointer shadow-xl">
                             <i class="material-icons">visibility</i>
                         </button>
                         @elseif($item->category === 'video')
                         <button type="button" 
-                            @click="$store.videoPlayer.openModal('{{ addslashes($item->title) }}', '{{ asset('storage/' . $item->file_path) }}')"
+                            @click="$store.videoPlayer.openModal('{{ addslashes($item->title) }}', '{{ Storage::url($item->file_path) }}')"
                             class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-pink-500 hover:text-white transition-all shadow-xl cursor-pointer">
                             <i class="material-icons text-3xl">play_arrow</i>
                         </button>
                         @elseif($item->category === 'audio')
-                        <button @click="playAudio('{{ asset('storage/' . $item->file_path) }}', '{{ addslashes($item->title) }}')" class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all shadow-xl cursor-pointer">
+                        <button @click="playAudio('{{ Storage::url($item->file_path) }}', '{{ addslashes($item->title) }}')" class="w-12 h-12 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all shadow-xl cursor-pointer">
                             <i class="material-icons">play_arrow</i>
                         </button>
                         @endif
@@ -522,6 +522,8 @@
                     const loadingTask = pdfjsLib.getDocument(this.url);
                     const pdf = await loadingTask.promise;
                     this.totalPages = pdf.numPages;
+                    this.pdfDoc = pdf;
+                    this.renderedPages = new Array(this.totalPages + 1).fill(false);
 
                     const rootContainer = document.getElementById('book-container');
                     if (!rootContainer) {
@@ -535,32 +537,30 @@
                     flipbook.style.height = '800px';
                     rootContainer.appendChild(flipbook);
 
+                    // Pre-create all page containers
                     for (let n = 1; n <= this.totalPages; n++) {
-                        const page = await pdf.getPage(n);
-                        const scale = 2;
-                        const viewport = page.getViewport({ scale });
-
-                        const canvas = document.createElement('canvas');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        canvas.classList.add('page-content');
-
-                        await page.render({
-                            canvasContext: canvas.getContext('2d'),
-                            viewport: viewport
-                        }).promise;
-
                         const pageDiv = document.createElement('div');
                         pageDiv.classList.add('page');
-                        pageDiv.appendChild(canvas);
+                        pageDiv.id = `pdf-page-${n}`;
+                        
+                        // Add placeholder/loading indicator
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'flex flex-col items-center justify-center h-full bg-slate-50 text-slate-300';
+                        placeholder.innerHTML = `
+                            <i class="material-icons text-4xl mb-2 animate-pulse">menu_book</i>
+                            <span class="text-xs font-bold uppercase tracking-widest">Memuat Halaman ${n}...</span>
+                        `;
+                        pageDiv.appendChild(placeholder);
                         flipbook.appendChild(pageDiv);
-                        page.cleanup();
                     }
 
                     if (this.pageFlip) {
                         try { this.pageFlip.destroy(); } catch(e) {}
                         this.pageFlip = null;
                     }
+
+                    // Render only first 3 pages initially
+                    await this.renderPageRange(1, Math.min(3, this.totalPages));
 
                     setTimeout(() => {
                         try {
@@ -580,7 +580,12 @@
                             });
 
                             this.pageFlip.loadFromHTML(flipbook.querySelectorAll('.page'));
-                            this.pageFlip.on('flip', (e) => { this.currentPage = e.data; });
+                            this.pageFlip.on('flip', (e) => { 
+                                this.currentPage = e.data;
+                                // Buffer rendering for current, next and prev pages
+                                const current = e.data + 1; // PageFlip is 0-indexed
+                                this.renderPageRange(Math.max(1, current - 2), Math.min(this.totalPages, current + 3));
+                            });
                             this.loading = false;
                         } catch (err) {
                             console.error('PageFlip Error:', err);
@@ -591,6 +596,43 @@
                     console.error('Reader Error:', error);
                     this.loading = false;
                     this.closeModal();
+                }
+            },
+
+            async renderPageRange(start, end) {
+                for (let i = start; i <= end; i++) {
+                    await this.renderSinglePage(i);
+                }
+            },
+
+            async renderSinglePage(pageNum) {
+                if (!this.pdfDoc || this.renderedPages[pageNum]) return;
+                
+                try {
+                    const page = await this.pdfDoc.getPage(pageNum);
+                    const scale = 2; // High quality
+                    const viewport = page.getViewport({ scale });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    canvas.classList.add('page-content');
+
+                    const context = canvas.getContext('2d');
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+
+                    const container = document.getElementById(`pdf-page-${pageNum}`);
+                    if (container) {
+                        container.innerHTML = '';
+                        container.appendChild(canvas);
+                        this.renderedPages[pageNum] = true;
+                    }
+                    page.cleanup();
+                } catch (err) {
+                    console.error(`Error rendering page ${pageNum}:`, err);
                 }
             },
 
