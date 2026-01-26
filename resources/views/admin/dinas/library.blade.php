@@ -490,6 +490,11 @@
 
 <script>
     function initLibraryReader() {
+        // Non-reactive storage for heavy objects to avoid Alpine Proxy issues
+        let pdfDoc = null;
+        let renderedPages = [];
+        let pageFlipInstance = null;
+
         const storeData = {
             open: false,
             title: '',
@@ -497,7 +502,6 @@
             loading: false,
             totalPages: 0,
             currentPage: 0,
-            pageFlip: null,
             zoom: 1,
             fullscreen: false,
 
@@ -522,8 +526,8 @@
                     const loadingTask = pdfjsLib.getDocument(this.url);
                     const pdf = await loadingTask.promise;
                     this.totalPages = pdf.numPages;
-                    this.pdfDoc = pdf;
-                    this.renderedPages = new Array(this.totalPages + 1).fill(false);
+                    pdfDoc = pdf;
+                    renderedPages = new Array(this.totalPages + 1).fill(false);
 
                     const rootContainer = document.getElementById('book-container');
                     if (!rootContainer) {
@@ -543,7 +547,6 @@
                         pageDiv.classList.add('page');
                         pageDiv.id = `pdf-page-${n}`;
                         
-                        // Add placeholder/loading indicator
                         const placeholder = document.createElement('div');
                         placeholder.className = 'flex flex-col items-center justify-center h-full bg-slate-50 text-slate-300';
                         placeholder.innerHTML = `
@@ -554,17 +557,16 @@
                         flipbook.appendChild(pageDiv);
                     }
 
-                    if (this.pageFlip) {
-                        try { this.pageFlip.destroy(); } catch(e) {}
-                        this.pageFlip = null;
+                    if (pageFlipInstance) {
+                        try { pageFlipInstance.destroy(); } catch(e) {}
+                        pageFlipInstance = null;
                     }
 
-                    // Render only first 3 pages initially
                     await this.renderPageRange(1, Math.min(3, this.totalPages));
 
                     setTimeout(() => {
                         try {
-                            this.pageFlip = new St.PageFlip(flipbook, {
+                            pageFlipInstance = new St.PageFlip(flipbook, {
                                 width: 600,
                                 height: 800,
                                 size: "stretch",
@@ -579,11 +581,10 @@
                                 startPage: 0
                             });
 
-                            this.pageFlip.loadFromHTML(flipbook.querySelectorAll('.page'));
-                            this.pageFlip.on('flip', (e) => { 
+                            pageFlipInstance.loadFromHTML(flipbook.querySelectorAll('.page'));
+                            pageFlipInstance.on('flip', (e) => { 
                                 this.currentPage = e.data;
-                                // Buffer rendering for current, next and prev pages
-                                const current = e.data + 1; // PageFlip is 0-indexed
+                                const current = e.data + 1;
                                 this.renderPageRange(Math.max(1, current - 2), Math.min(this.totalPages, current + 3));
                             });
                             this.loading = false;
@@ -606,11 +607,11 @@
             },
 
             async renderSinglePage(pageNum) {
-                if (!this.pdfDoc || this.renderedPages[pageNum]) return;
+                if (!pdfDoc || renderedPages[pageNum]) return;
                 
                 try {
-                    const page = await this.pdfDoc.getPage(pageNum);
-                    const scale = 2; // High quality
+                    const page = await pdfDoc.getPage(pageNum);
+                    const scale = 2;
                     const viewport = page.getViewport({ scale });
 
                     const canvas = document.createElement('canvas');
@@ -628,7 +629,7 @@
                     if (container) {
                         container.innerHTML = '';
                         container.appendChild(canvas);
-                        this.renderedPages[pageNum] = true;
+                        renderedPages[pageNum] = true;
                     }
                     page.cleanup();
                 } catch (err) {
@@ -636,8 +637,8 @@
                 }
             },
 
-            next() { if (this.pageFlip) this.pageFlip.flipNext(); },
-            prev() { if (this.pageFlip) this.pageFlip.flipPrev(); },
+            next() { if (pageFlipInstance) pageFlipInstance.flipNext(); },
+            prev() { if (pageFlipInstance) pageFlipInstance.flipPrev(); },
             zoomIn() { if (this.zoom < 2) this.zoom = Math.min(2, this.zoom + 0.1); },
             zoomOut() { if (this.zoom > 0.5) this.zoom = Math.max(0.5, this.zoom - 0.1); },
 
@@ -646,10 +647,12 @@
                 this.loading = false;
                 this.zoom = 1;
                 this.fullscreen = false;
-                if (this.pageFlip) {
-                    try { this.pageFlip.destroy(); } catch(e) {}
-                    this.pageFlip = null;
+                if (pageFlipInstance) {
+                    try { pageFlipInstance.destroy(); } catch(e) {}
+                    pageFlipInstance = null;
                 }
+                pdfDoc = null;
+                renderedPages = [];
                 const container = document.getElementById('book-container');
                 if (container) container.innerHTML = '';
             }
