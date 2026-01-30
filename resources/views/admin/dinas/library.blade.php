@@ -323,7 +323,7 @@
                         </div>
                         <div class="min-w-0">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Sekolah Pemilik</p>
-                            <p class="text-[11px] font-bold text-slate-600 truncate">{{ $item->school->nama_sekolah }}</p>
+                            <p class="text-[11px] font-bold text-slate-600 truncate">{{ $item->school->nama_sekolah ?? 'Global / Semua Sekolah' }}</p>
                         </div>
                     </div>
                 </div>
