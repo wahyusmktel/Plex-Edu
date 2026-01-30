@@ -348,6 +348,8 @@ Route::middleware(['auth'])->group(function () {
         
         // E-Library for Dinas
         Route::get('/library', [App\Http\Controllers\Admin\DinasController::class, 'library'])->name('library');
+        Route::post('/library/store', [App\Http\Controllers\Admin\DinasController::class, 'libraryStore'])->name('library.store');
+        Route::post('/library/signed-url', [App\Http\Controllers\Admin\DinasController::class, 'librarySignedUrl'])->name('library.signed-url');
         
         // App Settings
         Route::get('/settings', [App\Http\Controllers\Admin\DinasController::class, 'settings'])->name('settings');

@@ -15,6 +15,10 @@
                 <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">E-Library Global</h1>
             </div>
         </div>
+        <button @click="$store.libraryForm.open = true" class="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all">
+            <i class="material-icons">add_circle</i>
+            Tambah Koleksi
+        </button>
     </div>
 
     <!-- Stats Monitoring Row -->
@@ -439,6 +443,127 @@
             </div>
         </div>
     </div>
+
+    <!-- Add Collection Modal -->
+    <div 
+        x-show="$store.libraryForm && $store.libraryForm.open" 
+        x-cloak
+        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+    >
+        <div class="relative w-full max-w-4xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-10 py-6 border-b border-slate-50">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-pink-50 flex items-center justify-center text-pink-500">
+                        <i class="material-icons">add_to_photos</i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-slate-800">Tambah Koleksi Global</h3>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Koleksi ini akan tampil di semua sekolah</p>
+                    </div>
+                </div>
+                <button @click="$store.libraryForm.open = false" class="w-10 h-10 rounded-xl hover:bg-slate-50 text-slate-400 transition-all flex items-center justify-center">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+
+            <!-- Form Content -->
+            <div class="flex-grow overflow-y-auto custom-scrollbar p-10">
+                <form id="globalLibraryForm" action="{{ route('dinas.library.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori Koleksi</label>
+                                <select name="category" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all outline-none" required>
+                                    <option value="book">E-Book (PDF)</option>
+                                    <option value="audio">Audio Book (MP3)</option>
+                                    <option value="video">Video Book (MP4/WebM)</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Judul Koleksi</label>
+                                <input type="text" name="title" placeholder="Masukkan judul..." class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all outline-none" required>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pengarang / Pembuat</label>
+                                <input type="text" name="author" placeholder="Nama pengarang..." class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all outline-none" required>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kategori / Label</label>
+                                <input type="text" name="kategori" placeholder="Fiksi, Sains, dll..." class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all outline-none">
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deskripsi Ringkas</label>
+                                <textarea name="description" rows="3" placeholder="Informasi singkat..." class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-pink-100 transition-all outline-none"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Unggah Fail Digital</label>
+                                <div class="relative group border-2 border-dashed border-slate-100 rounded-[2rem] p-8 transition-all hover:bg-pink-50/20 hover:border-pink-200 text-center">
+                                    <input type="file" name="file" id="digitalFileForm" class="absolute inset-0 opacity-0 cursor-pointer" @change="$store.libraryForm.handleFileSelect($event)" required>
+                                    <div x-show="!$store.libraryForm.fileName">
+                                        <i class="material-icons text-4xl text-slate-300 mb-2">cloud_upload</i>
+                                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Pilih Fail (PDF, MP3, MP4)</p>
+                                        <p class="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">Maks. 500MB</p>
+                                    </div>
+                                    <div x-show="$store.libraryForm.fileName">
+                                        <i class="material-icons text-4xl text-emerald-500 mb-2">verified</i>
+                                        <p class="text-[11px] font-bold text-slate-700 truncate" x-text="$store.libraryForm.fileName"></p>
+                                        <p class="text-[10px] font-black text-[#d90d8b] mt-1" x-text="$store.libraryForm.fileSize"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div x-show="$store.libraryForm.uploading" class="p-6 bg-pink-50 rounded-3xl border border-pink-100">
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-grow">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-[10px] font-black text-[#d90d8b] uppercase tracking-widest">Mengunggah...</span>
+                                            <span class="text-[10px] font-black text-[#d90d8b]" x-text="Math.round($store.libraryForm.uploadProgress) + '%'"></span>
+                                        </div>
+                                        <div class="w-full h-2 bg-pink-100 rounded-full overflow-hidden">
+                                            <div class="h-full bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] transition-all duration-300" :style="'width: ' + $store.libraryForm.uploadProgress + '%'"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sampul (Opsional)</label>
+                                <div class="relative group border-2 border-dashed border-slate-100 rounded-[2rem] p-8 transition-all hover:bg-pink-50/20 hover:border-pink-200 text-center">
+                                    <input type="file" name="cover_image" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
+                                    <i class="material-icons text-4xl text-slate-300 mb-2">add_photo_alternate</i>
+                                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Unggah Sampul</p>
+                                    <p class="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">JPEG/PNG, Maks. 2MB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-10 border-t border-slate-50 bg-slate-50/50 flex justify-end gap-3">
+                <button @click="$store.libraryForm.open = false" class="px-8 py-4 rounded-2xl text-xs font-black text-slate-500 hover:text-slate-800 hover:bg-white transition-all uppercase tracking-widest">Batal</button>
+                <button @click="$store.libraryForm.submitForm()" :disabled="$store.libraryForm.uploading" class="px-10 py-4 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-600 text-white text-xs font-black shadow-lg shadow-pink-100 hover:scale-[1.02] active:scale-[0.98] transition-all uppercase tracking-widest disabled:opacity-50">
+                    <span x-show="!$store.libraryForm.uploading">Simpan Koleksi</span>
+                    <span x-show="$store.libraryForm.uploading" class="flex items-center gap-2">
+                        <i class="material-icons text-lg animate-spin">autorenew</i> Memproses...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -675,13 +800,143 @@
             }
         };
 
+        const formStoreData = {
+            open: false,
+            uploading: false,
+            uploadProgress: 0,
+            fileName: '',
+            fileSize: '',
+
+            handleFileSelect(event) {
+                if (event.target.files.length > 0) {
+                    const file = event.target.files[0];
+                    this.fileName = file.name;
+                    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                    this.fileSize = sizeMB + ' MB';
+                }
+            },
+
+            async submitForm() {
+                const form = document.getElementById('globalLibraryForm');
+                const digitalFile = document.getElementById('digitalFileForm').files[0];
+                
+                if (!digitalFile) {
+                    Swal.fire('Oops...', 'Silakan pilih fail digital.', 'error');
+                    return;
+                }
+
+                this.uploading = true;
+                this.uploadProgress = 0;
+
+                try {
+                    const signedResponse = await $.ajax({
+                        url: '{{ route("dinas.library.signed-url") }}',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            file_name: digitalFile.name,
+                            file_type: digitalFile.type,
+                            category: form.category.value
+                        }
+                    });
+
+                    if (signedResponse.supported) {
+                        const uploadUrl = signedResponse.url;
+                        const filePath = signedResponse.path;
+
+                        await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('PUT', uploadUrl, true);
+                            xhr.setRequestHeader('Content-Type', digitalFile.type);
+                            
+                            xhr.upload.onprogress = (e) => {
+                                if (e.lengthComputable) {
+                                    this.uploadProgress = (e.loaded / e.total) * 100;
+                                }
+                            };
+                            
+                            xhr.onload = () => {
+                                if (xhr.status === 200 || xhr.status === 201) resolve();
+                                else reject(new Error('Gagal mengunggah fail ke cloud storage.'));
+                            };
+                            
+                            xhr.onerror = () => reject(new Error('Kesalahan jaringan saat mengunggah.'));
+                            xhr.send(digitalFile);
+                        });
+
+                        const formData = new FormData(form);
+                        formData.append('file_path', filePath);
+                        formData.delete('file');
+
+                        await $.ajax({
+                            url: form.action,
+                            method: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false
+                        });
+                    } else {
+                        const formData = new FormData(form);
+                        await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', form.action, true);
+                            xhr.upload.onprogress = (e) => {
+                                if (e.lengthComputable) {
+                                    this.uploadProgress = (e.loaded / e.total) * 100;
+                                }
+                            };
+                            xhr.onload = () => {
+                                if (xhr.status === 200 || xhr.status === 302) resolve();
+                                else {
+                                    try {
+                                        const err = JSON.parse(xhr.responseText);
+                                        reject(new Error(err.message || 'Gagal menyimpan data ke server.'));
+                                    } catch(e) {
+                                        reject(new Error('Gagal menyimpan data ke server.'));
+                                    }
+                                }
+                            };
+                            xhr.onerror = () => reject(new Error('Kesalahan jaringan saat mengunggah.'));
+                            xhr.send(formData);
+                        });
+                    }
+
+                    this.uploading = false;
+                    this.open = false;
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Koleksi global berhasil ditambahkan.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+
+                } catch (err) {
+                    this.uploading = false;
+                    console.error('Upload Error:', err);
+                    let msg = 'Terjadi kesalahan saat mengunggah.';
+                    if (err.message) msg = err.message;
+                    if (err.responseJSON?.message) msg = err.responseJSON.message;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: msg
+                    });
+                }
+            }
+        };
+
         if (window.Alpine) {
             Alpine.store('reader', storeData);
             Alpine.store('videoPlayer', videoStoreData);
+            Alpine.store('libraryForm', formStoreData);
         } else {
             document.addEventListener('alpine:init', () => {
                 Alpine.store('reader', storeData);
                 Alpine.store('videoPlayer', videoStoreData);
+                Alpine.store('libraryForm', formStoreData);
             });
         }
     }

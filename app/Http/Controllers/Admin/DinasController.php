@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
@@ -632,6 +633,97 @@ class DinasController extends Controller
             'selectedCategory',
             'search'
         ));
+    }
+
+    public function libraryStore(Request $request)
+    {
+        $rules = [
+            'title' => 'required|string|max:255',
+            'author' => 'required|string|max:255',
+            'category' => 'required|in:book,audio,video',
+            'kategori' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'cover_image' => 'nullable|image|max:2048',
+        ];
+
+        if ($request->has('file_path')) {
+            $rules['file_path'] = 'required|string';
+        } else {
+            $rules['file'] = 'required|file|max:512000';
+        }
+
+        $request->validate($rules);
+
+        if ($request->has('file_path')) {
+            $file_path = $request->file_path;
+        } else {
+            $file_path = $request->file('file')->store('library/' . $request->category, config('filesystems.default'));
+        }
+
+        $cover_image = null;
+        if ($request->hasFile('cover_image')) {
+            $cover_image = $request->file('cover_image')->store('library/covers', config('filesystems.default'));
+        }
+
+        LibraryItem::create([
+            'school_id' => null, // Global item
+            'title' => $request->title,
+            'author' => $request->author,
+            'category' => $request->category,
+            'kategori' => $request->kategori,
+            'description' => $request->description,
+            'file_path' => $file_path,
+            'cover_image' => $cover_image,
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->route('dinas.library')->with('success', 'Koleksi perpustakaan berhasil ditambahkan.');
+    }
+
+    public function librarySignedUrl(Request $request)
+    {
+        $request->validate([
+            'file_name' => 'required',
+            'file_type' => 'required',
+            'category' => 'required|in:book,audio,video',
+        ]);
+
+        $diskName = config('filesystems.default');
+        
+        if ($diskName === 'local' || $diskName === 'public') {
+            return response()->json([
+                'supported' => false,
+                'message' => 'Local storage tidak mendukung Signed URL. Menggunakan upload standar.'
+            ]);
+        }
+
+        $extension = pathinfo($request->file_name, PATHINFO_EXTENSION);
+        $fileName = Str::uuid() . '.' . $extension;
+        $path = 'library/' . $request->category . '/' . $fileName;
+
+        $disk = Storage::disk($diskName);
+
+        try {
+            $url = $disk->temporaryUploadUrl(
+                $path, now()->addMinutes(30), [
+                    'ContentType' => $request->file_type
+                ]
+            );
+
+            return response()->json([
+                'supported' => true,
+                'url' => $url,
+                'path' => $path
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'supported' => false,
+                'message' => 'Driver storage ini tidak mendukung Signed URL: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function bulkImportSiswa(Request $request)
