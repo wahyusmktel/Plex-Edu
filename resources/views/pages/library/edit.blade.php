@@ -332,6 +332,7 @@
                             xhr.onerror = () => reject(new Error('Kesalahan jaringan saat mengunggah.'));
                             xhr.send(formData);
                         });
+                    }
                     } else {
                         // No new file, just submit the metadata
                         const formData = new FormData(form);
