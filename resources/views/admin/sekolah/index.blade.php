@@ -332,6 +332,7 @@
                                 <th class="px-6 py-3">Wali Kelas</th>
                                 <th x-show="settings.jenjang === 'sma_smk'" class="px-6 py-3">Jurusan</th>
                                 <th class="px-6 py-3 text-center">Kapasitas</th>
+                                <th class="px-6 py-3 text-center">Anggota</th>
                                 <th class="px-6 py-3 text-right">Aksi</th>
                             </tr>
                         </thead>
@@ -352,6 +353,7 @@
                                         <span class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-500 uppercase" x-text="item.jurusan ? item.jurusan.nama : '-'"></span>
                                     </td>
                                     <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center font-black text-[#d90d8b]" x-text="item.kapasitas"></td>
+                                    <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center font-black" :class="item.siswas_count >= item.kapasitas ? 'text-rose-500' : 'text-slate-700'" x-text="item.siswas_count || 0"></td>
                                     <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
                                         <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button @click="openMappingModal(item.id, item.nama)" class="p-2 text-emerald-500 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer" title="Map Anggota Kelas">
@@ -471,20 +473,24 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Left Column: Class Members -->
-                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col h-[500px]">
                             <h4 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
                                 Anggota Kelas
                                 <span class="bg-[#d90d8b] text-white text-[10px] px-2 py-1 rounded-lg" x-text="mapMembers.length + ' Siswa'"></span>
                             </h4>
-                            <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                                <template x-if="mapMembers.length === 0">
-                                    <div class="text-center py-8 text-slate-400 text-sm">Belum ada anggota kelas.</div>
+                            <div class="mb-4 relative">
+                                <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</i>
+                                <input type="text" x-model="searchMembers" class="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:border-[#ba80e8] focus:ring-1 focus:ring-[#ba80e8] outline-none transition-all placeholder:text-slate-400" placeholder="Cari nama, NIS, atau NISN...">
+                            </div>
+                            <div class="space-y-3 overflow-y-auto pr-2 flex-1">
+                                <template x-if="filteredMapMembers.length === 0">
+                                    <div class="text-center py-8 text-slate-400 text-sm" x-text="searchMembers ? 'Siswa tidak ditemukan.' : 'Belum ada anggota kelas.'"></div>
                                 </template>
-                                <template x-for="siswa in mapMembers" :key="siswa.id">
+                                <template x-for="siswa in filteredMapMembers" :key="siswa.id">
                                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between group flex-wrap gap-2">
                                         <div class="flex-1 min-w-0">
                                             <p class="font-bold text-slate-700 text-sm truncate" x-text="siswa.nama_lengkap"></p>
-                                            <p class="text-[10px] font-medium text-slate-400 mt-0.5" x-text="'NISN: ' + (siswa.nisn || '-')"></p>
+                                            <p class="text-[10px] font-medium text-slate-400 mt-0.5" x-text="(siswa.nis ? 'NIS: ' + siswa.nis : '') + (siswa.nis && siswa.nisn ? ' | ' : '') + (siswa.nisn ? 'NISN: ' + siswa.nisn : '')"></p>
                                         </div>
                                         <button @click="removeStudentFromKelas(siswa)" class="p-2 bg-rose-50 text-rose-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-100 cursor-pointer flex-shrink-0" title="Keluarkan dari kelas">
                                             <i class="material-icons text-sm">person_remove</i>
@@ -495,20 +501,24 @@
                         </div>
 
                         <!-- Right Column: Unassigned Students -->
-                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col h-[500px]">
                             <h4 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
                                 Siswa Belum Memiliki Kelas
                                 <span class="bg-slate-300 text-slate-700 text-[10px] px-2 py-1 rounded-lg" x-text="mapUnassigned.length + ' Siswa'"></span>
                             </h4>
-                            <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                                <template x-if="mapUnassigned.length === 0">
-                                    <div class="text-center py-8 text-slate-400 text-sm">Semua siswa sudah memiliki kelas.</div>
+                            <div class="mb-4 relative">
+                                <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</i>
+                                <input type="text" x-model="searchUnassigned" class="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:border-[#ba80e8] focus:ring-1 focus:ring-[#ba80e8] outline-none transition-all placeholder:text-slate-400" placeholder="Cari nama, NIS, atau NISN...">
+                            </div>
+                            <div class="space-y-3 overflow-y-auto pr-2 flex-1">
+                                <template x-if="filteredMapUnassigned.length === 0">
+                                    <div class="text-center py-8 text-slate-400 text-sm" x-text="searchUnassigned ? 'Siswa tidak ditemukan.' : 'Semua siswa sudah memiliki kelas.'"></div>
                                 </template>
-                                <template x-for="siswa in mapUnassigned" :key="siswa.id">
+                                <template x-for="siswa in filteredMapUnassigned" :key="siswa.id">
                                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between group flex-wrap gap-2">
                                         <div class="flex-1 min-w-0">
                                             <p class="font-bold text-slate-700 text-sm truncate" x-text="siswa.nama_lengkap"></p>
-                                            <p class="text-[10px] font-medium text-slate-400 mt-0.5" x-text="'NISN: ' + (siswa.nisn || '-')"></p>
+                                            <p class="text-[10px] font-medium text-slate-400 mt-0.5" x-text="(siswa.nis ? 'NIS: ' + siswa.nis : '') + (siswa.nis && siswa.nisn ? ' | ' : '') + (siswa.nisn ? 'NISN: ' + siswa.nisn : '')"></p>
                                         </div>
                                         <button @click="addStudentToKelas(siswa)" class="p-2 bg-emerald-50 text-emerald-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-emerald-100 cursor-pointer flex-shrink-0" title="Tambahkan ke kelas">
                                             <i class="material-icons text-sm">person_add</i>
@@ -758,6 +768,8 @@ function sekolahPage() {
         activeMapKelasName: '',
         mapMembers: [],
         mapUnassigned: [],
+        searchMembers: '',
+        searchUnassigned: '',
 
         get activeJurusans() {
             return this.jurusans.filter(j => j.is_active);
@@ -769,6 +781,26 @@ function sekolahPage() {
 
         isIdentityFilled() {
             return this.identity && this.identity.nama_sekolah && this.identity.npsn;
+        },
+
+        get filteredMapMembers() {
+            if (!this.searchMembers) return this.mapMembers;
+            const search = this.searchMembers.toLowerCase();
+            return this.mapMembers.filter(s => 
+                (s.nama_lengkap && s.nama_lengkap.toLowerCase().includes(search)) ||
+                (s.nis && s.nis.toLowerCase().includes(search)) ||
+                (s.nisn && s.nisn.toLowerCase().includes(search))
+            );
+        },
+
+        get filteredMapUnassigned() {
+            if (!this.searchUnassigned) return this.mapUnassigned;
+            const search = this.searchUnassigned.toLowerCase();
+            return this.mapUnassigned.filter(s => 
+                (s.nama_lengkap && s.nama_lengkap.toLowerCase().includes(search)) ||
+                (s.nis && s.nis.toLowerCase().includes(search)) ||
+                (s.nisn && s.nisn.toLowerCase().includes(search))
+            );
         },
 
         goToSettingsTab() {
@@ -955,6 +987,8 @@ function sekolahPage() {
         openMappingModal(id, nama) {
             this.activeMapKelasId = id;
             this.activeMapKelasName = nama;
+            this.searchMembers = '';
+            this.searchUnassigned = '';
             this.showMappingModal = true;
             this.fetchMappingData();
         },
@@ -977,6 +1011,12 @@ function sekolahPage() {
                 this.mapUnassigned = this.mapUnassigned.filter(s => s.id !== siswa.id);
                 this.mapMembers.push(siswa);
                 this.mapMembers.sort((a, b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap || ''));
+                
+                // Update siswas_count in kelas list
+                const kelasIndex = this.kelas.findIndex(k => k.id === this.activeMapKelasId);
+                if (kelasIndex !== -1) {
+                    this.kelas[kelasIndex].siswas_count = (this.kelas[kelasIndex].siswas_count || 0) + 1;
+                }
             }).fail(() => {
                 Swal.fire('Error', 'Gagal menambahkan siswa', 'error');
             });
@@ -990,6 +1030,12 @@ function sekolahPage() {
                 this.mapMembers = this.mapMembers.filter(s => s.id !== siswa.id);
                 this.mapUnassigned.push(siswa);
                 this.mapUnassigned.sort((a, b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap || ''));
+                
+                // Update siswas_count in kelas list
+                const kelasIndex = this.kelas.findIndex(k => k.id === this.activeMapKelasId);
+                if (kelasIndex !== -1) {
+                    this.kelas[kelasIndex].siswas_count = Math.max(0, (this.kelas[kelasIndex].siswas_count || 0) - 1);
+                }
             }).fail(() => {
                 Swal.fire('Error', 'Gagal menghapus siswa', 'error');
             });

@@ -19,7 +19,7 @@ class SekolahController extends Controller
         $allSettings = SchoolSetting::orderBy('tahun_pelajaran', 'desc')->orderBy('semester', 'desc')->get();
         $settings = $allSettings->where('is_active', true)->first() ?? $allSettings->first();
         $jurusans = Jurusan::all();
-        $kelas = Kelas::with(['waliKelas', 'jurusan'])->get();
+        $kelas = Kelas::with(['waliKelas', 'jurusan'])->withCount('siswas')->get();
         $gurus = Fungsionaris::where('jabatan', 'guru')->get();
         $identity = auth()->user()->school;
 
@@ -139,7 +139,7 @@ class SekolahController extends Controller
 
     public function showKelas($id)
     {
-        return response()->json(Kelas::findOrFail($id));
+        return response()->json(Kelas::withCount('siswas')->findOrFail($id));
     }
 
     public function updateKelas(Request $request, $id)
