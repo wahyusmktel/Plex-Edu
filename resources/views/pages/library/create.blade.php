@@ -141,11 +141,16 @@
                     <div class="space-y-2">
                         <label class="text-sm font-bold text-slate-700 ml-1">Gambar Sampul (Opsional)</label>
                         <div class="relative group border-2 border-dashed border-slate-200 rounded-2xl p-8 transition-all hover:border-[#d90d8b]/50 hover:bg-pink-50/20">
-                            <input type="file" name="cover_image" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
-                            <div class="text-center">
+                            <input type="file" name="cover_image" id="coverImage" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" @change="handleCoverSelect($event)">
+                            <div class="text-center" x-show="!coverName">
                                 <i class="material-icons text-4xl text-slate-300 group-hover:text-[#d90d8b] transition-colors mb-2">add_photo_alternate</i>
                                 <p class="text-sm font-medium text-slate-500 group-hover:text-[#d90d8b]">Gunakan gambar JPEG/PNG</p>
                                 <p class="text-xs text-slate-400 mt-1">Maksimum 2MB</p>
+                            </div>
+                            <div x-show="coverName" class="text-center">
+                                <i class="material-icons text-4xl text-[#d90d8b] mb-2">image</i>
+                                <p class="text-sm font-medium text-slate-700" x-text="coverName"></p>
+                                <p class="text-xs text-slate-400 mt-1" x-text="coverSize"></p>
                             </div>
                         </div>
                         @error('cover_image') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
@@ -172,6 +177,8 @@
         return {
             fileName: '',
             fileSize: '',
+            coverName: '',
+            coverSize: '',
             uploading: false,
             uploadProgress: 0,
 
@@ -184,13 +191,53 @@
                 }
             },
 
+            handleCoverSelect(event) {
+                if (event.target.files.length > 0) {
+                    const file = event.target.files[0];
+                    
+                    // Check if file exceeds 2MB limit (2 * 1024 * 1024 bytes)
+                    if (file.size > 2097152) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Ukuran Gambar Terlalu Besar',
+                            text: 'Maksimum ukuran gambar sampul adalah 2MB. Silakan pilih gambar lain.',
+                            confirmButtonColor: '#d90d8b'
+                        });
+                        // Reset the input
+                        event.target.value = '';
+                        this.coverName = '';
+                        this.coverSize = '';
+                        return;
+                    }
+
+                    this.coverName = file.name;
+                    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                    this.coverSize = sizeMB + ' MB';
+                } else {
+                    this.coverName = '';
+                    this.coverSize = '';
+                }
+            },
+
             async submitForm() {
                 const form = document.getElementById('libraryForm');
                 const digitalFile = document.getElementById('digitalFile').files[0];
+                const coverFile = document.getElementById('coverImage')?.files[0];
                 
                 // For new items, file is required
                 if (!digitalFile) {
                     Swal.fire('Oops...', 'Silakan pilih fail digital.', 'error');
+                    return;
+                }
+
+                // Extra safety check for cover image size before upload
+                if (coverFile && coverFile.size > 2097152) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Ukuran Gambar Terlalu Besar',
+                        text: 'Maksimum ukuran gambar sampul adalah 2MB. Silakan pilih gambar yang lebih kecil.',
+                        confirmButtonColor: '#d90d8b'
+                    });
                     return;
                 }
 
