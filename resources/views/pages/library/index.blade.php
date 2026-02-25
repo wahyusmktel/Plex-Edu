@@ -147,6 +147,12 @@
                                     Dipinjam (Sisa {{ $remaining }} Hari)
                                 </div>
                             @endif
+                            @if($book->school)
+                                <div class="mt-3 flex items-center gap-1.5 text-slate-400">
+                                    <i class="material-icons text-[14px]">account_balance</i>
+                                    <span class="text-[10px] font-medium truncate">{{ $book->school->nama_sekolah }}</span>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -185,6 +191,12 @@
                                         </span>
                                     @endif
                                 </div>
+                                @if($audio->school)
+                                    <div class="flex items-center gap-1.5 mt-1 text-slate-400">
+                                        <i class="material-icons text-[12px]">account_balance</i>
+                                        <span class="text-[9px] font-medium line-clamp-1">{{ $audio->school->nama_sekolah }}</span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
@@ -251,6 +263,12 @@
                                         </span>
                                     @endif
                                 </div>
+                                @if($video->school)
+                                    <div class="flex items-center gap-1.5 mt-2 text-slate-400">
+                                        <i class="material-icons text-[12px]">account_balance</i>
+                                        <span class="text-[9px] font-medium line-clamp-1">{{ $video->school->nama_sekolah }}</span>
+                                    </div>
+                                @endif
                             </div>
                             @if(auth()->user()->role !== 'guru')
                             <button type="button" @click="deleteItem('{{ $video->id }}', '{{ addslashes($video->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">

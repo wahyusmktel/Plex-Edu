@@ -24,6 +24,7 @@ class LibraryItem extends Model
         'durasi',
         'jumlah_halaman',
         'kategori',
+        'visibility',
         'is_active',
     ];
 

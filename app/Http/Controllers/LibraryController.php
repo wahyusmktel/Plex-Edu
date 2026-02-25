@@ -18,21 +18,30 @@ class LibraryController extends Controller
         }
 
         $kategori = $request->query('kategori');
+        $userSchoolId = auth()->user()->school_id;
 
-        $books = LibraryItem::where('category', 'book')
+        $itemsQuery = LibraryItem::with('school')->withoutGlobalScope('school')->where(function($query) use ($userSchoolId) {
+                $query->where('visibility', 'public')
+                      ->orWhere(function($q) use ($userSchoolId) {
+                          $q->where('visibility', 'private')
+                            ->where('school_id', $userSchoolId);
+                      });
+            });
+
+        $books = (clone $itemsQuery)->where('category', 'book')
             ->when($kategori, fn($q) => $q->where('kategori', $kategori))
             ->latest()
             ->get();
-        $audios = LibraryItem::where('category', 'audio')
+        $audios = (clone $itemsQuery)->where('category', 'audio')
             ->when($kategori, fn($q) => $q->where('kategori', $kategori))
             ->latest()
             ->get();
-        $videos = LibraryItem::where('category', 'video')
+        $videos = (clone $itemsQuery)->where('category', 'video')
             ->when($kategori, fn($q) => $q->where('kategori', $kategori))
             ->latest()
             ->get();
         
-        $categories = LibraryItem::whereNotNull('kategori')->distinct()->pluck('kategori');
+        $categories = (clone $itemsQuery)->whereNotNull('kategori')->distinct()->pluck('kategori');
         
         $borrowedItems = [];
         $totalBorrowedCount = 0;
@@ -118,6 +127,7 @@ class LibraryController extends Controller
             'category' => 'required|in:book,audio,video',
             'kategori' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'visibility' => 'required|in:public,private',
             'cover_image' => 'nullable|image|max:2048',
         ];
 
@@ -147,6 +157,7 @@ class LibraryController extends Controller
             'category' => $request->category,
             'kategori' => $request->kategori,
             'description' => $request->description,
+            'visibility' => $request->visibility,
             'file_path' => $file_path,
             'cover_image' => $cover_image,
         ]);
@@ -232,7 +243,12 @@ class LibraryController extends Controller
             return back()->with('error', 'Profil siswa tidak ditemukan.');
         }
 
-        $item = LibraryItem::findOrFail($id);
+        $item = LibraryItem::withoutGlobalScope('school')->findOrFail($id);
+
+        // Optional: Ensure that the item is either public or belongs to the current student's school
+        if ($item->visibility === 'private' && $item->school_id !== auth()->user()->school_id) {
+            abort(403, 'Akses dilarang. Koleksi ini bersifat privat untuk sekolah lain.');
+        }
 
         // Check if already borrowed
         $existing = LibraryLoan::where('student_id', $siswa->id)

@@ -55,6 +55,41 @@
                         <label class="text-sm font-bold text-slate-700 ml-1">Deskripsi Ringkas</label>
                         <textarea name="description" rows="4" placeholder="Berikan informasi singkat tentang koleksi ini..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#d90d8b] focus:ring-0 transition-all outline-none"></textarea>
                     </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Visibilitas Koleksi</label>
+                        <div class="flex gap-4">
+                            <label class="flex-1 relative">
+                                <input type="radio" name="visibility" value="public" class="peer sr-only" checked>
+                                <div class="p-4 rounded-xl border-2 border-slate-200 cursor-pointer transition-all peer-checked:border-[#d90d8b] peer-checked:bg-pink-50 hover:bg-slate-50">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 peer-checked:bg-[#d90d8b] peer-checked:text-white transition-colors">
+                                            <i class="material-icons">public</i>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-slate-700">Publik</p>
+                                            <p class="text-[10px] text-slate-500 mt-0.5">Semua sekolah dapat melihat</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="flex-1 relative">
+                                <input type="radio" name="visibility" value="private" class="peer sr-only">
+                                <div class="p-4 rounded-xl border-2 border-slate-200 cursor-pointer transition-all peer-checked:border-[#d90d8b] peer-checked:bg-pink-50 hover:bg-slate-50">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 peer-checked:bg-[#d90d8b] peer-checked:text-white transition-colors">
+                                            <i class="material-icons">lock</i>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-slate-700">Privat</p>
+                                            <p class="text-[10px] text-slate-500 mt-0.5">Khusus sekolah Anda saja</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        @error('visibility') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
                 </div>
 
                 <!-- Right Column -->
