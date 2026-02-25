@@ -120,7 +120,10 @@
                                     class="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-[#d90d8b] hover:text-white transition-colors cursor-pointer shadow-lg outline-none border-none">
                                     <i class="material-icons">{{ $isBorrowed ? 'visibility' : 'lock' }}</i>
                                 </button>
-                                @if(auth()->user()->role === 'admin')
+                                @if(auth()->user()->role === 'admin' && $book->school_id === auth()->user()->school_id)
+                                <a href="{{ route('library.edit', $book->id) }}" class="w-10 h-10 rounded-full bg-white text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-colors cursor-pointer shadow-lg outline-none border-none">
+                                    <i class="material-icons">edit</i>
+                                </a>
                                 <button type="button" 
                                     @click="deleteItem('{{ $book->id }}', '{{ addslashes($book->title) }}')"
                                     class="w-10 h-10 rounded-full bg-white text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-lg cursor-pointer">
@@ -208,7 +211,10 @@
                                     <i class="material-icons text-sm">lock</i> Pinjam Sekarang
                                 </button>
                             @endif
-                            @if(auth()->user()->role === 'admin')
+                            @if(auth()->user()->role === 'admin' && $audio->school_id === auth()->user()->school_id)
+                            <a href="{{ route('library.edit', $audio->id) }}" class="p-2 text-slate-400 hover:text-blue-500 transition-colors cursor-pointer">
+                                <i class="material-icons">edit</i>
+                            </a>
                             <button type="button" @click="deleteItem('{{ $audio->id }}', '{{ addslashes($audio->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
                                 <i class="material-icons">delete</i>
                             </button>
@@ -270,10 +276,15 @@
                                     </div>
                                 @endif
                             </div>
-                            @if(auth()->user()->role !== 'guru')
-                            <button type="button" @click="deleteItem('{{ $video->id }}', '{{ addslashes($video->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
-                                <i class="material-icons text-xl">delete</i>
-                            </button>
+                            @if(auth()->user()->role === 'admin' && $video->school_id === auth()->user()->school_id)
+                            <div class="flex items-center gap-1">
+                                <a href="{{ route('library.edit', $video->id) }}" class="p-2 text-slate-400 hover:text-blue-500 transition-colors cursor-pointer">
+                                    <i class="material-icons text-xl">edit</i>
+                                </a>
+                                <button type="button" @click="deleteItem('{{ $video->id }}', '{{ addslashes($video->title) }}')" class="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
+                                    <i class="material-icons text-xl">delete</i>
+                                </button>
+                            </div>
                             @endif
                         </div>
                     </div>

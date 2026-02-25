@@ -169,12 +169,86 @@ class LibraryController extends Controller
         return redirect()->route('library.index')->with('success', 'Item perpustakaan berhasil ditambahkan.');
     }
 
+    public function edit($id)
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Akses dilarang.');
+        }
+        $item = LibraryItem::findOrFail($id);
+        
+        if ($item->school_id !== auth()->user()->school_id) {
+            abort(403, 'Anda hanya dapat mengedit koleksi milik sekolah Anda.');
+        }
+
+        return view('pages.library.edit', compact('item'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Akses dilarang.');
+        }
+
+        $item = LibraryItem::findOrFail($id);
+        
+        if ($item->school_id !== auth()->user()->school_id) {
+            abort(403, 'Anda hanya dapat mengedit koleksi milik sekolah Anda.');
+        }
+
+        $rules = [
+            'title' => 'required|string|max:255',
+            'author' => 'required|string|max:255',
+            'category' => 'required|in:book,audio,video',
+            'kategori' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'visibility' => 'required|in:public,private',
+            'cover_image' => 'nullable|image|max:2048',
+        ];
+
+        if ($request->has('file_path')) {
+            $rules['file_path'] = 'required|string';
+        } elseif ($request->hasFile('file')) {
+            $rules['file'] = 'required|file|max:512000';
+        }
+
+        $request->validate($rules);
+
+        if ($request->has('file_path')) {
+            $item->file_path = $request->file_path;
+        } elseif ($request->hasFile('file')) {
+            $item->file_path = $request->file('file')->store('library/' . $request->category, config('filesystems.default'));
+        }
+
+        if ($request->hasFile('cover_image')) {
+            $item->cover_image = $request->file('cover_image')->store('library/covers', config('filesystems.default'));
+        }
+
+        $item->title = $request->title;
+        $item->author = $request->author;
+        $item->category = $request->category;
+        $item->kategori = $request->kategori;
+        $item->description = $request->description;
+        $item->visibility = $request->visibility;
+        $item->save();
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->route('library.index')->with('success', 'Item perpustakaan berhasil diperbarui.');
+    }
+
     public function destroy($id)
     {
         if (auth()->user()->role !== 'admin') {
             abort(403, 'Akses dilarang.');
         }
         $item = LibraryItem::findOrFail($id);
+
+        if ($item->school_id !== auth()->user()->school_id) {
+            abort(403, 'Anda hanya dapat menghapus koleksi milik sekolah Anda.');
+        }
+
         $disk = Storage::disk(config('filesystems.default'));
         $disk->delete($item->file_path);
         if ($item->cover_image) {

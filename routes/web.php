@@ -251,6 +251,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [LibraryController::class, 'create'])->name('create');
         Route::post('/signed-url', [LibraryController::class, 'getSignedUrl'])->name('signed-url');
         Route::post('/store', [LibraryController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [LibraryController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [LibraryController::class, 'update'])->name('update');
         Route::delete('/{id}', [LibraryController::class, 'destroy'])->name('destroy');
         
         // Loans
