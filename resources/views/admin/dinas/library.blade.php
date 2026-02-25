@@ -289,6 +289,20 @@
                         </span>
                     </div>
 
+                    <!-- Action Buttons for Edit & Delete -->
+                    <div class="absolute top-4 right-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 translate-x-4 group-hover:translate-x-0 duration-300">
+                        <a href="{{ route('dinas.library.edit', $item->id) }}" class="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-sm text-slate-700 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-lg hover:scale-110">
+                            <i class="material-icons text-lg">edit_note</i>
+                        </a>
+                        <form action="{{ route('dinas.library.destroy', $item->id) }}" method="POST" class="m-0">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" onclick="confirmDelete(this.form)" class="w-10 h-10 rounded-xl bg-white/95 backdrop-blur-sm text-slate-700 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-lg hover:scale-110">
+                                <i class="material-icons text-lg">delete_outline</i>
+                            </button>
+                        </form>
+                    </div>
+
                     <!-- Overlay actions -->
                     <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-20">
                         @if($item->category === 'book')
@@ -954,6 +968,28 @@
             showCloseButton: true,
             customClass: {
                 popup: 'rounded-[2.5rem]',
+            }
+        });
+    }
+
+    function confirmDelete(form) {
+        Swal.fire({
+            title: 'Hapus Koleksi?',
+            text: "Fail digital dan gambar sampul juga akan dihapus permanen.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            customClass: {
+                confirmButton: 'rounded-xl px-6 py-3 font-bold',
+                cancelButton: 'rounded-xl px-6 py-3 font-bold bg-slate-100 text-slate-700 hover:bg-slate-200',
+                popup: 'rounded-3xl'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
             }
         });
     }

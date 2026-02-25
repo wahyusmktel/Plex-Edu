@@ -358,6 +358,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/library', [App\Http\Controllers\Admin\DinasController::class, 'library'])->name('library');
         Route::post('/library/store', [App\Http\Controllers\Admin\DinasController::class, 'libraryStore'])->name('library.store');
         Route::post('/library/signed-url', [App\Http\Controllers\Admin\DinasController::class, 'librarySignedUrl'])->name('library.signed-url');
+        Route::get('/library/{id}/edit', [App\Http\Controllers\Admin\DinasController::class, 'libraryEdit'])->name('library.edit');
+        Route::put('/library/{id}', [App\Http\Controllers\Admin\DinasController::class, 'libraryUpdate'])->name('library.update');
+        Route::delete('/library/{id}', [App\Http\Controllers\Admin\DinasController::class, 'libraryDestroy'])->name('library.destroy');
         
         // App Settings
         Route::get('/settings', [App\Http\Controllers\Admin\DinasController::class, 'settings'])->name('settings');

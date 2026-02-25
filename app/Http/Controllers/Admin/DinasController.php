@@ -683,6 +683,92 @@ class DinasController extends Controller
         return redirect()->route('dinas.library')->with('success', 'Koleksi perpustakaan berhasil ditambahkan.');
     }
 
+    public function libraryEdit($id)
+    {
+        $item = LibraryItem::withoutGlobalScopes()->findOrFail($id);
+        return view('admin.dinas.library_edit', compact('item'));
+    }
+
+    public function libraryUpdate(Request $request, $id)
+    {
+        $item = LibraryItem::withoutGlobalScopes()->findOrFail($id);
+
+        $rules = [
+            'category' => 'required|in:book,audio,video',
+            'title' => 'required|string|max:255',
+            'author' => 'required|string|max:255',
+            'kategori' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'cover_image' => 'nullable|image|max:2048',
+        ];
+
+        // Validasi opsional untuk file jika diubah
+        if ($request->hasFile('file') || $request->has('file_path')) {
+            if ($request->has('file_path')) {
+                $rules['file_path'] = 'required|string';
+            } else {
+                $rules['file'] = 'required|file|max:512000';
+            }
+        }
+
+        $request->validate($rules);
+
+        // Update cover
+        if ($request->hasFile('cover_image')) {
+            if ($item->cover_image) {
+                Storage::disk(config('filesystems.default'))->delete($item->cover_image);
+            }
+            $item->cover_image = $request->file('cover_image')->store('library/covers', config('filesystems.default'));
+        }
+
+        // Update file digital
+        if ($request->has('file_path') && $request->file_path != '') {
+            $item->file_path = $request->file_path;
+        } elseif ($request->hasFile('file')) {
+            if ($item->file_path) {
+                try {
+                    Storage::disk(config('filesystems.default'))->delete($item->file_path);
+                } catch (\Exception $e) { }
+            }
+            $item->file_path = $request->file('file')->store('library/' . $request->category, config('filesystems.default'));
+        }
+
+        $item->title = $request->title;
+        $item->author = $request->author;
+        $item->category = $request->category;
+        $item->kategori = $request->kategori;
+        $item->description = $request->description;
+        
+        $item->save();
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->route('dinas.library')->with('success', 'Koleksi berhasil diperbarui.');
+    }
+
+    public function libraryDestroy($id)
+    {
+        $item = LibraryItem::withoutGlobalScopes()->findOrFail($id);
+        
+        if ($item->file_path) {
+            try {
+                Storage::disk(config('filesystems.default'))->delete($item->file_path);
+            } catch (\Exception $e) { }
+        }
+        
+        if ($item->cover_image) {
+            try {
+                Storage::disk(config('filesystems.default'))->delete($item->cover_image);
+            } catch (\Exception $e) { }
+        }
+
+        $item->delete();
+
+        return redirect()->route('dinas.library')->with('success', 'Koleksi berhasil dihapus.');
+    }
+
     public function librarySignedUrl(Request $request)
     {
         $request->validate([
