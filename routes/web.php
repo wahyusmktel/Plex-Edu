@@ -135,6 +135,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kelas/show/{id}', [SekolahController::class, 'showKelas'])->name('kelas.show');
         Route::post('/kelas/update/{id}', [SekolahController::class, 'updateKelas'])->name('kelas.update');
         Route::delete('/kelas/destroy/{id}', [SekolahController::class, 'destroyKelas'])->name('kelas.destroy');
+
+        // Class Members Mapping
+        Route::get('/kelas/{id}/members', [SekolahController::class, 'getKelasMembers'])->name('kelas.members');
+        Route::get('/kelas/unassigned-students', [SekolahController::class, 'getUnassignedStudents'])->name('kelas.unassigned');
+        Route::post('/kelas/{id}/add-student', [SekolahController::class, 'addStudentToKelas'])->name('kelas.add-student');
+        Route::post('/kelas/{id}/remove-student', [SekolahController::class, 'removeStudentFromKelas'])->name('kelas.remove-student');
     });
 
     // Berita & Pengumuman Reader Routes

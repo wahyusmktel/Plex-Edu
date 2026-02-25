@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Sekolah;
 use App\Models\SchoolSetting;
 use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Fungsionaris;
+use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
@@ -155,5 +157,58 @@ class SekolahController extends Controller
     {
         Kelas::destroy($id);
         return response()->json(['success' => 'Kelas berhasil dihapus']);
+    }
+
+    // Class Member Mapping API
+    public function getKelasMembers($id)
+    {
+        $members = Siswa::where('kelas_id', $id)
+            ->orderBy('nama_lengkap', 'asc')
+            ->get();
+            
+        return response()->json($members);
+    }
+
+    public function getUnassignedStudents()
+    {
+        $school_id = auth()->user()->school->id;
+        $unassigned = Siswa::where('school_id', $school_id)
+            ->whereNull('kelas_id')
+            ->orderBy('nama_lengkap', 'asc')
+            ->get();
+            
+        return response()->json($unassigned);
+    }
+
+    public function addStudentToKelas(Request $request, $id)
+    {
+        $request->validate(['siswa_id' => 'required']);
+        
+        $siswa = Siswa::findOrFail($request->siswa_id);
+        
+        if ($siswa->school_id !== auth()->user()->school->id) {
+            return response()->json(['error' => 'Unauthorized access'], 403);
+        }
+
+        $siswa->kelas_id = $id;
+        $siswa->save();
+
+        return response()->json(['success' => 'Siswa berhasil ditambahkan ke kelas']);
+    }
+
+    public function removeStudentFromKelas(Request $request, $id)
+    {
+        $request->validate(['siswa_id' => 'required']);
+        
+        $siswa = Siswa::findOrFail($request->siswa_id);
+
+        if ($siswa->school_id !== auth()->user()->school->id) {
+            return response()->json(['error' => 'Unauthorized access'], 403);
+        }
+
+        $siswa->kelas_id = null;
+        $siswa->save();
+
+        return response()->json(['success' => 'Siswa berhasil dihapus dari kelas']);
     }
 }

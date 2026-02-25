@@ -354,6 +354,9 @@
                                     <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-transparent group-hover:border-slate-100 text-center font-black text-[#d90d8b]" x-text="item.kapasitas"></td>
                                     <td class="px-6 py-4 bg-slate-50 group-hover:bg-white border-y border-r border-transparent group-hover:border-slate-100 last:rounded-r-2xl text-right">
                                         <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button @click="openMappingModal(item.id, item.nama)" class="p-2 text-emerald-500 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer" title="Map Anggota Kelas">
+                                                <i class="material-icons text-lg">group</i>
+                                            </button>
                                             <button @click="editKelas(item.id)" class="p-2 text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer">
                                                 <i class="material-icons text-lg">edit</i>
                                             </button>
@@ -445,6 +448,75 @@
                     <div class="mt-8 flex gap-3">
                         <button @click="showKelasModal = false" class="flex-1 py-4 bg-slate-50 text-slate-500 rounded-2xl font-bold hover:bg-slate-100 transition-all cursor-pointer">Batal</button>
                         <button @click="saveKelas" class="flex-1 py-4 bg-gradient-to-r from-[#ba80e8] to-[#d90d8b] text-white rounded-2xl font-bold shadow-lg shadow-pink-100 hover:scale-[1.02] transition-all cursor-pointer">Simpan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Mapping Modal -->
+    <div x-show="showMappingModal" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="showMappingModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 transition-opacity" @click="showMappingModal = false">
+                <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>&#8203;
+            <div x-show="showMappingModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="relative z-10 inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
+                <div class="bg-white p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-slate-800">Maping Anggota: <span x-text="activeMapKelasName" class="text-[#d90d8b]"></span></h3>
+                        <button @click="showMappingModal = false" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                            <i class="material-icons">close</i>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Left Column: Class Members -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                            <h4 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
+                                Anggota Kelas
+                                <span class="bg-[#d90d8b] text-white text-[10px] px-2 py-1 rounded-lg" x-text="mapMembers.length + ' Siswa'"></span>
+                            </h4>
+                            <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                                <template x-if="mapMembers.length === 0">
+                                    <div class="text-center py-8 text-slate-400 text-sm">Belum ada anggota kelas.</div>
+                                </template>
+                                <template x-for="siswa in mapMembers" :key="siswa.id">
+                                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between group flex-wrap gap-2">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-bold text-slate-700 text-sm truncate" x-text="siswa.nama_lengkap"></p>
+                                            <p class="text-[10px] font-medium text-slate-400 mt-0.5" x-text="'NISN: ' + (siswa.nisn || '-')"></p>
+                                        </div>
+                                        <button @click="removeStudentFromKelas(siswa)" class="p-2 bg-rose-50 text-rose-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-100 cursor-pointer flex-shrink-0" title="Keluarkan dari kelas">
+                                            <i class="material-icons text-sm">person_remove</i>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Unassigned Students -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                            <h4 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
+                                Siswa Belum Memiliki Kelas
+                                <span class="bg-slate-300 text-slate-700 text-[10px] px-2 py-1 rounded-lg" x-text="mapUnassigned.length + ' Siswa'"></span>
+                            </h4>
+                            <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                                <template x-if="mapUnassigned.length === 0">
+                                    <div class="text-center py-8 text-slate-400 text-sm">Semua siswa sudah memiliki kelas.</div>
+                                </template>
+                                <template x-for="siswa in mapUnassigned" :key="siswa.id">
+                                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between group flex-wrap gap-2">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-bold text-slate-700 text-sm truncate" x-text="siswa.nama_lengkap"></p>
+                                            <p class="text-[10px] font-medium text-slate-400 mt-0.5" x-text="'NISN: ' + (siswa.nisn || '-')"></p>
+                                        </div>
+                                        <button @click="addStudentToKelas(siswa)" class="p-2 bg-emerald-50 text-emerald-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-emerald-100 cursor-pointer flex-shrink-0" title="Tambahkan ke kelas">
+                                            <i class="material-icons text-sm">person_add</i>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -680,6 +752,13 @@ function sekolahPage() {
         showKelasModal: false,
         kelasForm: { id: null, nama: '', tingkat: '', wali_kelas_id: '', jurusan_id: '', kapasitas: 36, keterangan: '' },
 
+        // Mapping State
+        showMappingModal: false,
+        activeMapKelasId: null,
+        activeMapKelasName: '',
+        mapMembers: [],
+        mapUnassigned: [],
+
         get activeJurusans() {
             return this.jurusans.filter(j => j.is_active);
         },
@@ -869,6 +948,50 @@ function sekolahPage() {
                         success: () => location.reload()
                     });
                 }
+            });
+        },
+
+        // Mapping Logic
+        openMappingModal(id, nama) {
+            this.activeMapKelasId = id;
+            this.activeMapKelasName = nama;
+            this.showMappingModal = true;
+            this.fetchMappingData();
+        },
+        fetchMappingData() {
+            // Fetch class members
+            $.get(`{{ url('sekolah/kelas') }}/${this.activeMapKelasId}/members`).done(res => {
+                this.mapMembers = res;
+            });
+            // Fetch unassigned students
+            $.get(`{{ url('sekolah/kelas/unassigned-students') }}`).done(res => {
+                this.mapUnassigned = res;
+            });
+        },
+        addStudentToKelas(siswa) {
+            $.post(`{{ url('sekolah/kelas') }}/${this.activeMapKelasId}/add-student`, {
+                _token: '{{ csrf_token() }}',
+                siswa_id: siswa.id
+            }).done(() => {
+                // Move student locally
+                this.mapUnassigned = this.mapUnassigned.filter(s => s.id !== siswa.id);
+                this.mapMembers.push(siswa);
+                this.mapMembers.sort((a, b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap || ''));
+            }).fail(() => {
+                Swal.fire('Error', 'Gagal menambahkan siswa', 'error');
+            });
+        },
+        removeStudentFromKelas(siswa) {
+            $.post(`{{ url('sekolah/kelas') }}/${this.activeMapKelasId}/remove-student`, {
+                _token: '{{ csrf_token() }}',
+                siswa_id: siswa.id
+            }).done(() => {
+                // Move student locally
+                this.mapMembers = this.mapMembers.filter(s => s.id !== siswa.id);
+                this.mapUnassigned.push(siswa);
+                this.mapUnassigned.sort((a, b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap || ''));
+            }).fail(() => {
+                Swal.fire('Error', 'Gagal menghapus siswa', 'error');
             });
         }
     }
